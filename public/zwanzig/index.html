@@ -6,17 +6,27 @@
 <title>20 Questions · Lunacynas Spielezimmer</title>
 <meta name="description" content="Wer oder was steht auf der Karte? Rate mit 20 Hinweisen gegen deine Freunde – online oder am selben Bildschirm.">
 <meta name="theme-color" content="#16123A">
-<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2214%22%20fill%3D%22%2316123A%22/%3E%3Cpath%20d%3D%22M14%2052V18l10%2010q8-4%2016%200l10-10v34q-18%206-36%200z%22%20fill%3D%22none%22%20stroke%3D%22%23F6E6FF%22%20stroke-width%3D%224%22%20stroke-linejoin%3D%22round%22/%3E%3Ccircle%20cx%3D%2226%22%20cy%3D%2238%22%20r%3D%223%22%20fill%3D%22%23FDD5BB%22/%3E%3Ccircle%20cx%3D%2238%22%20cy%3D%2238%22%20r%3D%223%22%20fill%3D%22%23FDD5BB%22/%3E%3C/svg%3E">
+<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="icon" href="/assets/icons/icon.svg" type="image/svg+xml">
+<link rel="icon" href="/assets/icons/icon-32.png" type="image/png" sizes="32x32">
+<link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png" sizes="180x180">
+<link rel="manifest" href="/site.webmanifest">
 <meta property="og:type" content="website">
+<meta property="og:locale" content="de_DE">
 <meta property="og:site_name" content="Lunacynas Spielezimmer">
 <meta property="og:title" content="20 Questions – Rate-Spiel in 20 Hinweisen">
 <meta property="og:description" content="Wer oder was steht auf der Karte? Rate mit 20 Hinweisen gegen deine Freunde – online oder am selben Bildschirm.">
-<meta property="og:image" content="/assets/og.jpg">
+<meta property="og:url" content="/">
+<meta property="og:image" content="/assets/og.jpg?v=2">
+<meta property="og:image:type" content="image/jpeg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:url" content="/">
+<meta property="og:image:alt" content="Lunacynas gemütliches Stream-Zimmer bei Nacht mit dem Schriftzug „Lunacynas Spielezimmer“">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="/assets/og.jpg">
+<meta name="twitter:title" content="20 Questions – Rate-Spiel in 20 Hinweisen">
+<meta name="twitter:description" content="Wer oder was steht auf der Karte? Rate mit 20 Hinweisen gegen deine Freunde – online oder am selben Bildschirm.">
+<meta name="twitter:image" content="/assets/og.jpg?v=2">
+<meta name="twitter:image:alt" content="Lunacynas gemütliches Stream-Zimmer bei Nacht mit dem Schriftzug „Lunacynas Spielezimmer“">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -177,6 +187,12 @@ div.tile.closed .big{opacity:.55;text-shadow:none}
 
 #zwConfirm{position:fixed;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;background:rgba(8,6,30,.62);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 [hidden]{display:none!important}
+.credit{margin:-6px 0 14px;font-size:13px;font-weight:600;color:var(--muted)}
+.credit.big{margin:10px 0 0;font-size:16px;color:var(--lavender)}
+.credit b{color:var(--neon)}
+.vb{color:var(--ok);font-weight:700}
+.twbtn{background:#9146FF;color:#fff;box-shadow:0 4px 0 #5c2bb3}
+.twbtn:hover:not([disabled]){box-shadow:0 4px 0 #5c2bb3,0 0 22px rgba(145,70,255,.6)}
 .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--neon);color:var(--btn-ink);box-shadow:0 0 20px rgba(199,125,255,.6);font-weight:700;padding:10px 16px;border-radius:999px;font-size:14px;pointer-events:none;opacity:0;transition:opacity .2s;max-width:calc(100% - 32px);text-align:center;z-index:5}
 .toast.show{opacity:1}
 @media (prefers-reduced-motion:reduce){.btn,.toast,button.tile.closed{transition:none}.dots::after{animation:none;content:"…"}}
@@ -211,9 +227,14 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
   let myName=null;try{myName=localStorage.getItem('kb_name')}catch(e){}
   if(!myName||myName.length>30)myName=newName();
   const names={};names[uid]=myName;
+  const verified=new Set();
+  const auth={enabled:false,user:null};
+  window.kbAuth=auth;
   const conns=new Set();
   const cleanName=s=>typeof s==='string'?s.replace(/[^\p{L}\p{N} ._-]/gu,'').slice(0,30):'';
 
+  // Namen lernen: Twitch-bestätigte Namen (vom Server) haben Vorrang vor selbst gewählten
+  function learn(by,vn,pr){if(!by)return;if(vn){names[by]=cleanName(vn);verified.add(by)}else if(!verified.has(by)&&pr&&pr.nm)names[by]=cleanName(pr.nm)}
   function conn(roomName){
     const peers=new Map();const listeners=new Set();const connL=new Set();
     let readyRes;const ready=new Promise(r=>readyRes=r);setTimeout(()=>readyRes(false),5000);
@@ -231,8 +252,8 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
       ws.onopen=()=>{retry=0;setOpen(true);readyRes(true);flush()};
       ws.onmessage=e=>{let m;try{m=JSON.parse(e.data)}catch(_){return}
         if(m.t==='snap'&&Array.isArray(m.peers)){for(const k of [...peers.keys()])if(k!==peerId)peers.delete(k);
-          for(const p of m.peers){if(p&&p.peer&&p.peer!==peerId){peers.set(p.peer,{by:p.by,pr:p.pr||{},t:Date.now()});if(p.pr&&p.pr.nm)names[p.by]=cleanName(p.pr.nm)}}changed()}
-        else if(m.t==='p'&&m.peer&&m.peer!==peerId){if(m.pr===null)peers.delete(m.peer);else{peers.set(m.peer,{by:m.by,pr:m.pr,t:Date.now()});if(m.pr.nm)names[m.by]=cleanName(m.pr.nm)}changed()}};
+          for(const p of m.peers){if(p&&p.peer&&p.peer!==peerId){peers.set(p.peer,{by:p.by,pr:p.pr||{},t:Date.now()});learn(p.by,p.vn,p.pr)}}changed()}
+        else if(m.t==='p'&&m.peer&&m.peer!==peerId){if(m.pr===null)peers.delete(m.peer);else{peers.set(m.peer,{by:m.by,pr:m.pr,t:Date.now()});learn(m.by,m.vn,m.pr)}changed()}};
       ws.onclose=()=>{setOpen(false);readyRes(false);if(closed)return;for(const k of [...peers.keys()])if(k!==peerId)peers.delete(k);changed();retry=Math.min(retry+1,6);setTimeout(connect,400*retry)};
       ws.onerror=()=>{};
     }
@@ -253,18 +274,29 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
     return api;
   }
 
-  const lobby=conn(window.KB_LOBBY==='lobby-zw'?'lobby-zw':'lobby');
-  const room=Object.freeze({...lobby,join:n=>/^(kb|zw)-[a-z0-9]{4}$/.test(n)?Promise.resolve(conn('g-'+n)):Promise.reject({code:'invalid_argument',message:'bad name'})});
+
   const user=Object.freeze({
-    profiles(ids){const o={};(Array.isArray(ids)?ids:[ids]).forEach(id=>{o[id]={id,name:names[id]||'',avatarUrl:'',color:'#888',email:null,isMe:id===uid,guest:false}});return Promise.resolve(o)},
+    profiles(ids){const o={};(Array.isArray(ids)?ids:[ids]).forEach(id=>{o[id]={id,name:names[id]||'',verified:verified.has(id),avatarUrl:'',color:'#888',email:null,isMe:id===uid,guest:false}});return Promise.resolve(o)},
     id:()=>Promise.resolve(uid),name:()=>Promise.resolve(myName),
     me:()=>Promise.resolve({id:uid,name:myName,avatarUrl:'',color:'#888',email:null,isOwner:false,canEdit:false}),
     isOwner:()=>Promise.resolve(false),canEdit:()=>Promise.resolve(false),can:()=>Promise.resolve(null)
   });
   // Name für die Anzeige im Spiel
-  window.kbName={get:()=>myName,set(v){const c=cleanName(String(v||'')).trim();if(!c)return myName;myName=c;names[uid]=myName;try{localStorage.setItem('kb_name',myName)}catch(e){}conns.forEach(x=>x._rename());return myName},reroll(){myName=newName();names[uid]=myName;try{localStorage.setItem('kb_name',myName)}catch(e){}conns.forEach(c=>c._rename());return myName}};
+  window.kbName={get:()=>myName,verified:()=>!!auth.user,isVerified:by=>verified.has(by),set(v){if(auth.user)return myName;const c=cleanName(String(v||'')).trim();if(!c)return myName;myName=c;names[uid]=myName;try{localStorage.setItem('kb_name',myName)}catch(e){}conns.forEach(x=>x._rename());return myName},reroll(){if(auth.user)return myName;myName=newName();names[uid]=myName;try{localStorage.setItem('kb_name',myName)}catch(e){}conns.forEach(c=>c._rename());return myName}};
   // Online nur anbieten, wenn der Server antwortet (z. B. nicht bei reinem Static Hosting)
-  const roomP=lobby._ready.then(ok=>{if(!ok){lobby.leave();return null}return room});
+  // Erst klären, ob jemand per Twitch angemeldet ist – dann verbinden
+  const meP=fetch('/auth/me',{cache:'no-store',credentials:'same-origin'}).then(r=>r.ok?r.json():null).catch(()=>null).then(me=>{
+    auth.enabled=!!(me&&me.enabled);
+    if(me&&me.user&&/^\d+$/.test(me.user.id)){auth.user=me.user;uid='tw_'+me.user.id;myName=cleanName(me.user.name)||me.user.login;names[uid]=myName;verified.add(uid)}
+    try{window.dispatchEvent(new CustomEvent('kbauth',{detail:auth}))}catch(e){}
+    return auth;
+  });
+  window.kbAuthReady=meP;
+  const roomP=meP.then(()=>{
+    const lobby=conn(window.KB_LOBBY==='lobby-zw'?'lobby-zw':'lobby');
+    const room=Object.freeze({...lobby,join:n=>/^(kb|zw)-[a-z0-9]{4}$/.test(n)?Promise.resolve(conn('g-'+n)):Promise.reject({code:'invalid_argument',message:'bad name'})});
+    return lobby._ready.then(ok=>{if(!ok){lobby.leave();return null}return room});
+  });
   window.claude={use:n=>n==='room'?roomP:Promise.resolve(n==='user'?user:null)};
 })();
 
@@ -274,7 +306,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
 <div class="wrap">
   <header class="top">
     <h1 class="logo">20 Questions<small>Lunacynas Spielezimmer · Rate-Spiel in 20 Hinweisen</small></h1>
-    <div class="navr"><span class="netpill" id="netpill" hidden>Online bereit</span><button class="btn ghost" id="btnMenu" type="button">← Zurück</button><a class="btn ghost" href="/" data-home>Alle Spiele</a></div>
+    <div class="navr"><span class="netpill" id="netpill" hidden>Online bereit</span><button id="muteBtn" type="button"></button><button class="btn ghost" id="btnMenu" type="button">← Zurück</button><a class="btn ghost" href="/" data-home>Alle Spiele</a></div>
   </header>
   <div class="app">
     <section id="main" aria-live="polite"></section>
@@ -283,6 +315,98 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
 </div>
 <div class="toast" id="toast"></div>
 
+<script id="lzsound">
+// LZSound – kleines Sound-System für Lunacynas Spielezimmer
+// - Alle Töne werden live per Web Audio erzeugt (keine Audiodateien nötig).
+// - Der AudioContext entsteht erst nach der ersten Nutzer-Interaktion (Autoplay-Regeln der Browser).
+// - Stummschalten gilt für alle Seiten und bleibt über Reloads erhalten (localStorage "lz_muted").
+// Benutzung:  LZSound.play('correct')   LZSound.mountToggle(buttonElement)   LZSound.setMuted(true)
+window.LZSound = window.LZSound || (() => {
+  const KEY = 'lz_muted';
+  let muted = false;
+  try { muted = localStorage.getItem(KEY) === '1'; } catch (e) {}
+  let ac = null, master = null;
+  const subs = new Set();
+
+  function unlock() {
+    if (muted) return;
+    try {
+      if (!ac) {
+        const C = window.AudioContext || window.webkitAudioContext; if (!C) return;
+        ac = new C(); master = ac.createGain(); master.gain.value = 0.9; master.connect(ac.destination);
+      }
+      if (ac.state === 'suspended') ac.resume();
+    } catch (e) {}
+  }
+  ['pointerdown', 'keydown', 'touchstart'].forEach(t => window.addEventListener(t, unlock, { capture: true, passive: true }));
+
+  function tone(f, dur, o) {
+    o = o || {}; if (!ac || muted) return;
+    const t = ac.currentTime + (o.delay || 0), osc = ac.createOscillator(), g = ac.createGain();
+    osc.type = o.type || 'sine'; osc.frequency.setValueAtTime(f, t);
+    if (o.slide) osc.frequency.exponentialRampToValueAtTime(f * o.slide, t + dur);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(o.vol || 0.15, t + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    osc.connect(g).connect(master); osc.start(t); osc.stop(t + dur + 0.02);
+  }
+  function noise(dur, o) {
+    o = o || {}; if (!ac || muted) return;
+    const t = ac.currentTime, buf = ac.createBuffer(1, Math.floor(ac.sampleRate * dur), ac.sampleRate), d = buf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) { const k = i / d.length; d[i] = (Math.random() * 2 - 1) * (1 - k) * (0.5 + 0.5 * Math.sin(k * (o.wobble || 60))); }
+    const s = ac.createBufferSource(), f = ac.createBiquadFilter(), g = ac.createGain();
+    f.type = 'bandpass'; f.frequency.value = o.freq || 900; g.gain.value = o.vol || 0.4;
+    s.buffer = buf; s.connect(f).connect(g).connect(master); s.start(t);
+  }
+  const notes = (list, o) => list.forEach((f, i) => tone(f, (o.len && o.len[i]) || o.dur || 0.16, { type: o.type || 'triangle', vol: o.vol || 0.16, delay: i * (o.step || 0.08) }));
+
+  const SOUNDS = {
+    click:   () => tone(520, 0.06, { type: 'triangle', vol: 0.08 }),
+    pop:     () => tone(660, 0.12, { type: 'triangle', vol: 0.2, slide: 1.8 }),
+    buzz:    () => { tone(150, 0.32, { type: 'square', vol: 0.07, slide: 0.8 }); tone(156, 0.32, { type: 'sawtooth', vol: 0.035, slide: 0.8 }); },
+    wrong:   () => { tone(392, 0.14, { vol: 0.13, type: 'triangle' }); tone(311, 0.28, { vol: 0.13, type: 'triangle', delay: 0.13 }); },
+    correct: () => notes([523, 659, 784], { step: 0.08 }),
+    win:     () => notes([523, 659, 784, 1046], { step: 0.09, dur: 0.2 }),
+    fanfare: () => notes([523, 659, 784, 1046, 784, 1046], { step: 0.12, len: [0.16, 0.16, 0.16, 0.25, 0.16, 0.55], vol: 0.17 }),
+    lose:    () => notes([392, 349, 311], { step: 0.14, dur: 0.22, vol: 0.12 }),
+    tick:    () => tone(880, 0.08, { vol: 0.11 }),
+    go:      () => tone(1175, 0.25, { type: 'triangle', vol: 0.17 }),
+    turn:    () => { tone(988, 0.1, { vol: 0.11 }); tone(1319, 0.2, { vol: 0.11, delay: 0.1 }); },
+    magic:   () => notes([1319, 1568, 1760, 2093], { step: 0.06, dur: 0.14, type: 'sine', vol: 0.08 }),
+    shake:   () => noise(0.7, { freq: 900, vol: 0.5, wobble: 90 }),
+    join:    () => tone(784, 0.14, { type: 'sine', vol: 0.09, slide: 1.5 }),
+  };
+
+  function play(name) { if (muted) return; unlock(); const f = SOUNDS[name]; if (f && ac) { try { f(); } catch (e) {} } }
+  function emit() { subs.forEach(fn => { try { fn(muted); } catch (e) {} }); }
+  function setMuted(m) {
+    muted = !!m;
+    try { localStorage.setItem(KEY, muted ? '1' : '0'); } catch (e) {}
+    if (master && ac) master.gain.setTargetAtTime(muted ? 0 : 0.9, ac.currentTime, 0.01);
+    emit(); if (!muted) { unlock(); play('click'); }
+  }
+  window.addEventListener('storage', e => { if (e.key === KEY) { muted = e.newValue === '1'; if (master && ac) master.gain.value = muted ? 0 : 0.9; emit(); } });
+
+  const ON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+  const OFF = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16.5 9.5l5 5M21.5 9.5l-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+  (function css() {
+    const st = document.createElement('style');
+    st.textContent = '.lz-mute{width:44px;height:44px;flex:none;border-radius:50%;border:0;cursor:pointer;display:inline-grid;place-items:center;background:transparent;color:#EFE9FF;box-shadow:inset 0 0 0 2px rgba(185,166,232,.45);transition:box-shadow .15s}'
+      + '.lz-mute:hover{box-shadow:inset 0 0 0 2px #F6E6FF,0 0 16px rgba(199,125,255,.45)}'
+      + '.lz-mute:focus-visible{outline:3px solid #F6E6FF;outline-offset:3px}'
+      + '.lz-mute svg{width:22px;height:22px}'
+      + '.lz-mute[aria-pressed="true"]{color:#F2A7A8;box-shadow:inset 0 0 0 2px rgba(242,167,168,.6)}';
+    (document.head || document.documentElement).appendChild(st);
+  })();
+  function mountToggle(btn) {
+    if (!btn) return;
+    btn.classList.add('lz-mute'); btn.type = 'button';
+    const upd = m => { btn.setAttribute('aria-pressed', String(m)); const t = m ? 'Ton einschalten' : 'Ton ausschalten'; btn.title = t; btn.setAttribute('aria-label', t); btn.innerHTML = m ? OFF : ON; };
+    upd(muted); subs.add(upd);
+    btn.addEventListener('click', () => setMuted(!muted));
+  }
+  return { play, unlock, setMuted, isMuted: () => muted, mountToggle, onChange: fn => subs.add(fn), sounds: Object.keys(SOUNDS) };
+})();
+</script>
 <script>
 (()=>{
 const BUILTIN=[{"answer": "Albert Einstein", "category": "Person", "aliases": ["einstein"], "hints": ["Ich wurde in Ulm geboren.", "Dass ich in der Schule schlecht war, ist ein Mythos über mich.", "Eine Zeit lang arbeitete ich in einem Patentamt in Bern.", "Das Jahr 1905 nennt man mein „Wunderjahr\".", "Ich spielte gern Geige.", "Meinen Nobelpreis bekam ich für die Erklärung des photoelektrischen Effekts.", "1933 verließ ich Deutschland und lebte danach in den USA.", "Zuletzt forschte ich in Princeton.", "Man bot mir an, Präsident Israels zu werden – ich lehnte ab.", "Ein chemisches Element ist nach mir benannt.", "Ein berühmtes Foto zeigt mich mit herausgestreckter Zunge.", "Meine Frisur ist fast so berühmt wie ich.", "Mein Name ist ein Synonym für „Genie\".", "1939 warnte ich US-Präsident Roosevelt in einem Brief vor einer deutschen Atombombe.", "Ich beschäftigte mich mit Licht, Raum und Zeit.", "Ich habe die Relativitätstheorie entwickelt.", "E = mc² stammt von mir."], "level": 1}, {"answer": "Marie Curie", "category": "Person", "aliases": ["curie", "madame curie", "marie sklodowska curie", "maria sklodowska"], "hints": ["Geboren wurde ich in Warschau.", "Mein Geburtsname war Skłodowska.", "Zum Studieren zog ich nach Paris.", "Ich war die erste Frau mit einer Professur an der Sorbonne.", "Ich habe zwei Nobelpreise gewonnen – in zwei verschiedenen Fächern.", "Mein Mann Pierre forschte mit mir zusammen.", "Auch meine Tochter Irène bekam später einen Nobelpreis.", "Ich habe zwei chemische Elemente entdeckt.", "Eines davon habe ich nach meinem Heimatland benannt.", "Das andere heißt Radium.", "Den Begriff „Radioaktivität\" habe ich geprägt.", "Meine Notizbücher strahlen bis heute und lagern in Bleikisten.", "Im Ersten Weltkrieg organisierte ich mobile Röntgenwagen.", "Ich starb 1934, vermutlich an den Folgen der Strahlung.", "Ich liege im Panthéon in Paris.", "Ich war Physikerin und Chemikerin.", "Ich war die erste Frau, die einen Nobelpreis erhielt."], "level": 1}, {"answer": "Ludwig van Beethoven", "category": "Person", "aliases": ["beethoven", "ludwig beethoven"], "hints": ["Ich wurde 1770 geboren.", "Meine Geburtsstadt am Rhein war lange die Hauptstadt der Bundesrepublik.", "Die meiste Zeit meines Lebens lebte ich in Wien.", "Bei Joseph Haydn nahm ich Unterricht.", "Ich habe nur eine einzige Oper geschrieben: „Fidelio\".", "Wer meine „Unsterbliche Geliebte\" war, rätseln Forscher bis heute.", "Eine Sinfonie wollte ich Napoleon widmen – dann strich ich die Widmung.", "Ich habe neun Sinfonien komponiert.", "Meine „Mondscheinsonate\" bekam ihren Namen erst nach meinem Tod.", "Mein Klavierstück „Für Elise\" kennt fast jedes Kind.", "Im Laufe meines Lebens wurde ich taub.", "Trotz meiner Taubheit komponierte ich weiter.", "Die Melodie der Europahymne stammt von mir.", "Die „Ode an die Freude\" ist Teil meiner 9. Sinfonie.", "Der Anfang meiner 5. Sinfonie – ta-ta-ta-taaa – ist weltberühmt.", "Ich war Komponist und Pianist.", "Mein Vorname ist Ludwig."], "level": 1}, {"answer": "Pippi Langstrumpf", "category": "Person", "aliases": ["pippi", "pippilotta", "pippi langstrumpf"], "hints": ["Mein vollständiger Name ist ungewöhnlich lang.", "Erfunden wurde ich als Gute-Nacht-Geschichte für ein krankes Kind.", "Mein Vater ist Seefahrer und König auf einer Südseeinsel.", "Meine besten Freunde heißen Thomas und Annika.", "Ich wohne ganz ohne Erwachsene in der Villa Kunterbunt.", "Ich besitze einen Koffer voller Goldstücke.", "Mein Affe heißt Herr Nilsson.", "Mein Pferd heißt „Kleiner Onkel\".", "Ich kann mein Pferd hochheben.", "Ich bin das stärkste Mädchen der Welt.", "Meine Strümpfe passen nie zusammen.", "Ich habe rote, abstehende Zöpfe.", "Ich habe Sommersprossen.", "Ich stamme aus einem Kinderbuch aus Schweden.", "Astrid Lindgren hat mich erfunden.", "Ich erfinde gern neue Wörter, zum Beispiel „Spunk\".", "In meinem Nachnamen steckt ein Kleidungsstück."], "level": 1}, {"answer": "Venedig", "category": "Ort", "aliases": ["venezia", "venice"], "hints": ["Ich wurde auf über 100 kleinen Inseln gebaut.", "Meine Häuser stehen auf Millionen Holzpfählen.", "Ich war einmal eine mächtige Seerepublik.", "Marco Polo stammt von hier.", "Bei mir findet das älteste Filmfestival der Welt statt.", "Im Winter feiere ich Karneval mit kunstvollen Masken.", "Mein berühmtester Platz ist nach dem heiligen Markus benannt.", "Die Rialtobrücke gehört zu mir.", "Wenn das Wasser steigt, spricht man bei mir von „Acqua alta\".", "Kreuzfahrtschiffe sind bei mir sehr umstritten.", "Ich versinke ganz langsam.", "Statt Autos gibt es bei mir Boote.", "Der Canal Grande ist meine Hauptstraße.", "Gondolieri fahren bei mir Touristen herum.", "Ich liege in Italien.", "Ich bin eine Lagunenstadt an der Adria.", "Bei mir steht die Seufzerbrücke."], "level": 1}, {"answer": "Mount Everest", "category": "Ort", "aliases": ["everest", "mt everest", "chomolungma", "sagarmatha"], "hints": ["In Tibet nennt man mich Chomolungma.", "In Nepal heiße ich Sagarmatha.", "Benannt wurde ich nach einem britischen Landvermesser.", "Ich wachse jedes Jahr um ein paar Millimeter.", "Über mich verläuft die Grenze zwischen Nepal und China.", "1953 standen zum ersten Mal Menschen auf meiner Spitze.", "Edmund Hillary und Tenzing Norgay kamen als Erste ganz oben an.", "Reinhold Messner und Peter Habeler kamen 1978 ohne Flaschensauerstoff hinauf.", "In meiner „Todeszone\" wird die Luft gefährlich dünn.", "Viele meiner Besucher werden von Sherpas begleitet.", "Ich bin ein Berg.", "Ich gehöre zum Himalaya.", "Ich bin knapp 8.850 Meter hoch.", "An meinen Hängen liegt inzwischen viel Müll.", "Im Frühjahr gibt es bei mir manchmal regelrechte Staus.", "Mein Basislager liegt höher als jeder Gipfel der Alpen.", "Ich bin der höchste Berg der Welt."], "level": 1}, {"answer": "Sahara", "category": "Ort", "aliases": ["saharawueste", "sahara wueste"], "hints": ["Mein Name bedeutet auf Arabisch einfach „Wüste\".", "Vor rund 6.000 Jahren war ich grün, mit Seen und Giraffen.", "Mein Staub düngt den Amazonas-Regenwald.", "Ich bin ungefähr so groß wie die USA.", "Ich erstrecke mich über mehr als zehn Länder.", "Nur ein kleiner Teil von mir besteht aus Sanddünen.", "Die Tuareg leben seit Jahrhunderten bei mir.", "Der Nil fließt durch mich hindurch.", "Manchmal trägt mich der Wind bis nach Deutschland.", "Tagsüber ist es bei mir glühend heiß, nachts kann es frieren.", "Kamele sind bei mir das klassische Transportmittel.", "Bei mir gibt es Oasen.", "Fata Morganas sind bei mir keine Seltenheit.", "Im „Kleinen Prinzen\" muss der Pilot bei mir notlanden.", "Ich liege im Norden Afrikas.", "Ich bin die größte Hitzewüste der Welt.", "Ich bin eine Wüste."], "level": 1}, {"answer": "Mond", "category": "Ort", "aliases": ["der mond", "erdmond"], "hints": ["Ich entferne mich jedes Jahr knapp vier Zentimeter von meinem Partner.", "Ich zeige immer dieselbe Seite.", "Meine dunklen Flächen hielt man früher für Meere.", "Bei mir gibt es keine Luft zum Atmen.", "Auf mir wurden sechs amerikanische Flaggen aufgestellt.", "Zwölf Menschen sind bisher auf mir herumgelaufen.", "Ich sorge für Ebbe und Flut.", "Neil Armstrong betrat mich als Erster.", "Mein Licht ist eigentlich gar nicht meins.", "Manchmal verdecke ich die Sonne.", "Wölfe heulen mich angeblich an.", "Ich bin etwa 384.000 Kilometer von der Erde entfernt.", "Ich habe sehr viele Krater.", "Mal bin ich voll, mal halb, mal fast unsichtbar.", "Man erzählt sich, ich sei aus Käse.", "Am Nachthimmel bin ich das hellste Objekt.", "Ich bin der ständige Begleiter der Erde."], "level": 1}, {"answer": "Fahrrad", "category": "Ding", "aliases": ["rad", "velo", "drahtesel", "bike", "fahrraeder"], "hints": ["Mein Urahn wurde 1817 in Mannheim vorgestellt – noch ganz ohne Pedale.", "Meinen Vorfahren nannte man Laufmaschine oder Draisine.", "Es gab mich auch mit riesigem Vorderrad.", "In den Niederlanden gibt es mehr von mir als Einwohner.", "In der Schweiz sagt man „Velo\" zu mir.", "Umgangssprachlich nennt man mich auch Drahtesel.", "Die Tour de France ist mein berühmtestes Rennen.", "Heute gibt es mich oft mit Elektromotor.", "Ich habe eine Kette.", "Ich habe oft eine Gangschaltung.", "Wenn man mich nicht abschließt, werde ich gern geklaut.", "Ich habe eine Klingel.", "Man tritt in meine Pedale.", "Kinder lernen mich oft mit Stützrädern.", "Ich habe einen Sattel und einen Lenker.", "Ich bin klimafreundlicher als jedes Auto.", "Ich habe zwei Räder."], "level": 1}, {"answer": "Kaffee", "category": "Ding", "aliases": ["kaffeebohne", "kaffeebohnen", "coffee"], "hints": ["Der Legende nach entdeckte ein Ziegenhirte in Äthiopien meine Wirkung.", "Eine Hafenstadt im Jemen gab mir einen Spitznamen.", "Johann Sebastian Bach schrieb eine Kantate über mich.", "Ich wachse als rote Kirsche an einem Strauch.", "Arabica und Robusta sind meine bekanntesten Sorten.", "Brasilien produziert mehr von mir als jedes andere Land.", "In Deutschland trinkt man mehr von mir als Bier.", "In Wien gibt es eine ganze Kultur rund um mich und meine Häuser.", "Mich gibt es auch entkoffeiniert.", "Man trinkt mich gern mit Milchschaum.", "Bevor man mich genießt, werde ich geröstet.", "Ich mache wach.", "Ein ganzer Beruf dreht sich um mich: Barista.", "Am Nachmittag gibt es mich gern zum Kuchen.", "Mich gibt es als Bohne oder gemahlen.", "Ich enthalte Koffein.", "Ich bin ein Heißgetränk, oft schwarz."], "level": 1}, {"answer": "Regenschirm", "category": "Ding", "aliases": ["schirm", "knirps"], "hints": ["In England wurden Männer mit mir lange verspottet.", "Ursprünglich schützte ich vor allem vor der Sonne.", "Im alten China gab es mich schon vor über 2.000 Jahren.", "Ein berühmtes Kindermädchen fliegt mit mir durch die Luft.", "Eine Marke von mir zum Zusammenschieben ist in Deutschland zum Gattungsbegriff geworden.", "Gene Kelly tanzt in seiner berühmtesten Filmszene mit mir.", "Wer mich drinnen aufspannt, soll angeblich Pech haben.", "Ich habe Speichen – aber kein Rad.", "Bei starkem Wind stülpe ich mich gern um.", "Ich werde ständig in Bus und Bahn vergessen.", "Es gibt mich auch im Taschenformat.", "Mein Griff ist oft gebogen.", "Man spannt mich auf.", "Ich bestehe aus Stoff und einem Gestell.", "An grauen Tagen nimmt man mich lieber mit.", "Ich halte Nässe von oben ab.", "Wenn es regnet, braucht man mich."], "level": 1}, {"answer": "Schach", "category": "Ding", "aliases": ["schachspiel", "schachbrett"], "hints": ["Meine Wurzeln liegen vermutlich im Indien des 6. Jahrhunderts.", "Laut einer Legende wünschte sich mein Erfinder Reiskörner – auf jedem Feld doppelt so viele.", "1997 besiegte ein Computer namens Deep Blue einen Weltmeister in mir.", "Eine Netflix-Serie über mich löste einen weltweiten Boom aus.", "Mein wichtigstes Wort kommt wohl aus dem Persischen und bedeutet etwa: Der König ist hilflos.", "Bei Turnieren spielt man mich mit einer Uhr.", "Eine meiner Eröffnungen heißt „Sizilianisch\".", "Bei mir kann ein Bauer zur Dame werden.", "Das Pferd heißt bei mir Springer.", "Ich habe Türme, Läufer und Springer.", "Bei mir gibt es die Rochade.", "Ich werde auf 64 Feldern gespielt.", "Meine Figuren sind schwarz und weiß.", "Ziel ist es, den gegnerischen König mattzusetzen.", "Magnus Carlsen ist einer meiner berühmtesten Spieler.", "Ich gelte als Sport – mit eigener Olympiade.", "Ich bin ein Brettspiel für zwei."], "level": 1}, {"answer": "Ada Lovelace", "category": "Person", "aliases": ["lovelace", "ada", "augusta ada king", "augusta ada byron"], "hints": ["Ich wurde 1815 in London geboren.", "Mein Geburtsname war Augusta Ada Byron.", "Mein Vater war ein berühmter Dichter, den ich nie richtig kennengelernt habe.", "Meine Mutter ließ mich vor allem in Mathematik unterrichten – sie wollte nicht, dass ich nach meinem Vater komme.", "Als Kind entwarf ich Pläne für eine Flugmaschine.", "Ich war eine Adelige im England des 19. Jahrhunderts – ein Gräfinnentitel steckt in meinem bekanntesten Namen.", "Ich übersetzte den Aufsatz eines italienischen Ingenieurs und schrieb Anmerkungen dazu, die rund dreimal so lang wurden.", "In meiner „Note G“ steht ein Verfahren zur Berechnung von Bernoulli-Zahlen.", "Ich arbeitete eng mit Charles Babbage zusammen.", "Babbage nannte mich „Zauberin der Zahlen“.", "Die Maschine, für die ich schrieb, wurde zu meinen Lebzeiten nie gebaut.", "Ich ahnte schon damals, dass Maschinen eines Tages auch Musik komponieren könnten.", "Ich starb mit nur 36 Jahren – genauso alt wie mein Vater.", "Eine Programmiersprache des US-Verteidigungsministeriums trägt meinen Vornamen.", "Jedes Jahr im Oktober gibt es einen nach mir benannten Gedenktag für Frauen in Wissenschaft und Technik.", "Ich schrieb über eine „Analytical Engine“.", "Ich gelte oft als erste Programmiererin der Welt."], "level": 2}, {"answer": "Hedy Lamarr", "category": "Person", "aliases": ["lamarr", "hedy", "hedwig kiesler", "hedwig eva maria kiesler"], "hints": ["Ich wurde 1914 in Wien geboren.", "Mein Geburtsname war Hedwig Kiesler.", "Ein Film von 1933 machte mich schlagartig bekannt – und sorgte für einen Skandal.", "Mein erster Ehemann war ein österreichischer Waffenfabrikant.", "Ich floh aus dieser Ehe und ging nach Hollywood.", "Ein Filmstudio-Chef gab mir meinen Künstlernamen.", "Ich spielte die Delila in „Samson und Delilah“ von 1949.", "Mein Studio vermarktete mich als „schönste Frau der Welt“.", "Gemeinsam mit einem Komponisten meldete ich ein Patent an.", "Mein Partner kannte sich mit synchronisierten mechanischen Klavieren aus.", "Unsere Erfindung sollte ferngesteuerte Torpedos vor Störsendern schützen.", "Die Idee: Die Funkfrequenz springt ständig nach einem geheimen Muster hin und her.", "Unser Patent wurde 1942 erteilt.", "Meine Idee gilt als Vorläufer von Techniken, die heute in WLAN und Bluetooth stecken.", "Der „Tag der Erfinder“ in Deutschland fällt auf meinen Geburtstag, den 9. November.", "Ich starb im Jahr 2000 in Florida.", "Ich war Filmstar und Erfinderin zugleich."], "level": 2}, {"answer": "Alexander von Humboldt", "category": "Person", "aliases": ["humboldt", "alexander humboldt", "a. von humboldt"], "hints": ["Ich wurde 1769 in Berlin geboren.", "Mein älterer Bruder gründete eine berühmte Universität.", "Mein Reisebegleiter war der französische Botaniker Aimé Bonpland.", "Von 1799 bis 1804 reiste ich durch Süd- und Mittelamerika.", "Ich erforschte den Orinoco und eine natürliche Wasserverbindung zum Amazonas.", "Am Chimborazo stellte ich 1802 einen Höhenrekord auf – den Gipfel erreichte ich nicht.", "Ich zeichnete ein berühmtes Bild, das Pflanzen nach Höhenstufen an einem Vulkan zeigt.", "In Paris traf ich den jungen Simón Bolívar.", "Für meine Forschung gab ich fast mein ganzes Vermögen aus.", "Charles Darwin nannte mich ein großes Vorbild.", "Mein Spätwerk heißt „Kosmos“.", "Ich starb 1859 in Berlin.", "Eine kalte Meeresströmung vor der Westküste Südamerikas trägt meinen Namen.", "Auch ein Pinguin ist nach mir benannt.", "Kaum ein Mensch hat so viele Pflanzen, Tiere und Orte, die nach ihm benannt sind.", "Ein Forum im wiederaufgebauten Berliner Schloss trägt den Namen meines Bruders und meinen.", "Ich war Naturforscher und gelte als Mitbegründer der Geographie als Wissenschaft."], "level": 2}, {"answer": "Nikola Tesla", "category": "Person", "aliases": ["tesla", "nikola"], "hints": ["Ich wurde 1856 in Smiljan geboren, im heutigen Kroatien.", "1884 wanderte ich in die USA aus.", "Ich arbeitete kurz für Thomas Edison – Freunde wurden wir nicht.", "Im „Stromkrieg“ stand ich auf der Seite des Wechselstroms.", "George Westinghouse kaufte meine Patente.", "Ich entwickelte einen Motor, der mit Drehstrom läuft.", "Mein System half beim Bau eines der ersten großen Wasserkraftwerke an den Niagarafällen.", "Eine nach mir benannte Spule erzeugt meterlange künstliche Blitze.", "Ich träumte davon, Energie drahtlos um die ganze Welt zu schicken.", "Mein großer Funkturm auf Long Island wurde nie fertig.", "Ich lebte zuletzt in Hotelzimmern in New York.", "Ich fütterte leidenschaftlich gern Tauben.", "Ich starb 1943 verarmt in New York.", "Die Einheit der magnetischen Flussdichte ist nach mir benannt.", "Der Flughafen von Belgrad trägt meinen Namen.", "Ein Elektroauto-Hersteller trägt heute meinen Nachnamen.", "Ich war Erfinder und Elektroingenieur."], "level": 2}, {"answer": "Hildegard von Bingen", "category": "Person", "aliases": ["hildegard", "bingen", "heilige hildegard"], "hints": ["Ich lebte im 12. Jahrhundert.", "Schon als Kind wurde ich ins Kloster gegeben.", "Ich war Benediktinerin und später Äbtissin.", "Ich gründete ein eigenes Kloster auf dem Rupertsberg.", "Ich hatte Visionen und schrieb sie auf.", "Mein bekanntestes Buch heißt „Scivias“ – „Wisse die Wege“.", "Ich komponierte geistliche Musik, die heute noch gesungen wird.", "Ich schrieb ein geistliches Singspiel, das zu den ältesten seiner Art zählt.", "Ich erfand eine eigene Geheimsprache, die „Lingua ignota“.", "Ich schrieb über Heilkräuter, Krankheiten und Ernährung.", "Dinkel soll ich besonders geschätzt haben.", "Ich schrieb Briefe an Kaiser und Päpste.", "Ich ging auf Predigtreisen – für eine Frau damals sehr ungewöhnlich.", "Ich starb 1179.", "2012 wurde ich heiliggesprochen und zur Kirchenlehrerin erhoben.", "Mein Gedenktag ist der 17. September.", "Mein Name verrät die Stadt am Rhein, mit der man mich verbindet."], "level": 2}, {"answer": "Frida Kahlo", "category": "Person", "aliases": ["kahlo", "frida"], "hints": ["Ich wurde 1907 in Coyoacán bei Mexiko-Stadt geboren.", "Mein Vater war Fotograf und stammte aus Deutschland.", "Mit 18 Jahren überlebte ich einen schweren Busunfall.", "Viele Bilder malte ich im Liegen, mit einem Spiegel über meinem Bett.", "Etwa ein Drittel meiner Werke sind Selbstporträts.", "Ich war zweimal mit demselben Mann verheiratet.", "Mein Mann war ein berühmter Wandmaler.", "Ich trug gern traditionelle Kleidung aus der Region Tehuantepec.", "Leo Trotzki wohnte eine Zeit lang bei mir.", "1939 kaufte der französische Staat ein Bild von mir für den Louvre.", "Man zählt mich oft zum Surrealismus – ich selbst sagte, ich male meine eigene Wirklichkeit.", "Ich starb 1954.", "Mein Elternhaus ist heute ein Museum und heißt „Das Blaue Haus“.", "2002 spielte Salma Hayek mich im Kino.", "Zusammengewachsene Augenbrauen sind mein Markenzeichen.", "Ein Bild von mir heißt „Die zwei Fridas“.", "Ich war eine mexikanische Malerin."], "level": 2}, {"answer": "Petra", "category": "Ort", "aliases": ["felsenstadt petra"], "hints": ["Mein Name bedeutet auf Griechisch „Fels“.", "Die Nabatäer machten mich zu ihrer Hauptstadt.", "Ein ausgeklügeltes Wassersystem machte das Leben bei mir in der Wüste möglich.", "Ein Erdbeben im Jahr 363 zerstörte große Teile von mir.", "Lange lebten Beduinen in meinen Höhlen.", "1812 machte mich ein Schweizer Forscher in Europa wieder bekannt.", "Ein Dichter nannte mich „rosenrote Stadt, halb so alt wie die Zeit“.", "Viele meiner Bauten sind direkt in den Sandstein gehauen.", "Man betritt mich durch eine enge Schlucht, den Siq.", "Mein berühmtestes Gebäude heißt „Schatzhaus“.", "Zu meinem „Kloster“ führen rund 800 Stufen hinauf.", "Die Stadt Wadi Musa liegt direkt neben mir.", "Seit 1985 bin ich UNESCO-Welterbe.", "2007 wurde ich zu einem der „neuen sieben Weltwunder“ gewählt.", "Indiana Jones suchte bei mir nach dem Heiligen Gral.", "Ich liege in Jordanien.", "Ich bin eine antike Felsenstadt."], "level": 2}, {"answer": "Island", "category": "Ort", "aliases": ["iceland"], "hints": ["Zwei Kontinentalplatten driften bei mir auseinander.", "Mein Parlament gilt als eines der ältesten der Welt.", "Wikinger besiedelten mich im 9. Jahrhundert.", "Viele Familiennamen bei mir enden auf -son oder -dóttir.", "Mücken gibt es bei mir praktisch keine.", "Viele Häuser bei mir werden mit Erdwärme geheizt.", "Eine heiße Quelle bei mir gab allen Geysiren ihren Namen.", "Mein größter Gletscher heißt Vatnajökull.", "2010 legte einer meiner Vulkane den Flugverkehr in Europa lahm.", "Ich habe knapp 400.000 Einwohner.", "Eine eigene Armee habe ich nicht.", "Im Hochsommer wird es bei mir kaum dunkel.", "Meine Fußballfans wurden 2016 mit ihrem „Huh!“ weltberühmt.", "Der „Goldene Kreis“ ist meine bekannteste Touristenroute.", "Ich liege im Nordatlantik, knapp unterhalb des Polarkreises.", "Meine Hauptstadt heißt Reykjavík.", "Ich bin ein Inselstaat."], "level": 2}, {"answer": "Machu Picchu", "category": "Ort", "aliases": ["machupicchu", "machu pichu"], "hints": ["Mein Name bedeutet „alter Berg“.", "Ich wurde im 15. Jahrhundert gebaut.", "Die spanischen Eroberer haben mich offenbar nie gefunden.", "Viele meiner Mauern sind ohne Mörtel gebaut – und passen trotzdem perfekt.", "Ein Stein namens „Intihuatana“ hatte bei mir wohl astronomische Bedeutung.", "1911 machte mich der Amerikaner Hiram Bingham weltberühmt.", "Über mir ragt der steile Gipfel Huayna Picchu auf.", "Tief unter mir fließt der Urubamba.", "Das Dorf im Tal unter mir heißt Aguas Calientes.", "Man kann mich über einen mehrtägigen Fußweg erreichen.", "Von Cusco aus fährt ein Zug in meine Nähe.", "Lamas grasen zwischen meinen Ruinen.", "Die Zahl meiner Besucher ist streng begrenzt.", "Seit 1983 bin ich UNESCO-Welterbe.", "Ich liege auf rund 2.400 Metern Höhe in den Anden.", "Die Inka haben mich erbaut.", "Ich bin eine Ruinenstadt in Peru."], "level": 2}, {"answer": "Bhutan", "category": "Ort", "aliases": ["butan", "druk yul"], "hints": ["Mein eigener Name bedeutet „Land des Donnerdrachens“.", "Auf meiner Flagge ist ein Drache.", "Statt nur auf die Wirtschaftsleistung zu schauen, messe ich das „Bruttonationalglück“.", "Fernsehen und Internet gibt es bei mir erst seit 1999.", "Laut Verfassung muss ein Großteil meiner Fläche bewaldet bleiben.", "Meine Wälder binden mehr CO₂, als ich ausstoße.", "Touristen zahlen bei mir eine hohe Gebühr pro Tag.", "Mein bekanntestes Kloster hängt als „Tigernest“ an einer Felswand.", "Mein höchster Berg gilt als höchster unbestiegener Berg der Welt.", "Bogenschießen ist mein Nationalsport.", "Mein Nationalgericht besteht aus Chilis mit Käse.", "Viele Männer tragen bei mir ein Gewand namens Gho.", "In meiner Hauptstadt regelt ein Polizist den Verkehr statt einer Ampel.", "Der Anflug auf meinen Flughafen in Paro gilt als einer der schwierigsten der Welt.", "Ich werde von einem „Drachenkönig“ regiert.", "Ich liege im Himalaya zwischen Indien und China.", "Ich bin ein kleines Königreich in Südasien."], "level": 2}, {"answer": "Pompeji", "category": "Ort", "aliases": ["pompei", "pompeii"], "hints": ["Mein Untergang ist in Briefen von Plinius dem Jüngeren beschrieben.", "Sein Onkel starb bei dem Versuch, Menschen zu retten.", "Meine Nachbarstadt Herculaneum traf dasselbe Schicksal.", "Systematisch ausgegraben werde ich seit dem 18. Jahrhundert.", "Hohlräume in der Asche wurden mit Gips ausgegossen – so sieht man die Umrisse der Opfer.", "In meinem Straßenpflaster sieht man noch Spurrillen von Wagen.", "An meinen Wänden findet man antike Graffiti und Wahlwerbung.", "Ein Mosaik mit der Inschrift „Cave canem“ warnt vor dem Hund.", "Viele Imbissstuben zeugen vom Alltag meiner Bewohner.", "Mein Amphitheater gilt als eines der ältesten erhaltenen aus Stein.", "Pink Floyd spielte in meinem Amphitheater ein Konzert ohne Publikum.", "Ich bin UNESCO-Welterbe.", "Neapel liegt ganz in meiner Nähe.", "Ich liege in Kampanien in Italien.", "Im Jahr 79 wurde ich unter Asche und Bimsstein begraben.", "Der Vulkan, der mich zerstörte, ist bis heute aktiv.", "Ich bin eine antike römische Stadt."], "level": 2}, {"answer": "Marianengraben", "category": "Ort", "aliases": ["mariannengraben", "marianen graben", "marianas trench", "challengertief", "challenger tief"], "hints": ["Ich bin nach einer Inselgruppe benannt.", "Die Insel Guam liegt in meiner Nähe.", "Bei mir taucht eine Erdplatte unter eine andere ab.", "Ich bin sichelförmig und rund 2.500 Kilometer lang.", "Bei mir ist es stockdunkel und nur wenige Grad warm.", "Der Wasserdruck bei mir ist über tausendmal höher als an der Oberfläche.", "Schneckenfische leben bei mir noch in rund 8.000 Metern Tiefe.", "Sogar Plastikmüll wurde schon an meinem Grund gefunden.", "Ein Teil von mir ist ein Meeresschutzgebiet der USA.", "1960 erreichten Jacques Piccard und Don Walsh meinen Grund.", "2012 tauchte ein Hollywood-Regisseur allein zu meinem tiefsten Punkt.", "Mein tiefster Punkt heißt Challengertief.", "Würde man den Mount Everest in mich stellen, läge sein Gipfel noch unter Wasser.", "Ich bin fast 11.000 Meter tief.", "Ich liege im westlichen Pazifik.", "Ich bin die tiefste Stelle der Weltmeere.", "Ich bin ein Tiefseegraben."], "level": 2}, {"answer": "Enigma", "category": "Ding", "aliases": ["enigma maschine", "enigmamaschine", "chiffriermaschine enigma"], "hints": ["Mein Name ist griechisch und bedeutet „Rätsel“.", "In den 1920er-Jahren wurde ich zuerst an Firmen verkauft.", "Ich sehe aus wie eine Schreibmaschine in einem Holzkasten.", "Statt Papier habe ich kleine Lampen mit Buchstaben.", "Bei jedem Tastendruck drehen sich meine Walzen weiter.", "Ein Steckbrett vervielfacht meine Möglichkeiten.", "Ein Buchstabe wird bei mir nie zu sich selbst.", "Für jeden Tag gab es neue Einstellungen aus einem Schlüsselheft.", "Eine Version für die Marine hatte vier Walzen.", "Polnische Mathematiker durchschauten mich als Erste.", "In Bletchley Park arbeiteten Tausende daran, mich zu knacken.", "Alan Turing entwarf eine Maschine gegen mich, die „Bombe“ hieß.", "Der Film „The Imitation Game“ dreht sich um mich.", "Erhaltene Exemplare von mir werden heute für hohe Summen versteigert.", "Im Zweiten Weltkrieg benutzte mich vor allem das deutsche Militär.", "Ich verwandle Klartext in Geheimtext.", "Ich bin eine Verschlüsselungsmaschine."], "level": 2}, {"answer": "Bernstein", "category": "Ding", "aliases": ["amber"], "hints": ["Mein Name behauptet, ich sei ein Stein – bin ich aber nicht.", "Mein Name kommt vom niederdeutschen Wort für „brennen“.", "Ich bin Millionen Jahre alt.", "Ich brenne und rieche dabei nach Harz.", "Ich bin so leicht, dass ich in Salzwasser schwimme.", "Reibt man mich, lade ich mich elektrisch auf.", "Das Wort „Elektrizität“ stammt von meinem griechischen Namen.", "Im Englischen heiße ich wie das Gelb an der Ampel.", "Schon in der Antike wurde ich über weite Strecken gehandelt.", "Eine Handelsroute zwischen Ostsee und Mittelmeer ist nach mir benannt.", "Ein berühmtes Zimmer aus mir ist seit dem Zweiten Weltkrieg verschollen.", "In „Jurassic Park“ gewinnt man aus mir Dinosaurier-DNA.", "Manchmal sind Insekten in mir eingeschlossen.", "Meist bin ich honiggelb bis orange.", "An der Ostseeküste findet man mich nach Stürmen am Strand.", "Ich werde gern zu Schmuck verarbeitet.", "Ich bin fossiles Baumharz."], "level": 2}, {"answer": "Zauberwürfel", "category": "Ding", "aliases": ["rubiks cube", "rubik's cube", "rubikwuerfel", "rubik wuerfel", "zauberwuerfel", "rubikswuerfel", "magic cube"], "hints": ["Ich wurde 1974 in Ungarn erfunden.", "Mein Erfinder lehrte Architektur und Design.", "Er brauchte selbst etwa einen Monat, um mich zum ersten Mal zu lösen.", "Mein ungarischer Name bedeutet „magischer Würfel“.", "In den 1980er-Jahren war ich ein weltweiter Trend.", "Ich bin eines der meistverkauften Spielzeuge aller Zeiten.", "Ich habe über 43 Trillionen mögliche Stellungen.", "Jede Stellung lässt sich in höchstens 20 Zügen lösen.", "Meine Mittelsteine verändern ihre Lage zueinander nie.", "Ich bestehe aus 26 sichtbaren Teilsteinen.", "Speedcuber schaffen mich in gut drei Sekunden.", "Manche lösen mich sogar mit verbundenen Augen.", "Mich gibt es auch als 2×2 oder 7×7.", "Ich habe sechs Seiten in sechs Farben.", "Ich bin ein Drehpuzzle.", "Mein deutscher Name klingt nach Magie.", "Auf Englisch trage ich den Namen meines Erfinders."], "level": 2}, {"answer": "Stethoskop", "category": "Ding", "aliases": ["stetoskop", "stethoscope"], "hints": ["Ich wurde 1816 in Paris erfunden.", "Mein Erfinder hieß René Laennec.", "Ganz am Anfang war ich ein zusammengerolltes Blatt Papier.", "Danach war ich ein einfaches Holzrohr.", "Mein Name bedeutet ungefähr „Brust betrachten“.", "Vor mir legte man oft das Ohr direkt auf den Körper.", "Ich bin meist aus Metall und Kunststoff.", "Mein Bruststück hat eine Membran für hohe und einen Trichter für tiefe Töne.", "Ich habe meist zwei Ohrbügel.", "Auch beim Blutdruckmessen werde ich gebraucht.", "Mich gibt es heute auch elektronisch, mit Verstärker.", "Auch Tierärzte benutzen mich.", "Viele tragen mich um den Hals.", "In Arztserien bin ich fast immer zu sehen.", "In Spielzeug-Arztkoffern liege ich oft obenauf.", "Mit mir hört man Herz und Lunge ab.", "Ich bin ein medizinisches Gerät."], "level": 2}];
@@ -326,7 +450,7 @@ function buildRound(G){
   const tiles=shuffle([...hints.map(t=>({k:'h',t})),...acts.map(a=>({k:'a',ty:a.ty,n:a.n||0,t:a.t}))]).map((t,i)=>({...t,num:i+1,o:false}));
   const n=G.pl.length,order=[];if(G.vr){for(let k=1;k<n;k++)order.push((G.vl+k)%n)}else{for(let k=0;k<n;k++)order.push((G.vl+k)%n)}
   const el=findEligible(G.pl,order,0);
-  return {...G,deck,card:{key:c.key,answer:c.answer,category:c.category,aliases:c.aliases||[]},tiles,order,pl:el.pl,tp:el.tp,opened:0,cur:null,log:[],msg:null,lw:null,res:null,ph:'pick'};
+  return {...G,deck,card:{key:c.key,answer:c.answer,category:c.category,aliases:c.aliases||[],author:c.custom?(c.author||''):'',av:!!c.authorVerified},tiles,order,pl:el.pl,tp:el.tp,opened:0,cur:null,log:[],msg:null,lw:null,res:null,ph:'pick'};
 }
 function newGame(cfg,players){return buildRound({goal:cfg.goal,mode:cfg.mode,diff:cfg.diff,reader:cfg.reader||'pc',vr:cfg.mode==='spoken'||cfg.reader==='person',pl:players.map(p=>({...p,pts:0,sk:false})),vl:0,rd:1,deck:[]})}
 function advance(G,extra){G={...G,...(extra||{})};if(G.opened>=20)return endRound(G,null);const r=findEligible(G.pl,G.order,G.tp+1);return {...G,pl:r.pl,tp:r.tp,ph:'pick',cur:null}}
@@ -380,7 +504,7 @@ function pub(G){
   const reveal=G.ph==='roundEnd'||G.ph==='gameEnd';
   const {deck,...rest}=G;
   const sx=reveal?null:btoa(unescape(encodeURIComponent(JSON.stringify({tiles:G.tiles,deck:G.deck,aliases:G.card&&G.card.aliases})))).split('').reverse().join('');
-  return {...rest,card:G.card?{key:G.card.key,answer:G.card.answer,category:G.card.category}:null,tiles:G.tiles.map(t=>t.o||reveal?t:{k:'?',num:t.num,o:false}),sx};
+  return {...rest,card:G.card?{key:G.card.key,answer:G.card.answer,category:G.card.category,author:G.card.author||'',av:!!G.card.av}:null,tiles:G.tiles.map(t=>t.o||reveal?t:{k:'?',num:t.num,o:false}),sx};
 }
 
 // ================= Namen =================
@@ -437,9 +561,10 @@ function hostApply(actor,a,free){const prev=ON.H&&ON.H.ph;const G2=apply(ON.H,ac
 function reportGame(G){
   if(!window.KB_SERVER||!G||!G.pl)return;
   const max=Math.max(...G.pl.map(p=>p.pts));
-  const players=G.pl.map((p,i)=>({name:nameOf(G,i),pts:p.pts,win:p.pts===max}));
+  const players=G.pl.map((p,i)=>({name:nameOf(G,i),b:p.b||'',pts:p.pts,win:p.pts===max}));
+  const room=V.view==='online'&&ON.code?ON.code:undefined;
   const gid=Math.random().toString(36).slice(2,12)+Date.now().toString(36);
-  try{fetch('/api/scores',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({game:'zw',gid,players})}).catch(()=>{})}catch(e){}
+  try{fetch('/api/scores',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({game:'zw',gid,room,players})}).catch(()=>{})}catch(e){}
 }
 function takeOver(g){
   ON.H=unpack(g);ON.H.hp=myPeer();ON.host=true;ON.hostGone=false;ON.seen={};ON.off={};
@@ -531,6 +656,11 @@ function viewLocalSetup(){
     ${settingsHtml(s,false)}
     <div class="row"><button class="btn" type="button" data-do="startLocal">Spiel starten</button><button class="btn ghost" type="button" data-do="menu">Zurück</button></div></div>`;
 }
+function twNameField(myNm){
+  const a=window.kbAuth||{},me=window.kbName&&window.kbName.verified();
+  if(me)return `<div class="field"><span class="label">Dein Name</span><div class="game"><div style="min-width:0"><div class="t">${esc(myNm)} <span class="vb" title="Mit Twitch angemeldet">✓ Twitch</span></div><div class="s">Dein Name ist mit Twitch bestätigt und zählt so für die Bestenliste.</div></div><a class="btn small ghost" href="/auth/logout?r=/zwanzig/">Abmelden</a></div></div>`;
+  return `<div class="field"><span class="label">Dein Name</span><div class="namerow"><input class="txt" id="myName" value="${esc(myNm)}" maxlength="24" autocomplete="off"><button class="btn small ghost" type="button" data-do="saveName">Speichern</button></div>${a.enabled?`<div class="row"><a class="btn small twbtn" href="/auth/twitch/login?r=/zwanzig/">Mit Twitch einloggen</a><span class="hint">Bestätigter Name mit ✓ in der Bestenliste</span></div>`:''}</div>`;
+}
 function viewLobby(){
   const peers=NET.room?NET.room.peers():[];
   const games=peers.filter(p=>!p.sameTab&&p.presence&&p.presence.host&&typeof p.presence.host.code==='string'&&/^zw-[a-z0-9]{4}$/.test(p.presence.host.code));
@@ -541,7 +671,7 @@ function viewLobby(){
       <button class="btn small ${open?'':'ghost'}" type="button" data-do="join" data-code="${esc(h.code)}">${open?'Mitspielen':'Zuschauen'}</button></div>`}).join('')
     :`<div class="empty">Gerade ist kein offenes Spiel da. Eröffne eins – deine Mitspieler sehen es dann hier.</div>`;
   return `<div class="panel sheet"><div class="label">Online</div><h2>Spiel finden</h2>
-    <div class="field"><span class="label">Dein Name</span><div class="namerow"><input class="txt" id="myName" value="${esc(myNm)}" maxlength="24" autocomplete="off"><button class="btn small ghost" type="button" data-do="saveName">Speichern</button></div></div>
+    ${twNameField(myNm)}
     <div class="games">${list}</div>
     <div class="row"><button class="btn" type="button" data-do="create">Neues Spiel eröffnen</button><button class="btn ghost" type="button" data-do="menu">Zurück</button></div></div>`;
 }
@@ -595,6 +725,7 @@ function viewBoard(G,me,ctl){
   const log=G.mode==='typed'&&G.log.length?`<div class="log"><span class="label">Schon geraten</span>${G.log.map(l=>`<span class="g">„${esc(l.g)}“ <i>· ${esc(nameOf(G,l.i))}</i></span>`).join('')}</div>`:'';
   return `<div class="cardhead"><div><div class="label">Runde ${G.rd}${G.vr?` · Es liest vor: ${vlName}${!local&&me===G.vl?' (du)':''}`:' · Alle raten reihum'}</div><h2>Ich bin ${CAT[card.category]||'gesucht.'}</h2></div>
     <div class="pot"><b>${20-G.opened}</b><span class="label">Punkte im Topf</span></div></div>
+    ${card.author?`<p class="credit">Community-Karte von ${esc(card.author)}${card.av?' <span class="vb" title="Mit Twitch bestätigt">✓</span>':''}</p>`:''}
     <div class="panel prompt" id="promptBox">${prompt}</div>
     <div class="tiles">${tiles}</div>${log}`;
 }
@@ -602,6 +733,7 @@ function viewRoundEnd(G,me,ctl){
   const card=G.card,r=G.res,last=G.pl.some(p=>p.pts>=G.goal);
   const text=r.w!=null?`${esc(nameOf(G,r.w))} hat es nach ${r.opened} ${r.opened===1?'geöffnetem Feld':'geöffneten Feldern'} erraten.`:(G.vr?'Niemand ist draufgekommen – alle 20 Punkte gehen an die Vorleser·in.':'Niemand ist draufgekommen – die Punkte verfallen.');
   return `<div class="panel"><div class="label hot">Aufgelöst · Runde ${G.rd}</div><div class="answer">${esc(card.answer)}</div><p style="margin:0;font-size:19px">${text}</p>
+    ${card.author?`<p class="credit big">Karte eingereicht von <b>${esc(card.author)}</b>${card.av?' <span class="vb" title="Mit Twitch bestätigt">✓</span>':''} – danke!</p>`:''}
     <div class="gains">${r.gains.length?'':'<div><b>+0</b><span class="label">für alle</span></div>'}${r.gains.map(g=>`<div><b>+${g.pts}</b><span class="label">${esc(nameOf(G,g.i))} · ${g.role}</span></div>`).join('')}</div>
     ${ctl?`<button class="btn" type="button" data-do="next">${last?'Zur Siegerehrung':'Nächste Karte'}</button>`:`<p class="hint">Die Spielleitung zieht gleich die nächste Karte.</p>`}
     <div class="label" style="margin-top:26px">Alle Hinweise dieser Karte</div>
@@ -626,10 +758,23 @@ function viewSide(G,me){
   const peers=ON.gr&&me!==null?new Set(ON.gr.peers().map(p=>p.peer)):null;
   return `<div class="panel"><h3>Punktestand <span>Ziel ${G.goal}</span></h3><div class="score">${G.pl.map((p,i)=>{
     const role=G.vr&&i===G.vl?'Liest vor':(i===cur&&playing?'Am Zug':(p.sk?'Setzt aus':''));
-    return `<div class="sc ${i===me?'me':''} ${peers&&p.p&&!peers.has(p.p)?'off':''}"><div class="top"><span class="nm">${esc(nameOf(G,i))}${i===me?' (du)':''}</span><span class="pt">${p.pts}</span></div>
+    return `<div class="sc ${i===me?'me':''} ${peers&&p.p&&!peers.has(p.p)?'off':''}"><div class="top"><span class="nm">${esc(nameOf(G,i))}${p.b&&window.kbName&&window.kbName.isVerified&&window.kbName.isVerified(p.b)?' <span class="vb" title="Mit Twitch bestätigt">✓</span>':''}${i===me?' (du)':''}</span><span class="pt">${p.pts}</span></div>
       <div class="bar"><i style="width:${Math.min(100,Math.round(p.pts/G.goal*100))}%"></i></div>${role?`<span class="chip ${role==='Am Zug'?'hot':''}">${role}</span>`:''}${peers&&p.p&&!peers.has(p.p)?' <span class="chip">offline</span>':''}</div>`}).join('')}</div>${me===null?`<div style="margin-top:12px"><button class="linkbtn" type="button" data-do="newSetup">Neues Spiel einrichten</button></div>`:''}</div>`;
 }
 
+// Töne aus Zustandswechseln ableiten (gleich für lokal und online)
+let sPrev=null;
+function sounds(G,me){
+  if(!G||!window.LZSound){sPrev=null;return}
+  const sig={ph:G.ph,opened:G.opened||0,rd:G.rd||0,msg:G.msg?JSON.stringify(G.msg):'',cur:G.order?G.order[G.tp]:-1,n:(G.pl||[]).length};
+  const p=sPrev;sPrev=sig;if(!p)return;const play=LZSound.play;
+  if(G.ph==='lobby'){if(sig.n>p.n)play('join');return}
+  if(G.ph==='gameEnd'&&p.ph!=='gameEnd'){play('fanfare');return}
+  if(G.ph==='roundEnd'&&p.ph!=='roundEnd'){const w=G.res&&G.res.w;play(w==null?'lose':(me===null||w===me)?'win':'correct');return}
+  if(sig.rd===p.rd&&sig.opened>p.opened){const t=G.tiles&&G.tiles[G.cur];play(t&&t.k==='a'?'magic':'pop');return}
+  if(sig.msg!==p.msg&&G.msg&&(G.msg.k==='wrong'||G.msg.k==='no')){play('wrong');return}
+  if(G.ph==='pick'&&me!==null&&me>=0&&sig.cur===me&&p.cur!==me)play('turn');
+}
 let forced=false;
 function render(force){
   if(force)forced=true;
@@ -650,6 +795,7 @@ function render(force){
     else if(G.ph==='roundEnd')main=viewRoundEnd(G,me,ctl);
     else if(G.ph==='gameEnd')main=viewGameEnd(G,me,ctl);
   }
+  sounds(G,me);
   side=viewSide(G,me);
   const nameKey=JSON.stringify(NET.names);
   const mk=main+'|'+nameKey;
@@ -729,6 +875,8 @@ setInterval(()=>{if(V.view==='online'){hostTick();render()}else if(V.view==='lob
   try{const room=await c.use('room');if(room){NET.room=room;room.onPeers(()=>{},()=>{NET.room=null;$('netpill').hidden=true;if(V.view==='online'||V.view==='lobby'){ON.gr=null;V.view='menu'}render(true)})}}catch(e){}
   NET.state=NET.room?'on':'off';$('netpill').hidden=!NET.room;render(true);
 })();
+if(window.LZSound)LZSound.mountToggle($('muteBtn'));
+window.addEventListener('kbauth',()=>render(true));
 loadCustom();
 render(true);
 })();

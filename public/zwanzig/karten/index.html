@@ -6,17 +6,27 @@
 <title>Eigene Karten · 20 Questions</title>
 <meta name="description" content="Schlag eine eigene Karte für 20 Questions vor – Lunacyna schaltet sie frei.">
 <meta name="theme-color" content="#16123A">
-<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2214%22%20fill%3D%22%2316123A%22/%3E%3Cpath%20d%3D%22M14%2052V18l10%2010q8-4%2016%200l10-10v34q-18%206-36%200z%22%20fill%3D%22none%22%20stroke%3D%22%23F6E6FF%22%20stroke-width%3D%224%22%20stroke-linejoin%3D%22round%22/%3E%3Ccircle%20cx%3D%2226%22%20cy%3D%2238%22%20r%3D%223%22%20fill%3D%22%23FDD5BB%22/%3E%3Ccircle%20cx%3D%2238%22%20cy%3D%2238%22%20r%3D%223%22%20fill%3D%22%23FDD5BB%22/%3E%3C/svg%3E">
+<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="icon" href="/assets/icons/icon.svg" type="image/svg+xml">
+<link rel="icon" href="/assets/icons/icon-32.png" type="image/png" sizes="32x32">
+<link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png" sizes="180x180">
+<link rel="manifest" href="/site.webmanifest">
 <meta property="og:type" content="website">
+<meta property="og:locale" content="de_DE">
 <meta property="og:site_name" content="Lunacynas Spielezimmer">
 <meta property="og:title" content="Eigene Karten für 20 Questions">
 <meta property="og:description" content="Schlag eine eigene Karte für 20 Questions vor – Lunacyna schaltet sie frei.">
-<meta property="og:image" content="/assets/og.jpg">
+<meta property="og:url" content="/">
+<meta property="og:image" content="/assets/og.jpg?v=2">
+<meta property="og:image:type" content="image/jpeg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:url" content="/">
+<meta property="og:image:alt" content="Lunacynas gemütliches Stream-Zimmer bei Nacht mit dem Schriftzug „Lunacynas Spielezimmer“">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="/assets/og.jpg">
+<meta name="twitter:title" content="Eigene Karten für 20 Questions">
+<meta name="twitter:description" content="Schlag eine eigene Karte für 20 Questions vor – Lunacyna schaltet sie frei.">
+<meta name="twitter:image" content="/assets/og.jpg?v=2">
+<meta name="twitter:image:alt" content="Lunacynas gemütliches Stream-Zimmer bei Nacht mit dem Schriftzug „Lunacynas Spielezimmer“">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Quicksand:wght@500;600;700&display=swap">
@@ -87,6 +97,16 @@ textarea.txt{min-height:300px;resize:vertical;line-height:1.55;font-weight:500;f
 .chip.p{background:rgba(242,167,168,.2);color:var(--peach)}
 .chip.o{background:rgba(255,255,255,.08);color:var(--muted)}
 .empty{font-size:14px;color:var(--muted);padding:14px;border:2px dashed var(--line);border-radius:14px;text-align:center}
+
+#authBox{display:inline-flex;gap:8px;align-items:center;flex-wrap:wrap}
+.authbtn{display:inline-flex;align-items:center;gap:8px;font:700 14px var(--font-body);text-decoration:none;padding:10px 16px;border-radius:999px;color:#fff;background:#9146FF;box-shadow:0 4px 0 #5c2bb3}
+.authbtn:hover{box-shadow:0 4px 0 #5c2bb3,0 0 22px rgba(145,70,255,.6)}
+.authbtn:focus-visible{outline:3px solid #F6E6FF;outline-offset:3px}
+.authbtn svg{width:18px;height:18px}
+.authbtn.ghostish{background:transparent;color:#EFE9FF;box-shadow:inset 0 0 0 2px rgba(185,166,232,.45)}
+.authme{font-weight:700;font-size:14px;padding:8px 12px;border-radius:999px;background:rgba(18,15,46,.6);color:#EFE9FF}
+.vb{color:#7BE0A6;font-weight:700}
+
 .sub{font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--lavender);margin:18px 0 8px}
 </style>
 </head>
@@ -94,7 +114,7 @@ textarea.txt{min-height:300px;resize:vertical;line-height:1.55;font-weight:500;f
 <div class="wrap">
   <header>
     <h1>Eigene Karten<small>20 Questions · Lunacynas Spielezimmer</small></h1>
-    <nav class="nav"><a class="btn ghost" href="/zwanzig/">← Zu 20 Questions</a><a class="btn ghost" href="/">Alle Spiele</a></nav>
+    <nav class="nav"><span id="authBox"></span><button id="muteBtn" type="button"></button><a class="btn ghost" href="/zwanzig/">← Zu 20 Questions</a><a class="btn ghost" href="/">Alle Spiele</a></nav>
   </header>
 
   <div class="tabs" role="tablist">
@@ -120,7 +140,7 @@ textarea.txt{min-height:300px;resize:vertical;line-height:1.55;font-weight:500;f
         <textarea class="txt" id="fHints" placeholder="Ich habe vier Pfoten und schnurre im Stream.&#10;Meistens schlafe ich im Körbchen unter dem Fenster.&#10;…"></textarea>
         <p class="hint">Schreib in der Ich-Form, ohne den Begriff selbst zu verraten. Mindestens 12, am besten 17 Hinweise – von knifflig bis ziemlich eindeutig. Die Reihenfolge wird im Spiel gemischt; fehlende Felder werden zu Sonderfeldern.</p>
       </div>
-      <div class="field" id="byField"><label class="label" for="fBy">Dein Name (optional)</label><input class="txt" id="fBy" maxlength="30" placeholder="So wie im Chat" autocomplete="off"></div>
+      <div class="field" id="byField"><label class="label" for="fBy" id="fByLabel">Dein Name (optional)</label><input class="txt" id="fBy" maxlength="30" placeholder="So wie im Chat" autocomplete="off"><p class="hint" id="fByNote">Dein Name erscheint im Spiel als „Karte eingereicht von …“.</p></div>
       <div class="row">
         <button class="btn" id="fSubmit" type="submit">Vorschlag einschicken</button>
         <button class="btn ghost" id="fCancel" type="button" hidden>Abbrechen</button>
@@ -149,6 +169,98 @@ textarea.txt{min-height:300px;resize:vertical;line-height:1.55;font-weight:500;f
   </section>
 </div>
 
+<script id="lzsound">
+// LZSound – kleines Sound-System für Lunacynas Spielezimmer
+// - Alle Töne werden live per Web Audio erzeugt (keine Audiodateien nötig).
+// - Der AudioContext entsteht erst nach der ersten Nutzer-Interaktion (Autoplay-Regeln der Browser).
+// - Stummschalten gilt für alle Seiten und bleibt über Reloads erhalten (localStorage "lz_muted").
+// Benutzung:  LZSound.play('correct')   LZSound.mountToggle(buttonElement)   LZSound.setMuted(true)
+window.LZSound = window.LZSound || (() => {
+  const KEY = 'lz_muted';
+  let muted = false;
+  try { muted = localStorage.getItem(KEY) === '1'; } catch (e) {}
+  let ac = null, master = null;
+  const subs = new Set();
+
+  function unlock() {
+    if (muted) return;
+    try {
+      if (!ac) {
+        const C = window.AudioContext || window.webkitAudioContext; if (!C) return;
+        ac = new C(); master = ac.createGain(); master.gain.value = 0.9; master.connect(ac.destination);
+      }
+      if (ac.state === 'suspended') ac.resume();
+    } catch (e) {}
+  }
+  ['pointerdown', 'keydown', 'touchstart'].forEach(t => window.addEventListener(t, unlock, { capture: true, passive: true }));
+
+  function tone(f, dur, o) {
+    o = o || {}; if (!ac || muted) return;
+    const t = ac.currentTime + (o.delay || 0), osc = ac.createOscillator(), g = ac.createGain();
+    osc.type = o.type || 'sine'; osc.frequency.setValueAtTime(f, t);
+    if (o.slide) osc.frequency.exponentialRampToValueAtTime(f * o.slide, t + dur);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(o.vol || 0.15, t + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    osc.connect(g).connect(master); osc.start(t); osc.stop(t + dur + 0.02);
+  }
+  function noise(dur, o) {
+    o = o || {}; if (!ac || muted) return;
+    const t = ac.currentTime, buf = ac.createBuffer(1, Math.floor(ac.sampleRate * dur), ac.sampleRate), d = buf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) { const k = i / d.length; d[i] = (Math.random() * 2 - 1) * (1 - k) * (0.5 + 0.5 * Math.sin(k * (o.wobble || 60))); }
+    const s = ac.createBufferSource(), f = ac.createBiquadFilter(), g = ac.createGain();
+    f.type = 'bandpass'; f.frequency.value = o.freq || 900; g.gain.value = o.vol || 0.4;
+    s.buffer = buf; s.connect(f).connect(g).connect(master); s.start(t);
+  }
+  const notes = (list, o) => list.forEach((f, i) => tone(f, (o.len && o.len[i]) || o.dur || 0.16, { type: o.type || 'triangle', vol: o.vol || 0.16, delay: i * (o.step || 0.08) }));
+
+  const SOUNDS = {
+    click:   () => tone(520, 0.06, { type: 'triangle', vol: 0.08 }),
+    pop:     () => tone(660, 0.12, { type: 'triangle', vol: 0.2, slide: 1.8 }),
+    buzz:    () => { tone(150, 0.32, { type: 'square', vol: 0.07, slide: 0.8 }); tone(156, 0.32, { type: 'sawtooth', vol: 0.035, slide: 0.8 }); },
+    wrong:   () => { tone(392, 0.14, { vol: 0.13, type: 'triangle' }); tone(311, 0.28, { vol: 0.13, type: 'triangle', delay: 0.13 }); },
+    correct: () => notes([523, 659, 784], { step: 0.08 }),
+    win:     () => notes([523, 659, 784, 1046], { step: 0.09, dur: 0.2 }),
+    fanfare: () => notes([523, 659, 784, 1046, 784, 1046], { step: 0.12, len: [0.16, 0.16, 0.16, 0.25, 0.16, 0.55], vol: 0.17 }),
+    lose:    () => notes([392, 349, 311], { step: 0.14, dur: 0.22, vol: 0.12 }),
+    tick:    () => tone(880, 0.08, { vol: 0.11 }),
+    go:      () => tone(1175, 0.25, { type: 'triangle', vol: 0.17 }),
+    turn:    () => { tone(988, 0.1, { vol: 0.11 }); tone(1319, 0.2, { vol: 0.11, delay: 0.1 }); },
+    magic:   () => notes([1319, 1568, 1760, 2093], { step: 0.06, dur: 0.14, type: 'sine', vol: 0.08 }),
+    shake:   () => noise(0.7, { freq: 900, vol: 0.5, wobble: 90 }),
+    join:    () => tone(784, 0.14, { type: 'sine', vol: 0.09, slide: 1.5 }),
+  };
+
+  function play(name) { if (muted) return; unlock(); const f = SOUNDS[name]; if (f && ac) { try { f(); } catch (e) {} } }
+  function emit() { subs.forEach(fn => { try { fn(muted); } catch (e) {} }); }
+  function setMuted(m) {
+    muted = !!m;
+    try { localStorage.setItem(KEY, muted ? '1' : '0'); } catch (e) {}
+    if (master && ac) master.gain.setTargetAtTime(muted ? 0 : 0.9, ac.currentTime, 0.01);
+    emit(); if (!muted) { unlock(); play('click'); }
+  }
+  window.addEventListener('storage', e => { if (e.key === KEY) { muted = e.newValue === '1'; if (master && ac) master.gain.value = muted ? 0 : 0.9; emit(); } });
+
+  const ON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+  const OFF = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16.5 9.5l5 5M21.5 9.5l-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+  (function css() {
+    const st = document.createElement('style');
+    st.textContent = '.lz-mute{width:44px;height:44px;flex:none;border-radius:50%;border:0;cursor:pointer;display:inline-grid;place-items:center;background:transparent;color:#EFE9FF;box-shadow:inset 0 0 0 2px rgba(185,166,232,.45);transition:box-shadow .15s}'
+      + '.lz-mute:hover{box-shadow:inset 0 0 0 2px #F6E6FF,0 0 16px rgba(199,125,255,.45)}'
+      + '.lz-mute:focus-visible{outline:3px solid #F6E6FF;outline-offset:3px}'
+      + '.lz-mute svg{width:22px;height:22px}'
+      + '.lz-mute[aria-pressed="true"]{color:#F2A7A8;box-shadow:inset 0 0 0 2px rgba(242,167,168,.6)}';
+    (document.head || document.documentElement).appendChild(st);
+  })();
+  function mountToggle(btn) {
+    if (!btn) return;
+    btn.classList.add('lz-mute'); btn.type = 'button';
+    const upd = m => { btn.setAttribute('aria-pressed', String(m)); const t = m ? 'Ton einschalten' : 'Ton ausschalten'; btn.title = t; btn.setAttribute('aria-label', t); btn.innerHTML = m ? OFF : ON; };
+    upd(muted); subs.add(upd);
+    btn.addEventListener('click', () => setMuted(!muted));
+  }
+  return { play, unlock, setMuted, isMuted: () => muted, mountToggle, onChange: fn => subs.add(fn), sounds: Object.keys(SOUNDS) };
+})();
+</script>
 <script>
 (()=>{
 const $=id=>document.getElementById(id);
@@ -163,10 +275,11 @@ function segSet(id,v){$(id).querySelectorAll('button').forEach(b=>b.setAttribute
 const hints=()=>$('fHints').value.split('\n').map(s=>s.trim()).filter(s=>s.length>=3);
 function updCount(){const n=hints().length,c=$('fCount');c.textContent=n+' / 17';c.className='count '+(n>=12&&n<=20?'ok':'no')}
 $('fHints').addEventListener('input',updCount);
-function readForm(){return {answer:$('fAnswer').value.trim(),aliases:$('fAliases').value.split(',').map(s=>s.trim()).filter(Boolean),category:segVal('fCat'),level:+segVal('fLevel'),hints:hints(),by:$('fBy').value.trim()}}
+let twUser=null;
+function readForm(){return {answer:$('fAnswer').value.trim(),aliases:$('fAliases').value.split(',').map(s=>s.trim()).filter(Boolean),category:segVal('fCat'),level:+segVal('fLevel'),hints:hints(),author:$('fBy').value.trim()}}
 function fillForm(c){
   $('fAnswer').value=c?c.answer:'';$('fAliases').value=c?(c.aliases||[]).join(', '):'';segSet('fCat',c?c.category:'Person');segSet('fLevel',c?c.level:1);
-  $('fHints').value=c?(c.hints||[]).join('\n'):'';$('fBy').value=c?(c.by||''):'';updCount();
+  $('fHints').value=c?(c.hints||[]).join('\n'):'';$('fBy').value=c?(c.author||c.by||''):'';updCount();
 }
 function check(c){
   if(c.answer.length<2)return 'Bitte einen Begriff eintragen.';
@@ -176,7 +289,7 @@ function check(c){
   if(leak)return `Ein Hinweis verrät den Begriff: „${leak.slice(0,60)}“`;
   return null;
 }
-function msg(t,ok){const m=$('fMsg');m.textContent=t;m.className='msg '+(ok?'ok':'no')}
+function msg(t,ok){const m=$('fMsg');m.textContent=t;m.className='msg '+(ok?'ok':'no');if(t&&window.LZSound)LZSound.play(ok?'correct':'buzz')}
 async function api(path,opt){
   const o=Object.assign({headers:{}},opt||{});o.headers=Object.assign({'content-type':'application/json'},o.headers);if(key&&path.startsWith('/api/admin'))o.headers['x-admin-key']=key;
   const r=await fetch(path,o);let d=null;try{d=await r.json()}catch(e){}
@@ -197,6 +310,8 @@ function setFormMode(m){
   $('formTitle').textContent=adm?(editing?'Karte bearbeiten':'Neue Karte'):'Karte vorschlagen';
   $('formLead').textContent=adm?(editing&&editing.status==='pending'?`Vorschlag${editing.by?' von '+editing.by:''}. Beim Speichern wird die Karte freigegeben.`:'Gespeicherte Karten sind sofort im Spiel – unter „Eigene“ und in der passenden Schwierigkeit.'):'Du hast eine Idee für eine Karte für 20 Questions – vielleicht einen Insider aus dem Stream? Schick sie ein. Lunacyna schaut sie sich an und schaltet sie frei.';
   $('fSubmit').textContent=adm?(editing&&editing.status==='pending'?'Freigeben & speichern':'Speichern'):'Vorschlag einschicken';
+  const twLock=!adm&&twUser;$('fBy').hidden=!!twLock;$('fByLabel').textContent=adm?'Eingereicht von':'Dein Name (optional)';
+  $('fByNote').innerHTML=twLock?'Du reichst als <b>'+esc(twUser.name)+'</b> <span class="vb">✓</span> ein – so steht es im Spiel unter der Karte.':(adm?'Erscheint im Spiel als „Karte eingereicht von …“. Leer lassen für keinen Namen.':'Dein Name erscheint im Spiel als „Karte eingereicht von …“.');
   $('byField').hidden=false;$('fCancel').hidden=!adm;
   $('formPanel').hidden=adm&&!editing&&m!=='new';
 }
@@ -229,7 +344,7 @@ function itemHtml(c){
     ?`<button class="btn small ghost" data-act="edit" data-id="${esc(c.id)}">Bearbeiten</button><button class="btn small ghost" data-act="off" data-id="${esc(c.id)}">Pausieren</button><button class="btn small danger" data-act="del" data-id="${esc(c.id)}">Löschen</button>`
     :`<button class="btn small" data-act="on" data-id="${esc(c.id)}">Wieder ins Spiel</button><button class="btn small ghost" data-act="edit" data-id="${esc(c.id)}">Bearbeiten</button><button class="btn small danger" data-act="del" data-id="${esc(c.id)}">Löschen</button>`;
   return `<div class="item"><div style="min-width:0"><div class="t">${esc(c.answer)}<span class="chip">${CAT[c.category]||''}</span><span class="chip ${c.status==='pending'?'p':c.status==='off'?'o':''}">${lv}</span></div>
-    <div class="s">${(c.hints||[]).length} Hinweise${c.by?' · von '+esc(c.by):''}</div></div><div class="row" style="justify-content:flex-end">${actions}</div></div>`;
+    <div class="s">${(c.hints||[]).length} Hinweise${(c.author||c.by)?' · von '+esc(c.author||c.by)+(c.authorVerified?' <span class="vb" title="Mit Twitch bestätigt">✓</span>':''):''}</div></div><div class="row" style="justify-content:flex-end">${actions}</div></div>`;
 }
 function renderLists(){
   const by=s=>cards.filter(c=>c.status===s).sort((a,b)=>(b.at||0)-(a.at||0));
@@ -249,8 +364,24 @@ document.addEventListener('click',async e=>{
   if(act==='off'||act==='on'){try{await api('/api/admin/cards',{method:'POST',body:JSON.stringify({...c,status:act==='off'?'off':'ok'})});await loadAdmin()}catch(er){$('aMsg').textContent=er.message}}
 });
 
+if(window.LZSound)LZSound.mountToggle($('muteBtn'));
+document.addEventListener('lzauth',e=>{twUser=e.detail&&e.detail.user||null;setFormMode(mode)});
 if(location.hash==='#verwalten')showTab('admin');else showTab('suggest');
 updCount();
+// ---- Twitch-Login (optional; erscheint nur, wenn er im Server eingerichtet ist) ----
+(()=>{
+  const box=document.getElementById('authBox');if(!box)return;
+  const back=location.pathname;
+  const esc=t=>String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  fetch('/auth/me',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(me=>{
+    if(!me||!me.enabled)return;
+    box.innerHTML=me.user
+      ?'<span class="authme" title="Mit Twitch angemeldet"><span class="vb">✓</span> '+esc(me.user.name)+'</span><a class="authbtn ghostish" href="/auth/logout?r='+encodeURIComponent(back)+'">Abmelden</a>'
+      :'<a class="authbtn tw" href="/auth/twitch/login?r='+encodeURIComponent(back)+'"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 2 2.5 6v14h5v3h3l3-3h4l5-5V2H4zm16 12-3 3h-4l-3 3v-3H6V4h14v10zM15 7h2v5h-2V7zm-5 0h2v5h-2V7z" fill="currentColor"/></svg>Mit Twitch einloggen</a>';
+    document.dispatchEvent(new CustomEvent('lzauth',{detail:me}));
+  }).catch(()=>{});
+})();
+
 })();
 </script>
 </body>
