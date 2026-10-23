@@ -297,22 +297,23 @@ function buildRound(G){
   const ci=deck.pop(),c=CARDS[ci];
   const hints=shuffle(c.hints).slice(0,17),acts=shuffle(ACTS).slice(0,20-hints.length);
   const tiles=shuffle([...hints.map(t=>({k:'h',t})),...acts.map(a=>({k:'a',ty:a.ty,n:a.n||0,t:a.t}))]).map((t,i)=>({...t,num:i+1,o:false}));
-  const n=G.pl.length,order=[];for(let k=1;k<n;k++)order.push((G.vl+k)%n);
+  const n=G.pl.length,order=[];if(G.vr){for(let k=1;k<n;k++)order.push((G.vl+k)%n)}else{for(let k=0;k<n;k++)order.push((G.vl+k)%n)}
   const el=findEligible(G.pl,order,0);
   return {...G,deck,ci,tiles,order,pl:el.pl,tp:el.tp,opened:0,cur:null,log:[],msg:null,lw:null,res:null,ph:'pick'};
 }
-function newGame(cfg,players){return buildRound({goal:cfg.goal,mode:cfg.mode,diff:cfg.diff,pl:players.map(p=>({...p,pts:0,sk:false})),vl:0,rd:1,deck:[]})}
+function newGame(cfg,players){return buildRound({goal:cfg.goal,mode:cfg.mode,diff:cfg.diff,reader:cfg.reader||'pc',vr:cfg.mode==='spoken'||cfg.reader==='person',pl:players.map(p=>({...p,pts:0,sk:false})),vl:0,rd:1,deck:[]})}
 function advance(G,extra){G={...G,...(extra||{})};if(G.opened>=20)return endRound(G,null);const r=findEligible(G.pl,G.order,G.tp+1);return {...G,pl:r.pl,tp:r.tp,ph:'pick',cur:null}}
 function endRound(G,w){
   const pl=G.pl.map(p=>({...p})),v=G.vl;let gains;
-  if(w!=null){const gw=20-G.opened,gv=G.opened;pl[w].pts+=gw;pl[v].pts+=gv;gains=[{i:w,role:'hat erraten',pts:gw},{i:v,role:'liest vor',pts:gv}]}
-  else{pl[v].pts+=20;gains=[{i:v,role:'liest vor',pts:20}]}
+  if(w!=null){const gw=20-G.opened,gv=G.opened;pl[w].pts+=gw;gains=[{i:w,role:'hat erraten',pts:gw}];if(G.vr){pl[v].pts+=gv;gains.push({i:v,role:'liest vor',pts:gv})}}
+  else if(G.vr){pl[v].pts+=20;gains=[{i:v,role:'liest vor',pts:20}]}
+  else gains=[];
   return {...G,pl,ph:'roundEnd',res:{w,gains,opened:G.opened}};
 }
 // actor = Spieler-Index; free = lokal (eine Maus/ein Bildschirm) oder Spielleiter-Sonderrechte
 function apply(G,actor,a,free){
   if(!G||!a)return null;
-  const cur=G.order?G.order[G.tp]:-1,isCur=free||actor===cur,isVl=free||actor===G.vl;
+  const cur=G.order?G.order[G.tp]:-1,isCur=free||actor===cur,isVl=free||(G.vr?actor===G.vl:actor===0);
   switch(a.t){
     case 'pick':{
       if(G.ph!=='pick'||!isCur)return null;const i=a.i|0,t=G.tiles[i];if(!t||t.o)return null;
@@ -342,7 +343,7 @@ function apply(G,actor,a,free){
       if(G.ph!=='roundEnd'||!free)return null;
       if(G.pl.some(p=>p.pts>=G.goal))return {...G,ph:'gameEnd'};
       return buildRound({...G,vl:(G.vl+1)%G.pl.length,rd:G.rd+1});
-    case 'rematch':if(G.ph!=='gameEnd'||!free)return null;return newGame(G,G.pl.map(p=>({name:p.name,p:p.p,b:p.b})));
+    case 'rematch':if(G.ph!=='gameEnd'||!free)return null;return newGame({...G,reader:G.reader||(G.vr?'person':'pc')},G.pl.map(p=>({name:p.name,p:p.p,b:p.b})));
   }
   return null;
 }
@@ -364,8 +365,8 @@ function nameOf(G,i){const p=G&&G.pl&&G.pl[i];if(!p)return '?';return p.name||(p
 
 // ================= Ansicht / Zustand der Seite =================
 // view: menu | local-setup | local | lobby | online
-const V={view:'menu',local:null,setup:{names:['','',''],goal:60,mode:'typed',diff:'mix'}};
-try{const s=JSON.parse(localStorage.getItem('zwanzig-lunacyna-v1')||'null');if(s&&s.setup)V.setup=Object.assign(V.setup,s.setup);if(s&&s.local&&s.local.ph)V.local=s.local}catch(e){}
+const V={view:'menu',local:null,setup:{names:['','',''],goal:60,mode:'typed',diff:'mix',reader:'pc'}};
+try{const s=JSON.parse(localStorage.getItem('zwanzig-lunacyna-v1')||'null');if(s&&s.setup)V.setup=Object.assign(V.setup,s.setup);if(s&&s.local&&s.local.ph){V.local=s.local;if(V.local.vr===undefined)V.local.vr=true}}catch(e){}
 function saveLocal(){try{localStorage.setItem('zwanzig-lunacyna-v1',JSON.stringify({setup:V.setup,local:V.local}))}catch(e){}}
 
 // ================= Online =================
@@ -376,7 +377,7 @@ async function onlineCreate(){
   const code='zw-'+Math.random().toString(36).slice(2,6).padEnd(4,'x');
   try{ON.gr=await NET.room.join(code)}catch(e){toast('Spiel konnte nicht eröffnet werden');return}
   ON.code=code;ON.host=true;ON.seen={};ON.hostGone=false;ON.joinedAt=Date.now();
-  ON.H={ph:'lobby',goal:V.setup.goal,mode:V.setup.mode,diff:V.setup.diff,pl:[]};
+  ON.H={ph:'lobby',goal:V.setup.goal,mode:V.setup.mode,diff:V.setup.diff,reader:V.setup.reader||'pc',pl:[]};
   ON.gr.presence({j:1}).catch(()=>{});V.view='online';hostTick();render(true);
 }
 async function onlineJoin(code){
@@ -454,7 +455,9 @@ function settingsHtml(cfg,disabled){
   return `<div class="field"><span class="label">Schwierigkeit</span>${segHtml('diff',cfg.diff,DIFFS,disabled)}<p class="hint">${cfg.diff==='normal'?'Bekannte Persönlichkeiten, Orte und Dinge.':cfg.diff==='hard'?'Knifflige Karten mit kniffligen Hinweisen – für Rate-Profis.':'Leichte und schwere Karten gemischt.'}</p></div>
     <div class="field"><span class="label">Gespielt wird bis</span>${segHtml('goal',cfg.goal,[[40,'40 Punkte'],[60,'60 Punkte'],[100,'100 Punkte']],disabled)}</div>
     <div class="field"><span class="label">Antworten</span>${segHtml('mode',cfg.mode,[['typed','Eintippen'],['spoken','Laut sagen']],disabled)}
-      <p class="hint">${cfg.mode==='typed'?'Antworten werden eingetippt und automatisch geprüft – kleine Tippfehler sind okay.':'Antworten laut sagen (z. B. im Voice-Chat). Wer vorliest, sieht die Lösung und entscheidet.'}</p></div>`;
+      <p class="hint">${cfg.mode==='typed'?'Antworten werden eingetippt und automatisch geprüft – kleine Tippfehler sind okay.':'Antworten laut sagen (z. B. im Voice-Chat). Wer vorliest, sieht die Lösung und entscheidet.'}</p></div>
+    <div class="field"><span class="label">Wer liest vor?</span>${segHtml('reader',cfg.mode==='spoken'?'person':(cfg.reader||'pc'),[['pc','Der Computer'],['person','Reihum eine Person']],disabled||cfg.mode==='spoken')}
+      <p class="hint">${cfg.mode==='spoken'?'Beim lauten Antworten braucht es eine Person, die vorliest und entscheidet – sie wechselt jede Runde.':(cfg.reader||'pc')==='pc'?'Alle raten reihum. Wer errät, bekommt 20 minus geöffnete Felder.':'Wie beim Kartenspiel: Eine Person liest vor und bekommt die übrigen Punkte. Bei zwei Spielern rät dann immer dieselbe Person.'}</p></div>`;
 }
 function viewLocalSetup(){
   const s=V.setup;
@@ -493,16 +496,16 @@ function viewWaiting(G,me){
 // me: eigener Index (online), -1 = Zuschauer, null = lokal (alle)
 function viewBoard(G,me,ctl){
   const local=me===null,cur=G.order[G.tp],card=CARDS[G.ci];
-  const isCur=local||me===cur,isVl=local||me===G.vl;
+  const isCur=local||me===cur,isVl=local||(G.vr?me===G.vl:me===0);
   const curName=esc(nameOf(G,cur)),vlName=esc(nameOf(G,G.vl));
   const t=G.cur!=null?G.tiles[G.cur]:null;
   let prompt='';
-  const peekBtn=(!local||G.mode==='spoken')&&isVl&&card?`<span class="peek" data-peek><button class="linkbtn" type="button" data-hold>Lösung (gedrückt halten)</button><span class="ans">${esc(card.answer)}</span></span>`:'';
+  const peekBtn=G.vr&&(!local||G.mode==='spoken')&&(local||me===G.vl)&&card?`<span class="peek" data-peek><button class="linkbtn" type="button" data-hold>Lösung (gedrückt halten)</button><span class="ans">${esc(card.answer)}</span></span>`:'';
   if(G.ph==='pick'){
     prompt=`<div class="label hot">Am Zug</div><div class="who">${isCur&&!local?'Du bist dran<em>, wähl eine Zahl.</em>':curName+'<em>, wähl eine Zahl.</em>'}</div>`;
     if(!isCur)prompt+=`<div class="wait" style="margin-top:10px"><span class="dots">${curName} überlegt</span></div>`;
     if(G.msg)prompt+=`<div class="msg">${msgText(G,G.msg)}</div>`;
-    if(G.lw&&isVl&&G.mode==='typed')prompt+=`<div style="margin-top:8px"><button class="linkbtn" type="button" data-do="override">${local?'Vorleser·in: ':''}Das war doch richtig</button></div>`;
+    if(G.lw&&isVl&&G.mode==='typed')prompt+=`<div style="margin-top:8px"><button class="linkbtn" type="button" data-do="override">${G.vr&&local?'Vorleser·in: ':(!G.vr&&!local?'Spielleitung: ':'')}Das war doch richtig</button></div>`;
   }else if(G.ph==='guess'){
     prompt=`<div class="label hot">Hinweis ${t.num} · für ${curName}</div><div class="clue">${esc(t.t)}</div>`;
     if(G.mode==='typed'){
@@ -528,16 +531,16 @@ function viewBoard(G,me,ctl){
     return `<div class="tile open${curr?' current':''}"><span class="n">${x.num}</span><span class="tx">${esc(x.t)}</span></div>`;
   }).join('');
   const log=G.mode==='typed'&&G.log.length?`<div class="log"><span class="label">Schon geraten</span>${G.log.map(l=>`<span class="g">„${esc(l.g)}“ <i>· ${esc(nameOf(G,l.i))}</i></span>`).join('')}</div>`:'';
-  return `<div class="cardhead"><div><div class="label">Runde ${G.rd} · Es liest vor: ${vlName}${!local&&me===G.vl?' (du)':''}</div><h2>Ich bin ${CAT[card.category]||'gesucht.'}</h2></div>
+  return `<div class="cardhead"><div><div class="label">Runde ${G.rd}${G.vr?` · Es liest vor: ${vlName}${!local&&me===G.vl?' (du)':''}`:' · Alle raten reihum'}</div><h2>Ich bin ${CAT[card.category]||'gesucht.'}</h2></div>
     <div class="pot"><b>${20-G.opened}</b><span class="label">Punkte im Topf</span></div></div>
     <div class="panel prompt" id="promptBox">${prompt}</div>
     <div class="tiles">${tiles}</div>${log}`;
 }
 function viewRoundEnd(G,me,ctl){
   const card=CARDS[G.ci],r=G.res,last=G.pl.some(p=>p.pts>=G.goal);
-  const text=r.w!=null?`${esc(nameOf(G,r.w))} hat es nach ${r.opened} ${r.opened===1?'geöffnetem Feld':'geöffneten Feldern'} erraten.`:'Niemand ist draufgekommen – alle 20 Punkte gehen an die Vorleser·in.';
+  const text=r.w!=null?`${esc(nameOf(G,r.w))} hat es nach ${r.opened} ${r.opened===1?'geöffnetem Feld':'geöffneten Feldern'} erraten.`:(G.vr?'Niemand ist draufgekommen – alle 20 Punkte gehen an die Vorleser·in.':'Niemand ist draufgekommen – die Punkte verfallen.');
   return `<div class="panel"><div class="label hot">Aufgelöst · Runde ${G.rd}</div><div class="answer">${esc(card.answer)}</div><p style="margin:0;font-size:19px">${text}</p>
-    <div class="gains">${r.gains.map(g=>`<div><b>+${g.pts}</b><span class="label">${esc(nameOf(G,g.i))} · ${g.role}</span></div>`).join('')}</div>
+    <div class="gains">${r.gains.length?'':'<div><b>+0</b><span class="label">für alle</span></div>'}${r.gains.map(g=>`<div><b>+${g.pts}</b><span class="label">${esc(nameOf(G,g.i))} · ${g.role}</span></div>`).join('')}</div>
     ${ctl?`<button class="btn" type="button" data-do="next">${last?'Zur Siegerehrung':'Nächste Karte'}</button>`:`<p class="hint">Die Spielleitung zieht gleich die nächste Karte.</p>`}
     <div class="label" style="margin-top:26px">Alle Hinweise dieser Karte</div>
     <div class="allhints">${G.tiles.filter(t=>t.k==='h').map(t=>`<div class="${t.o?'':'closed'}"><span>${t.num}</span>${esc(t.t)}</div>`).join('')}</div></div>`;
@@ -552,15 +555,15 @@ function viewGameEnd(G,me,ctl){
 function viewSide(G,me){
   if(!G||!G.pl||!G.pl.length||G.ph==='lobby'){
     return `<div class="panel"><h3>So geht's</h3><ol class="rules">
-      <li>Eine Person liest vor. Alle anderen raten, wer oder was auf der Karte steht.</li>
+      <li>Gesucht ist eine Person, ein Ort oder ein Ding. Die Hinweise liest der Computer vor – oder reihum eine Person.</li>
       <li>Wer dran ist, wählt eine Zahl von 1 bis 20, bekommt einen Hinweis und darf einmal raten.</li>
-      <li>Pro Karte gibt es 20 Punkte. Wer errät, bekommt 20 minus geöffnete Felder – den Rest die Vorleser·in.</li>
+      <li>Pro Karte gibt es 20 Punkte. Wer errät, bekommt 20 minus geöffnete Felder. Liest eine Person vor, bekommt sie den Rest.</li>
       <li>Drei Felder sind Sonderfelder: aussetzen, Punkte gewinnen, Punkte verlieren oder nochmal wählen.</li></ol></div>`;
   }
   const playing=['pick','guess','action'].includes(G.ph),cur=G.order?G.order[G.tp]:-1;
   const peers=ON.gr&&me!==null?new Set(ON.gr.peers().map(p=>p.peer)):null;
   return `<div class="panel"><h3>Punktestand <span>Ziel ${G.goal}</span></h3><div class="score">${G.pl.map((p,i)=>{
-    const role=i===G.vl?'Liest vor':(i===cur&&playing?'Am Zug':(p.sk?'Setzt aus':''));
+    const role=G.vr&&i===G.vl?'Liest vor':(i===cur&&playing?'Am Zug':(p.sk?'Setzt aus':''));
     return `<div class="sc ${i===me?'me':''} ${peers&&p.p&&!peers.has(p.p)?'off':''}"><div class="top"><span class="nm">${esc(nameOf(G,i))}${i===me?' (du)':''}</span><span class="pt">${p.pts}</span></div>
       <div class="bar"><i style="width:${Math.min(100,Math.round(p.pts/G.goal*100))}%"></i></div>${role?`<span class="chip ${role==='Am Zug'?'hot':''}">${role}</span>`:''}${peers&&p.p&&!peers.has(p.p)?' <span class="chip">offline</span>':''}</div>`}).join('')}</div>${me===null?`<div style="margin-top:12px"><button class="linkbtn" type="button" data-do="newSetup">Neues Spiel einrichten</button></div>`:''}</div>`;
 }
@@ -622,7 +625,7 @@ document.addEventListener('click',e=>{
     case 'create':{const el=$('myName');if(el&&window.kbName&&el.value.trim())window.kbName.set(el.value);onlineCreate();break}
     case 'join':{const el=$('myName');if(el&&window.kbName&&el.value.trim())window.kbName.set(el.value);onlineJoin(b.dataset.code);break}
     case 'leave':onlineLeave();break;
-    case 'toLobby':if(ON.host&&ON.H){ON.H={ph:'lobby',goal:ON.H.goal,mode:ON.H.mode,diff:ON.H.diff,pl:ON.H.pl.map(p=>({p:p.p,b:p.b}))};ON.dirty=true;hostTick();render(true)}break;
+    case 'toLobby':if(ON.host&&ON.H){ON.H={ph:'lobby',goal:ON.H.goal,mode:ON.H.mode,diff:ON.H.diff,reader:ON.H.reader||'pc',pl:ON.H.pl.map(p=>({p:p.p,b:p.b}))};ON.dirty=true;hostTick();render(true)}break;
     case 'hostStart':if(ON.host&&ON.H&&ON.H.pl.length>=2){ON.H=newGame(ON.H,ON.H.pl.map(p=>({p:p.p,b:p.b})));ON.dirty=true;hostTick();render(true)}break;
     case 'guess':{const el=$('guess');if(el&&el.value.trim()){send('guess',{g:el.value.trim()});el.value=''}break}
     case 'pass':send('pass');break;
