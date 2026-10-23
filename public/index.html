@@ -4,13 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Lunacynas Spielezimmer</title>
-<meta name="description" content="Kleine Browser-Spiele von Lunacyna – Kugelblitz und Zwanzig, online mit Freunden oder am selben Bildschirm.">
+<meta name="description" content="Kleine Browser-Spiele von Lunacyna – Kugelblitz und 20 Questions, online mit Freunden oder am selben Bildschirm.">
 <meta name="theme-color" content="#16123A">
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2214%22%20fill%3D%22%2316123A%22/%3E%3Cpath%20d%3D%22M14%2052V18l10%2010q8-4%2016%200l10-10v34q-18%206-36%200z%22%20fill%3D%22none%22%20stroke%3D%22%23F6E6FF%22%20stroke-width%3D%224%22%20stroke-linejoin%3D%22round%22/%3E%3Ccircle%20cx%3D%2226%22%20cy%3D%2238%22%20r%3D%223%22%20fill%3D%22%23FDD5BB%22/%3E%3Ccircle%20cx%3D%2238%22%20cy%3D%2238%22%20r%3D%223%22%20fill%3D%22%23FDD5BB%22/%3E%3C/svg%3E">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Lunacynas Spielezimmer">
 <meta property="og:title" content="Lunacynas Spielezimmer">
-<meta property="og:description" content="Kleine Browser-Spiele von Lunacyna – Kugelblitz und Zwanzig, online mit Freunden oder am selben Bildschirm.">
+<meta property="og:description" content="Kleine Browser-Spiele von Lunacyna – Kugelblitz und 20 Questions, online mit Freunden oder am selben Bildschirm.">
 <meta property="og:image" content="/assets/og.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -192,7 +192,7 @@ footer a:hover{border-bottom-color:var(--neon)}
       <div class="thumb">
         <svg viewBox="0 0 400 300" aria-hidden="true" id="zwThumb"></svg>
       </div>
-      <h3>Zwanzig</h3>
+      <h3>20 Questions</h3>
       <p>Wer oder was steht auf der Karte? 20 Hinweise, ein Versuch pro Feld – je früher du's errätst, desto mehr Punkte.</p>
       <div class="tags"><span class="tag">2–6 Spieler</span><span class="tag">Online &amp; am selben PC</span><span class="tag">Leicht bis schwer</span></div>
       <span class="play"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M3 1.5 L12 7 L3 12.5 Z" fill="currentColor"/></svg>Spielen</span>
@@ -219,13 +219,13 @@ footer a:hover{border-bottom-color:var(--neon)}
     <div class="frame">
       <h3 id="lbTitle">Wer gewinnt diesen Monat?</h3>
       <div class="toggles" id="lbMonth"><button type="button" data-m="0" aria-pressed="true">Dieser Monat</button><button type="button" data-m="1" aria-pressed="false">Letzter Monat</button></div>
-      <div class="toggles" id="lbGame" style="margin-top:-6px"><button type="button" data-g="all" aria-pressed="true">Alle Spiele</button><button type="button" data-g="kb" aria-pressed="false">Kugelblitz</button><button type="button" data-g="zw" aria-pressed="false">Zwanzig</button></div>
+      <div class="toggles" id="lbGame" style="margin-top:-6px"><button type="button" data-g="all" aria-pressed="true">Alle Spiele</button><button type="button" data-g="kb" aria-pressed="false">Kugelblitz</button><button type="button" data-g="zw" aria-pressed="false">20 Questions</button></div>
       <div id="lb" aria-live="polite"><div class="lbempty">Lädt …</div></div>
     </div>
     <div class="frame side-note">
       <h3>Mitmachen</h3>
-      <p>Gezählt werden Online-Partien mit mindestens zwei echten Mitspielern und Zwanzig am selben Bildschirm, wenn ihr eure Namen eintragt. Bots zählen nicht.</p>
-      <p>Du hast eine Idee für eine Zwanzig-Karte – vielleicht einen Insider aus dem Stream?</p>
+      <p>Gezählt wird jede fertig gespielte Partie mit mindestens zwei echten Menschen – online, und bei 20 Questions auch, wenn ihr gemeinsam an einem Bildschirm spielt und eure Namen eintragt. Bots und Namen wie „Spieler 2“ zählen nicht.</p>
+      <p>Du hast eine Idee für eine Karte für 20 Questions – vielleicht einen Insider aus dem Stream?</p>
       <a class="play" href="/zwanzig/karten/">Karte vorschlagen</a>
     </div>
   </section>
@@ -261,7 +261,7 @@ for(const [x,y] of spots){const c=cols[k%6];k++;const cx=200+x*1.1,cy=158+y*1.1;
   html+=`<circle cx="${cx+3}" cy="${cy+5}" r="15" fill="rgba(20,20,60,.18)"/><circle cx="${cx}" cy="${cy}" r="15" fill="${c[0]}" stroke="${c[1]}" stroke-width="2"/><circle cx="${cx+1}" cy="${cy+2}" r="6.5" fill="#fff" opacity=".95"/><text x="${cx+1}" y="${cy+5.5}" text-anchor="middle" font-size="9" font-weight="700" font-family="Quicksand,sans-serif" fill="#14214F">${(k*7)%9+1}</text><ellipse cx="${cx-5}" cy="${cy-7}" rx="4" ry="2.4" fill="#fff" opacity=".55"/>`}
 g.innerHTML=html;
 
-// ---- Felder im Vorschaubild von Zwanzig ----
+// ---- Felder im Vorschaubild von 20 Questions ----
 const zw=document.getElementById('zwThumb');
 if(zw){let h='';const open={3:1,7:1,12:1},act={16:1};
   for(let i=0;i<20;i++){const c=i%5,r=Math.floor(i/5),x=52+c*62,y=34+r*60,n=i+1;
