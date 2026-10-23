@@ -1,0 +1,13 @@
+{
+  "name": "kugelblitz",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Kugelblitz – Murmel-Geschicklichkeitsspiel mit Online-Multiplayer auf Cloudflare Workers",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy"
+  },
+  "devDependencies": {
+    "wrangler": "^4.40.0"
+  }
+}
