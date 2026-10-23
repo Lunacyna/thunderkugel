@@ -252,8 +252,8 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
   });
   window.kbAuthReady=meP;
   const roomP=meP.then(()=>{
-    const lobby=conn(window.KB_LOBBY==='lobby-zw'?'lobby-zw':'lobby');
-    const room=Object.freeze({...lobby,join:n=>/^(kb|zw)-[a-z0-9]{4}$/.test(n)?Promise.resolve(conn('g-'+n)):Promise.reject({code:'invalid_argument',message:'bad name'})});
+    const lobby=conn(['lobby-zw','lobby-ne'].includes(window.KB_LOBBY)?window.KB_LOBBY:'lobby');
+    const room=Object.freeze({...lobby,join:n=>/^(kb|zw|ne)-[a-z0-9]{4}$/.test(n)?Promise.resolve(conn('g-'+n)):Promise.reject({code:'invalid_argument',message:'bad name'})});
     return lobby._ready.then(ok=>{if(!ok){lobby.leave();return null}return room});
   });
   window.claude={use:n=>n==='room'?roomP:Promise.resolve(n==='user'?user:null)};
@@ -526,8 +526,21 @@ function draw(V){
     else if(hb&&hb.blocked&&!V.hold){ctx.fillStyle='#D9372B';ctx.fillText('eingeklemmt – festhalten',x,y+BR+24)}
     ctx.restore();
   }
+  // Deckel: Kugeln bleiben bis zum Start verborgen
+  if(V.covered){
+    const lg=ctx.createRadialGradient(CX-70,CY-90,20,CX,CY,R+4);
+    lg.addColorStop(0,'#5A4E9A');lg.addColorStop(.6,'#3A3170');lg.addColorStop(1,'#241D4C');
+    ctx.fillStyle=lg;ctx.beginPath();ctx.arc(CX,CY,R+3,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle='rgba(246,230,255,.25)';ctx.lineWidth=3;ctx.beginPath();ctx.arc(CX,CY,R-16,0,Math.PI*2);ctx.stroke();
+    ctx.fillStyle='rgba(246,230,255,.55)';
+    for(let i=0;i<26;i++){const a=i*2.399,d=(R-40)*Math.sqrt((i+.5)/26);ctx.beginPath();ctx.arc(CX+Math.cos(a)*d,CY+Math.sin(a)*d,i%5===0?2.2:1.2,0,Math.PI*2);ctx.fill()}
+    if(!V.countdown){
+      ctx.fillStyle='#FDD5BB';ctx.beginPath();ctx.arc(CX,CY,26,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='#3A3170';ctx.beginPath();ctx.arc(CX+11,CY-8,23,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='rgba(246,230,255,.85)';ctx.font='700 15px Quicksand, system-ui, sans-serif';ctx.textAlign='center';ctx.textBaseline='alphabetic';ctx.fillText('Deckel drauf – gleich geht\'s los',CX,CY+64)}
+  }
   if(V.countdown){
-    ctx.fillStyle='rgba(30,22,70,.45)';ctx.beginPath();ctx.arc(CX,CY,R,0,Math.PI*2);ctx.fill();
+    if(!V.covered){ctx.fillStyle='rgba(30,22,70,.45)';ctx.beginPath();ctx.arc(CX,CY,R,0,Math.PI*2);ctx.fill()}
     ctx.fillStyle='#F6E6FF';ctx.shadowColor='#C77DFF';ctx.shadowBlur=30;ctx.font='700 170px "Dancing Script", cursive';ctx.textAlign='center';ctx.textBaseline='middle';
     ctx.lineWidth=6;ctx.strokeStyle='#5B3A9A';ctx.strokeText(V.countdown,CX,CY);ctx.fillText(V.countdown,CX,CY);ctx.shadowBlur=0;
   }
@@ -665,12 +678,13 @@ const LO={
         else if(!b.blocked){S.hold=null;this.collect(b)}else{S.hold.t+=dt;if(S.hold.t>=HOLD){S.hold=null;this.collect(b)}}}}
     const p=S.players[S.turn],play=S.phase==='playing';
     $('timer').textContent=S.phase==='turnDone'?fmt(S.times[S.turn]):play?fmt(S.elapsed+S.penalty):'0,0';
-    renderSide({roundInfo:S.round?`Runde ${S.round}/${S.rounds} · ${MODES[S.mode]}`:MODES[S.mode],mode:S.mode,card:S.card,step:S.step||0,
+    const hideCard=['intro','countdown'].includes(S.phase);
+    renderSide({roundInfo:S.round?`Runde ${S.round}/${S.rounds} · ${MODES[S.mode]}`:MODES[S.mode],mode:S.mode,card:hideCard?[]:S.card,step:S.step||0,
       showCurrent:['playing','countdown','intro'].includes(S.phase),label:p&&S.phase!=='setup'?`Zeit · ${p.name}`:'Zeit',labelCol:p&&S.phase!=='setup'?p.col:'',
       pen:S.penalty?`+${S.penalty} s Strafe`:'',jokers:p?p.jokers:3,canShake:play&&p&&p.jokers>0,
       players:(S.players||[]).map((pl,i)=>({name:pl.name,col:pl.col,pts:pl.pts,jk:pl.jokers,active:i===S.turn&&S.phase!=='over'&&S.phase!=='roundDone',extra:S.times&&S.times[i]!=null&&S.phase!=='over'?fmt(S.times[i])+' s':''})),
       emptyHint:'Wähle Spieler, Kartenart und Runden.'});
-    draw({balls:S.balls,interactive:play,jokers:p?p.jokers:0,countdown:S.phase==='countdown'?Math.ceil((S.cdEnd-now)/800):0,hold:S.hold,locked:0});
+    draw({balls:S.balls,interactive:play,jokers:p?p.jokers:0,countdown:S.phase==='countdown'?Math.ceil((S.cdEnd-now)/800):0,covered:hideCard,hold:S.hold,locked:0});
   }
 };
 
@@ -947,7 +961,7 @@ const ON={
     if(g&&Array.isArray(g.pl)&&g.ph==='play'){for(const p of this.gr.peers()){if(p.sameTab)continue;const c=p.presence&&p.presence.c;if(!Array.isArray(c)||!isFinite(c[0])||!isFinite(c[1]))continue;
       const k=g.pl.findIndex(x=>x.p===p.peer);if(k<0)continue;others.push({x:+c[0],y:+c[1],col:PCOL[k],name:pname(g.pl[k],k)})}
       g.pl.forEach((p,k)=>{if(p.bot&&isFinite(p.cx)&&isFinite(p.cy))others.push({x:+p.cx,y:+p.cy,col:PCOL[k],name:pname(p,k)})})}
-    draw({balls,interactive:playing,jokers:me?me.jk:0,countdown:g&&g.ph==='count'?g.cd:0,hold:this.hold,locked:me&&me.lk>0?me.lk:0,others});
+    draw({balls,interactive:playing,jokers:me?me.jk:0,countdown:g&&g.ph==='count'?g.cd:0,covered:!!(g&&g.ph==='count'),hold:this.hold,locked:me&&me.lk>0?me.lk:0,others});
     // Seitenleiste
     if(g&&Array.isArray(g.pl)){
       resolveNames(g.pl.map(p=>p.b));
@@ -955,7 +969,7 @@ const ON={
       const card=this.cards&&i>=0?this.cards[i]:[];
       const step=me?Math.min(5,me.st+(this.pending?1:0)):0;
       $('timer').textContent=fmt(g.el);
-      renderSide({roundInfo:g.rd?`Runde ${g.rd}/${g.rounds} · ${MODES[g.mode]||''}`:`Online · ${MODES[g.mode]||''}`,mode:g.mode,card:g.rd?card:[],step,
+      renderSide({roundInfo:g.rd?`Runde ${g.rd}/${g.rounds} · ${MODES[g.mode]||''}`:`Online · ${MODES[g.mode]||''}`,mode:g.mode,card:g.rd&&g.ph!=='count'?card:[],step,
         showCurrent:['play','count'].includes(g.ph),label:i>=0?(this.solo?'Zeit · Du':'Zeit · '+pname(me,i)+' (du)'):'Zuschauer',labelCol:i>=0?PCOL[i]:'',
         pen:me&&me.lk>0?`gesperrt ${fmt(me.lk)} s`:'',jokers:me?me.jk:0,canShake:playing&&me.jk>0,playersHead:'Kugeln · Karten · Joker',
         players:g.pl.map((p,k)=>({name:pname(p,k)+(k===i&&!this.solo?' (du)':'')+(p.p===g.hp&&!this.solo?' ★':''),col:PCOL[k],pts:p.pts|0,jk:p.jk|0,active:k===i,off:!p.bot&&!peersNow.has(p.p),prog:g.ph==='lobby'?null:p.st|0})),

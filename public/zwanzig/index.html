@@ -293,8 +293,8 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
   });
   window.kbAuthReady=meP;
   const roomP=meP.then(()=>{
-    const lobby=conn(window.KB_LOBBY==='lobby-zw'?'lobby-zw':'lobby');
-    const room=Object.freeze({...lobby,join:n=>/^(kb|zw)-[a-z0-9]{4}$/.test(n)?Promise.resolve(conn('g-'+n)):Promise.reject({code:'invalid_argument',message:'bad name'})});
+    const lobby=conn(['lobby-zw','lobby-ne'].includes(window.KB_LOBBY)?window.KB_LOBBY:'lobby');
+    const room=Object.freeze({...lobby,join:n=>/^(kb|zw|ne)-[a-z0-9]{4}$/.test(n)?Promise.resolve(conn('g-'+n)):Promise.reject({code:'invalid_argument',message:'bad name'})});
     return lobby._ready.then(ok=>{if(!ok){lobby.leave();return null}return room});
   });
   window.claude={use:n=>n==='room'?roomP:Promise.resolve(n==='user'?user:null)};

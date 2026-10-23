@@ -7,7 +7,7 @@
 
 import { DurableObject } from "cloudflare:workers";
 
-const ROOM_RE = /^(lobby|lobby-zw|g-(kb|zw)-[a-z0-9]{4})$/;
+const ROOM_RE = /^(lobby|lobby-zw|lobby-ne|g-(kb|zw|ne)-[a-z0-9]{4})$/;
 const ID_RE = /^[a-z0-9_]{4,24}$/;
 const MAX_MSG = 12000;     // Bytes pro Nachricht
 const MAX_PEERS = 64;      // Verbindungen pro Raum
