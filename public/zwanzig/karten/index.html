@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Eigene Karten · Zwanzig</title>
+<meta name="description" content="Schlag eine eigene Karte für Zwanzig vor – Lunacyna schaltet sie frei.">
+<meta name="theme-color" content="#16123A">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2214%22%20fill%3D%22%2316123A%22/%3E%3Cpath%20d%3D%22M14%2052V18l10%2010q8-4%2016%200l10-10v34q-18%206-36%200z%22%20fill%3D%22none%22%20stroke%3D%22%23F6E6FF%22%20stroke-width%3D%224%22%20stroke-linejoin%3D%22round%22/%3E%3Ccircle%20cx%3D%2226%22%20cy%3D%2238%22%20r%3D%223%22%20fill%3D%22%23FDD5BB%22/%3E%3Ccircle%20cx%3D%2238%22%20cy%3D%2238%22%20r%3D%223%22%20fill%3D%22%23FDD5BB%22/%3E%3C/svg%3E">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Lunacynas Spielezimmer">
+<meta property="og:title" content="Eigene Karten für Zwanzig">
+<meta property="og:description" content="Schlag eine eigene Karte für Zwanzig vor – Lunacyna schaltet sie frei.">
+<meta property="og:image" content="/assets/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="/assets/og.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Quicksand:wght@500;600;700&display=swap">
+<style>
+/* Layout: Werkbank im Nachtzimmer – oben Reiter, darunter ein Formular-Rahmen und Kartenlisten. Bewusst nur dunkel. */
+:root{
+  --night:#16123A;--frame:#3A3170;--panel-a:#2E2659;--panel-b:#221C47;
+  --text:#EFE9FF;--muted:#A99FCB;--lavender:#B9A6E8;--neon:#F6E6FF;--glow:#C77DFF;
+  --moon:#FDD5BB;--moon-deep:#C9967C;--peach:#F2A7A8;--ok:#7BE0A6;--bad:#FF8FA3;
+  --line:rgba(185,166,232,.22);--soft:rgba(255,255,255,.06);--btn-ink:#2A1E4F;
+  --font-script:"Dancing Script","Brush Script MT",cursive;
+  --font-body:"Quicksand","Nunito","Segoe UI",system-ui,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{background:var(--night);color:var(--text);font-family:var(--font-body);font-size:16px;line-height:1.5;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:
+  radial-gradient(1.2px 1.2px at 12% 18%,rgba(246,230,255,.9),transparent 60%),radial-gradient(1px 1px at 34% 8%,rgba(246,230,255,.7),transparent 60%),
+  radial-gradient(1.4px 1.4px at 58% 22%,rgba(246,230,255,.8),transparent 60%),radial-gradient(1.3px 1.3px at 90% 30%,rgba(246,230,255,.8),transparent 60%),
+  radial-gradient(1px 1px at 22% 46%,rgba(246,230,255,.6),transparent 60%),radial-gradient(1px 1px at 86% 70%,rgba(246,230,255,.5),transparent 60%),
+  radial-gradient(60vmax 50vmax at 92% -8%,rgba(253,213,187,.16),transparent 60%),radial-gradient(90vmax 50vmax at 50% 120%,rgba(242,167,168,.28),transparent 60%),
+  linear-gradient(180deg,#120F2E 0%,#1D1842 55%,#3B2E66 88%,#5E4373 100%)}
+[hidden]{display:none!important}
+.wrap{max-width:900px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:14px 56px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:20px}
+h1{margin:0;font-family:var(--font-script);font-weight:700;font-size:clamp(42px,6vw,60px);line-height:1;color:var(--neon);text-shadow:0 0 6px var(--glow),0 0 18px var(--glow),0 0 40px rgba(199,125,255,.6)}
+h1 small{display:block;font-family:var(--font-body);font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;text-shadow:none;margin-top:6px}
+.nav{display:flex;gap:8px;flex-wrap:wrap}
+.btn{font:700 15px var(--font-body);border:0;border-radius:999px;padding:11px 20px;cursor:pointer;background:var(--moon);color:var(--btn-ink);box-shadow:0 4px 0 var(--moon-deep),0 0 18px rgba(253,213,187,.35);text-decoration:none;display:inline-flex;align-items:center;gap:8px}
+.btn:hover:not([disabled]){box-shadow:0 4px 0 var(--moon-deep),0 0 26px rgba(253,213,187,.6)}
+.btn:active:not([disabled]){transform:translateY(3px);box-shadow:0 1px 0 var(--moon-deep)}
+.btn[disabled]{opacity:.5;cursor:wait}
+.btn.ghost{background:transparent;color:var(--text);box-shadow:inset 0 0 0 2px rgba(185,166,232,.45)}
+.btn.small{padding:6px 12px;font-size:13px;box-shadow:0 3px 0 var(--moon-deep)}
+.btn.small.ghost{box-shadow:inset 0 0 0 2px rgba(185,166,232,.4)}
+.btn.danger{background:transparent;color:var(--bad);box-shadow:inset 0 0 0 2px rgba(255,143,163,.5)}
+.btn:focus-visible,.tab:focus-visible,.seg button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid var(--neon);outline-offset:3px}
+.tabs{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap}
+.tab{font:700 15px var(--font-body);padding:10px 18px;border-radius:12px;border:2px solid var(--line);background:var(--soft);color:var(--text);cursor:pointer}
+.tab[aria-selected="true"]{background:var(--moon);color:var(--btn-ink);border-color:var(--moon)}
+.panel{background:linear-gradient(180deg,var(--panel-a),var(--panel-b));border-radius:18px;padding:20px 22px;box-shadow:0 0 0 5px var(--frame),0 16px 36px rgba(0,0,0,.4)}
+.panel+.panel{margin-top:24px}
+.panel h2{margin:0 0 6px;font-family:var(--font-script);font-weight:700;font-size:34px;color:var(--neon);text-shadow:0 0 10px rgba(199,125,255,.45)}
+.lead{margin:0 0 16px;color:var(--muted)}
+.form{display:grid;gap:16px}
+.field{display:grid;gap:7px;align-content:start}
+.label{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.hint{font-size:13.5px;color:var(--muted);margin:0}
+.txt{width:100%;min-width:0;font:600 17px var(--font-body);color:var(--text);background:rgba(10,8,30,.35);border:2px solid var(--line);border-radius:12px;padding:11px 14px;outline:none}
+textarea.txt{min-height:300px;resize:vertical;line-height:1.55;font-weight:500;font-size:16px}
+.txt:focus{border-color:var(--glow);box-shadow:0 0 14px rgba(199,125,255,.35)}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg button{flex:1 1 auto;font:700 14px var(--font-body);padding:10px 14px;border-radius:12px;border:2px solid var(--line);background:var(--soft);color:var(--text);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--moon);color:var(--btn-ink);border-color:var(--moon)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:620px){.two{grid-template-columns:1fr}}
+.count{font-weight:700;font-variant-numeric:tabular-nums}
+.count.ok{color:var(--ok)}.count.no{color:var(--peach)}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.msg{font-weight:700;margin:0}
+.msg.ok{color:var(--ok)}.msg.no{color:var(--bad)}
+.list{display:grid;gap:10px}
+.item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px 14px;border-radius:14px;background:var(--soft);border:2px solid var(--line)}
+.item .t{font-weight:700;font-size:17px;overflow-wrap:anywhere}
+.item .s{font-size:13px;color:var(--muted)}
+.chip{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border-radius:999px;background:rgba(185,166,232,.16);color:var(--lavender);margin-left:6px;vertical-align:2px}
+.chip.p{background:rgba(242,167,168,.2);color:var(--peach)}
+.chip.o{background:rgba(255,255,255,.08);color:var(--muted)}
+.empty{font-size:14px;color:var(--muted);padding:14px;border:2px dashed var(--line);border-radius:14px;text-align:center}
+.sub{font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--lavender);margin:18px 0 8px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Eigene Karten<small>Zwanzig · Lunacynas Spielezimmer</small></h1>
+    <nav class="nav"><a class="btn ghost" href="/zwanzig/">← Zu Zwanzig</a><a class="btn ghost" href="/">Alle Spiele</a></nav>
+  </header>
+
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" id="tabSuggest" aria-selected="true" type="button">Karte vorschlagen</button>
+    <button class="tab" role="tab" id="tabAdmin" aria-selected="false" type="button">Verwalten</button>
+  </div>
+
+  <!-- Formular (für Vorschläge und zum Bearbeiten) -->
+  <section class="panel" id="formPanel">
+    <h2 id="formTitle">Karte vorschlagen</h2>
+    <p class="lead" id="formLead">Du hast eine Idee für eine Zwanzig-Karte – vielleicht einen Insider aus dem Stream? Schick sie ein. Lunacyna schaut sie sich an und schaltet sie frei.</p>
+    <form class="form" id="cardForm" novalidate>
+      <div class="two">
+        <div class="field"><label class="label" for="fAnswer">Gesuchter Begriff</label><input class="txt" id="fAnswer" maxlength="60" placeholder="z. B. Kater Paul" autocomplete="off"></div>
+        <div class="field"><label class="label" for="fAliases">Andere Schreibweisen (optional)</label><input class="txt" id="fAliases" maxlength="300" placeholder="z. B. Paul, der Kater" autocomplete="off"><p class="hint">Mit Komma trennen. Kleine Tippfehler erkennt das Spiel sowieso.</p></div>
+      </div>
+      <div class="two">
+        <div class="field"><span class="label">Kategorie</span><div class="seg" id="fCat"><button type="button" data-v="Person" aria-pressed="true">Person</button><button type="button" data-v="Ort" aria-pressed="false">Ort</button><button type="button" data-v="Ding" aria-pressed="false">Ding</button></div></div>
+        <div class="field"><span class="label">Schwierigkeit</span><div class="seg" id="fLevel"><button type="button" data-v="1" aria-pressed="true">Leicht</button><button type="button" data-v="2" aria-pressed="false">Schwer</button></div></div>
+      </div>
+      <div class="field">
+        <div class="row" style="justify-content:space-between"><label class="label" for="fHints">Hinweise – einer pro Zeile</label><span class="count no" id="fCount">0 / 17</span></div>
+        <textarea class="txt" id="fHints" placeholder="Ich habe vier Pfoten und schnurre im Stream.&#10;Meistens schlafe ich im Körbchen unter dem Fenster.&#10;…"></textarea>
+        <p class="hint">Schreib in der Ich-Form, ohne den Begriff selbst zu verraten. Mindestens 12, am besten 17 Hinweise – von knifflig bis ziemlich eindeutig. Die Reihenfolge wird im Spiel gemischt; fehlende Felder werden zu Sonderfeldern.</p>
+      </div>
+      <div class="field" id="byField"><label class="label" for="fBy">Dein Name (optional)</label><input class="txt" id="fBy" maxlength="30" placeholder="So wie im Chat" autocomplete="off"></div>
+      <div class="row">
+        <button class="btn" id="fSubmit" type="submit">Vorschlag einschicken</button>
+        <button class="btn ghost" id="fCancel" type="button" hidden>Abbrechen</button>
+        <p class="msg" id="fMsg" role="status"></p>
+      </div>
+    </form>
+  </section>
+
+  <!-- Verwaltung -->
+  <section class="panel" id="adminPanel" hidden>
+    <div id="login">
+      <h2>Verwalten</h2>
+      <p class="lead">Hier gibst du Vorschläge frei und legst eigene Karten an. Dafür brauchst du den Admin-Schlüssel, den du in Cloudflare hinterlegt hast.</p>
+      <form class="row" id="loginForm"><input class="txt" id="aKey" type="password" placeholder="Admin-Schlüssel" autocomplete="current-password" style="flex:1 1 240px"><button class="btn" type="submit">Anmelden</button></form>
+      <p class="msg no" id="aMsg" role="status" style="margin-top:10px"></p>
+    </div>
+    <div id="admin" hidden>
+      <div class="row" style="justify-content:space-between">
+        <h2>Verwalten</h2>
+        <div class="row"><button class="btn small" id="aNew" type="button">+ Neue Karte</button><button class="btn small ghost" id="aLogout" type="button">Abmelden</button></div>
+      </div>
+      <div class="sub">Neue Vorschläge</div><div class="list" id="lPending"></div>
+      <div class="sub">Im Spiel</div><div class="list" id="lOk"></div>
+      <div class="sub">Pausiert</div><div class="list" id="lOff"></div>
+    </div>
+  </section>
+</div>
+
+<script>
+(()=>{
+const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let mode='suggest', editing=null, key='', cards=[];
+try{key=localStorage.getItem('zw_admin_key')||''}catch(e){}
+
+// ---------- Formular ----------
+function segVal(id){const b=$(id).querySelector('[aria-pressed="true"]');return b?b.dataset.v:null}
+function segSet(id,v){$(id).querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===String(v))))}
+['fCat','fLevel'].forEach(id=>$(id).addEventListener('click',e=>{const b=e.target.closest('button');if(b)segSet(id,b.dataset.v)}));
+const hints=()=>$('fHints').value.split('\n').map(s=>s.trim()).filter(s=>s.length>=3);
+function updCount(){const n=hints().length,c=$('fCount');c.textContent=n+' / 17';c.className='count '+(n>=12&&n<=20?'ok':'no')}
+$('fHints').addEventListener('input',updCount);
+function readForm(){return {answer:$('fAnswer').value.trim(),aliases:$('fAliases').value.split(',').map(s=>s.trim()).filter(Boolean),category:segVal('fCat'),level:+segVal('fLevel'),hints:hints(),by:$('fBy').value.trim()}}
+function fillForm(c){
+  $('fAnswer').value=c?c.answer:'';$('fAliases').value=c?(c.aliases||[]).join(', '):'';segSet('fCat',c?c.category:'Person');segSet('fLevel',c?c.level:1);
+  $('fHints').value=c?(c.hints||[]).join('\n'):'';$('fBy').value=c?(c.by||''):'';updCount();
+}
+function check(c){
+  if(c.answer.length<2)return 'Bitte einen Begriff eintragen.';
+  if(c.hints.length<12)return `Es braucht mindestens 12 Hinweise – gerade sind es ${c.hints.length}.`;
+  if(c.hints.length>20)return 'Höchstens 20 Hinweise, bitte ein paar streichen.';
+  const a=c.answer.toLowerCase();const leak=c.hints.find(h=>h.toLowerCase().includes(a));
+  if(leak)return `Ein Hinweis verrät den Begriff: „${leak.slice(0,60)}“`;
+  return null;
+}
+function msg(t,ok){const m=$('fMsg');m.textContent=t;m.className='msg '+(ok?'ok':'no')}
+async function api(path,opt){
+  const o=Object.assign({headers:{}},opt||{});o.headers=Object.assign({'content-type':'application/json'},o.headers);if(key&&path.startsWith('/api/admin'))o.headers['x-admin-key']=key;
+  const r=await fetch(path,o);let d=null;try{d=await r.json()}catch(e){}
+  if(!r.ok)throw new Error((d&&d.error)||'Das hat nicht geklappt ('+r.status+').');return d;
+}
+$('cardForm').addEventListener('submit',async e=>{
+  e.preventDefault();const c=readForm(),err=check(c);if(err){msg(err,false);return}
+  const btn=$('fSubmit');btn.disabled=true;msg('',true);
+  try{
+    if(mode==='suggest'){await api('/api/cards/suggest',{method:'POST',body:JSON.stringify(c)});fillForm(null);msg('Danke! Dein Vorschlag ist angekommen.',true)}
+    else{await api('/api/admin/cards',{method:'POST',body:JSON.stringify({...c,id:editing&&editing.id,status:'ok'})});msg('Gespeichert – die Karte ist im Spiel.',true);fillForm(null);editing=null;setFormMode('admin');await loadAdmin()}
+  }catch(er){msg(er.message,false)}finally{btn.disabled=false}
+});
+$('fCancel').onclick=()=>{editing=null;fillForm(null);setFormMode('admin');msg('',true)};
+
+function setFormMode(m){
+  mode=m;const adm=m!=='suggest';
+  $('formTitle').textContent=adm?(editing?'Karte bearbeiten':'Neue Karte'):'Karte vorschlagen';
+  $('formLead').textContent=adm?(editing&&editing.status==='pending'?`Vorschlag${editing.by?' von '+editing.by:''}. Beim Speichern wird die Karte freigegeben.`:'Gespeicherte Karten sind sofort im Spiel – unter „Eigene“ und in der passenden Schwierigkeit.'):'Du hast eine Idee für eine Zwanzig-Karte – vielleicht einen Insider aus dem Stream? Schick sie ein. Lunacyna schaut sie sich an und schaltet sie frei.';
+  $('fSubmit').textContent=adm?(editing&&editing.status==='pending'?'Freigeben & speichern':'Speichern'):'Vorschlag einschicken';
+  $('byField').hidden=false;$('fCancel').hidden=!adm;
+  $('formPanel').hidden=adm&&!editing&&m!=='new';
+}
+
+// ---------- Reiter ----------
+function showTab(t){
+  $('tabSuggest').setAttribute('aria-selected',String(t==='suggest'));$('tabAdmin').setAttribute('aria-selected',String(t==='admin'));
+  $('adminPanel').hidden=t!=='admin';editing=null;fillForm(null);msg('',true);
+  if(t==='suggest'){setFormMode('suggest');$('formPanel').hidden=false}
+  else{setFormMode('admin');if(key)login(key,true);else{$('login').hidden=false;$('admin').hidden=true}}
+}
+$('tabSuggest').onclick=()=>showTab('suggest');$('tabAdmin').onclick=()=>showTab('admin');
+
+// ---------- Verwaltung ----------
+async function login(k,silent){
+  key=k;$('aMsg').textContent='';
+  try{await api('/api/admin/check');try{localStorage.setItem('zw_admin_key',k)}catch(e){}$('login').hidden=true;$('admin').hidden=false;await loadAdmin()}
+  catch(er){key='';try{localStorage.removeItem('zw_admin_key')}catch(e){}$('login').hidden=false;$('admin').hidden=true;if(!silent||er.message)$('aMsg').textContent=er.message}
+}
+$('loginForm').addEventListener('submit',e=>{e.preventDefault();const k=$('aKey').value.trim();if(k)login(k,false)});
+$('aLogout').onclick=()=>{key='';try{localStorage.removeItem('zw_admin_key')}catch(e){}$('aKey').value='';$('login').hidden=false;$('admin').hidden=true;setFormMode('admin')};
+$('aNew').onclick=()=>{editing=null;fillForm(null);setFormMode('new');$('formPanel').hidden=false;$('fAnswer').focus();$('formPanel').scrollIntoView({behavior:'smooth',block:'start'})};
+
+const CAT={Person:'Person',Ort:'Ort',Ding:'Ding'};
+function itemHtml(c){
+  const lv=c.level===2?'Schwer':'Leicht';
+  const actions=c.status==='pending'
+    ?`<button class="btn small" data-act="edit" data-id="${esc(c.id)}">Ansehen & freigeben</button><button class="btn small danger" data-act="del" data-id="${esc(c.id)}">Löschen</button>`
+    :c.status==='ok'
+    ?`<button class="btn small ghost" data-act="edit" data-id="${esc(c.id)}">Bearbeiten</button><button class="btn small ghost" data-act="off" data-id="${esc(c.id)}">Pausieren</button><button class="btn small danger" data-act="del" data-id="${esc(c.id)}">Löschen</button>`
+    :`<button class="btn small" data-act="on" data-id="${esc(c.id)}">Wieder ins Spiel</button><button class="btn small ghost" data-act="edit" data-id="${esc(c.id)}">Bearbeiten</button><button class="btn small danger" data-act="del" data-id="${esc(c.id)}">Löschen</button>`;
+  return `<div class="item"><div style="min-width:0"><div class="t">${esc(c.answer)}<span class="chip">${CAT[c.category]||''}</span><span class="chip ${c.status==='pending'?'p':c.status==='off'?'o':''}">${lv}</span></div>
+    <div class="s">${(c.hints||[]).length} Hinweise${c.by?' · von '+esc(c.by):''}</div></div><div class="row" style="justify-content:flex-end">${actions}</div></div>`;
+}
+function renderLists(){
+  const by=s=>cards.filter(c=>c.status===s).sort((a,b)=>(b.at||0)-(a.at||0));
+  const put=(id,arr,empty)=>{$(id).innerHTML=arr.length?arr.map(itemHtml).join(''):`<div class="empty">${empty}</div>`};
+  put('lPending',by('pending'),'Gerade keine neuen Vorschläge.');
+  put('lOk',by('ok'),'Noch keine eigenen Karten. Leg mit „+ Neue Karte“ los.');
+  put('lOff',by('off'),'Nichts pausiert.');
+}
+async function loadAdmin(){try{cards=await api('/api/admin/cards')||[];renderLists()}catch(er){$('aMsg').textContent=er.message}}
+document.addEventListener('click',async e=>{
+  const b=e.target.closest('[data-act]');if(!b)return;const c=cards.find(x=>x.id===b.dataset.id);if(!c)return;
+  const act=b.dataset.act;
+  if(act==='edit'){editing=c;fillForm(c);setFormMode('admin');$('formPanel').hidden=false;$('formPanel').scrollIntoView({behavior:'smooth',block:'start'});return}
+  if(act==='del'){
+    if(b.dataset.sure!=='1'){b.dataset.sure='1';b.textContent='Wirklich löschen?';setTimeout(()=>{if(b.isConnected){b.dataset.sure='';b.textContent='Löschen'}},3000);return}
+    try{await api('/api/admin/cards/'+encodeURIComponent(c.id),{method:'DELETE'});await loadAdmin()}catch(er){$('aMsg').textContent=er.message}return}
+  if(act==='off'||act==='on'){try{await api('/api/admin/cards',{method:'POST',body:JSON.stringify({...c,status:act==='off'?'off':'ok'})});await loadAdmin()}catch(er){$('aMsg').textContent=er.message}}
+});
+
+if(location.hash==='#verwalten')showTab('admin');else showTab('suggest');
+updCount();
+})();
+</script>
+</body>
+</html>
