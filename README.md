@@ -7,7 +7,9 @@ Spielbar am selben Computer oder online mit gemeinsamer Schale.
 
 | Datei | Zweck |
 |---|---|
-| `public/index.html` | Das komplette Spiel (eine Datei) |
+| `public/index.html` | Startseite „Spielezimmer“ mit Spielauswahl |
+| `public/kugelblitz/index.html` | Das Spiel Kugelblitz |
+| `public/assets/header.webp` | Twitch-Header für die Startseite |
 | `src/worker.js` | Cloudflare Worker: liefert die Seite aus und betreibt die Online-Räume (Durable Objects + WebSockets) |
 | `wrangler.jsonc` | Cloudflare-Konfiguration |
 | `package.json` | Installiert `wrangler`, das Cloudflare-Kommandozeilenwerkzeug |
@@ -37,6 +39,20 @@ Am Ende steht die Adresse im Terminal, z. B. `https://kugelblitz.<dein-name>.wor
 Diesen Link an die Mitspieler schicken – fertig.
 
 Beim allerersten Deploy fragt Cloudflare evtl. nach einer `workers.dev`-Subdomain; einfach einen Namen wählen.
+
+## Ohne Terminal: über GitHub (nur im Browser)
+
+1. Auf github.com ein neues Repository anlegen und den **Inhalt** dieses Ordners hochladen
+   („Add file“ → „Upload files“). Wichtig: `wrangler.jsonc` muss ganz oben im Repo liegen, nicht in einem Unterordner.
+2. Im Cloudflare-Dashboard: **Workers & Pages** → **Erstellen** → Reiter **Workers** → **Repository importieren** (Import a repository).
+3. GitHub verbinden, das Repo auswählen, Einstellungen so lassen (Deploy-Befehl: `npx wrangler deploy`) und **Bereitstellen** klicken.
+
+Wichtig: **nicht** „Pages“ wählen. Pages kann nur statische Seiten – dort funktioniert nur „Am selben Computer“, nicht Online.
+
+## Häufiger Fehler: 404 bei Cloudflare Pages
+
+Wer die ZIP-Datei per Drag & Drop bei **Pages** hochlädt, bekommt eine 404-Seite, weil die `index.html` dort im Unterordner `public/` liegt.
+Pages ist für dieses Spiel der falsche Weg (kein Online-Server möglich). Nimm einen der beiden Wege oben.
 
 ## Lokal testen
 
