@@ -117,6 +117,9 @@ footer a:hover{border-bottom-color:var(--neon)}
 
 <main class="page">
   <section class="hero">
+    <div class="window">
+      <img src="/assets/header.webp" width="1193" height="480" alt="Lunacynas gemütliches Stream-Zimmer bei Nacht mit Mond, Sternschnuppen und schlafenden Katzen">
+    </div>
     <div class="sign">
       <svg class="catsign" viewBox="0 0 68 58" aria-hidden="true">
         <path d="M8 52 V14 L20 26 Q34 20 48 26 L60 14 V52 Q34 60 8 52 Z" fill="none" stroke="#F6E6FF" stroke-width="3" stroke-linejoin="round"/>
@@ -125,7 +128,7 @@ footer a:hover{border-bottom-color:var(--neon)}
       </svg>
       <h1>Spielezimmer</h1>
     </div>
-    <p class="lead">Such dir ein Spiel aus und klick drauf. Alles läuft direkt im Browser und wird nur mit der Maus gespielt.</p>
+    <p class="lead">Such dir ein Spiel aus und klick drauf. Alles läuft direkt im Browser – am selben Bildschirm oder online mit Freunden und Chat.</p>
   </section>
 
   <section class="wall" aria-label="Spiele">
@@ -150,18 +153,15 @@ footer a:hover{border-bottom-color:var(--neon)}
       <span class="play"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M3 1.5 L12 7 L3 12.5 Z" fill="currentColor"/></svg>Spielen</span>
     </a>
 
-    <div class="game soon" aria-label="Weiteres Spiel kommt bald">
+    <a class="game" href="/zwanzig/">
       <div class="thumb">
-        <svg viewBox="0 0 400 300" aria-hidden="true">
-          <circle cx="200" cy="140" r="54" fill="#FDD5BB" opacity=".9"/>
-          <circle cx="222" cy="128" r="50" fill="#1E1945"/>
-          <text x="200" y="250" text-anchor="middle" font-family="Dancing Script, cursive" font-size="34" fill="#B9A6E8">psst … in Arbeit</text>
-        </svg>
+        <svg viewBox="0 0 400 300" aria-hidden="true" id="zwThumb"></svg>
       </div>
-      <span class="sticker">Bald</span>
-      <h3>Nächstes Spiel</h3>
-      <p>Hier zieht bald ein neues Spiel ein.</p>
-    </div>
+      <h3>Zwanzig</h3>
+      <p>Wer oder was steht auf der Karte? 20 Hinweise, ein Versuch pro Feld – je früher du's errätst, desto mehr Punkte.</p>
+      <div class="tags"><span class="tag">2–6 Spieler</span><span class="tag">Online &amp; am selben PC</span><span class="tag">Leicht bis schwer</span></div>
+      <span class="play"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M3 1.5 L12 7 L3 12.5 Z" fill="currentColor"/></svg>Spielen</span>
+    </a>
 
     <div class="game soon" aria-label="Weiteres Spiel kommt bald">
       <div class="thumb">
@@ -209,6 +209,17 @@ const spots=[[-30,-6],[0,-14],[30,-6],[-46,20],[-16,14],[14,14],[44,20],[-30,40]
 for(const [x,y] of spots){const c=cols[k%6];k++;const cx=200+x*1.1,cy=158+y*1.1;
   html+=`<circle cx="${cx+3}" cy="${cy+5}" r="15" fill="rgba(20,20,60,.18)"/><circle cx="${cx}" cy="${cy}" r="15" fill="${c[0]}" stroke="${c[1]}" stroke-width="2"/><circle cx="${cx+1}" cy="${cy+2}" r="6.5" fill="#fff" opacity=".95"/><text x="${cx+1}" y="${cy+5.5}" text-anchor="middle" font-size="9" font-weight="700" font-family="Quicksand,sans-serif" fill="#14214F">${(k*7)%9+1}</text><ellipse cx="${cx-5}" cy="${cy-7}" rx="4" ry="2.4" fill="#fff" opacity=".55"/>`}
 g.innerHTML=html;
+
+// ---- Felder im Vorschaubild von Zwanzig ----
+const zw=document.getElementById('zwThumb');
+if(zw){let h='';const open={3:1,7:1,12:1},act={16:1};
+  for(let i=0;i<20;i++){const c=i%5,r=Math.floor(i/5),x=52+c*62,y=34+r*60,n=i+1;
+    const fill=act[n]?'#5B3A9A':open[n]?'#463C82':'#2B2358';
+    h+=`<rect x="${x}" y="${y}" width="52" height="50" rx="9" fill="${fill}" stroke="#3A3170" stroke-width="3"/>`;
+    if(open[n])h+=`<text x="${x+8}" y="${y+16}" font-size="10" font-weight="700" font-family="Quicksand,sans-serif" fill="#B9A6E8">${n}</text><rect x="${x+8}" y="${y+24}" width="34" height="4" rx="2" fill="#B9A6E8" opacity=".6"/><rect x="${x+8}" y="${y+32}" width="26" height="4" rx="2" fill="#B9A6E8" opacity=".45"/>`;
+    else if(act[n])h+=`<path transform="translate(${x+16} ${y+12}) scale(.85)" d="M12 2l2.9 6.3 6.9.7-5.2 4.6 1.5 6.8L12 17l-6.1 3.4 1.5-6.8L2.2 9l6.9-.7z" fill="#FDD5BB"/>`;
+    else h+=`<text x="${x+26}" y="${y+34}" text-anchor="middle" font-size="22" font-weight="700" font-family="Dancing Script,cursive" fill="#F6E6FF">${n}</text>`;}
+  zw.innerHTML=h}
 
 // ---- Sternenhimmel ----
 const cv=document.getElementById('sky'),ctx=cv.getContext('2d');let W,H,dpr,stars=[],shoots=[];

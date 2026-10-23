@@ -1,0 +1,662 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Zwanzig · Lunacynas Spielezimmer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Quicksand:wght@500;600;700&display=swap">
+<style>
+/* Layout: Lunacynas Nachtzimmer – links die Karte mit 20 Feldern wie Bilderrahmen an der Wand, rechts der Punktestand. Bewusst nur dunkel. */
+:root{
+  --night:#16123A;
+  --frame:#3A3170;
+  --panel-a:#2E2659;
+  --panel-b:#221C47;
+  --text:#EFE9FF;
+  --muted:#A99FCB;
+  --lavender:#B9A6E8;
+  --neon:#F6E6FF;
+  --glow:#C77DFF;
+  --moon:#FDD5BB;
+  --moon-deep:#C9967C;
+  --peach:#F2A7A8;
+  --ok:#7BE0A6;
+  --bad:#FF8FA3;
+  --line:rgba(185,166,232,.22);
+  --soft:rgba(255,255,255,.06);
+  --btn-ink:#2A1E4F;
+  --font-script:"Dancing Script","Brush Script MT",cursive;
+  --font-body:"Quicksand","Nunito","Segoe UI",system-ui,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{
+  background-color:var(--night);
+    color:var(--text);font-family:var(--font-body);font-size:16px;line-height:1.45;
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+.wrap{max-width:1200px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:14px 48px}
+header.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:22px}
+h1.logo{margin:0;font-family:var(--font-script);font-weight:700;font-size:clamp(44px,6vw,62px);line-height:1;color:var(--neon);
+  text-shadow:0 0 6px var(--glow),0 0 18px var(--glow),0 0 40px rgba(199,125,255,.6)}
+h1.logo small{display:block;font-family:var(--font-body);font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;text-shadow:none;margin-top:6px}
+.navr{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.btn{font-family:var(--font-body);font-weight:700;font-size:15px;border:0;border-radius:999px;padding:11px 20px;cursor:pointer;background:var(--moon);color:var(--btn-ink);
+  box-shadow:0 4px 0 var(--moon-deep),0 0 18px rgba(253,213,187,.35);transition:transform .08s,box-shadow .15s;text-decoration:none;display:inline-flex;align-items:center;gap:8px}
+.btn:hover:not([disabled]){box-shadow:0 4px 0 var(--moon-deep),0 0 26px rgba(253,213,187,.6)}
+.btn:active:not([disabled]){transform:translateY(3px);box-shadow:0 1px 0 var(--moon-deep)}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.btn.ghost{background:transparent;color:var(--text);box-shadow:inset 0 0 0 2px rgba(185,166,232,.45)}
+.btn.ghost:hover:not([disabled]){box-shadow:inset 0 0 0 2px var(--neon),0 0 18px rgba(199,125,255,.4)}
+.btn.small{padding:7px 14px;font-size:13.5px}
+.btn:focus-visible,.seg button:focus-visible,.tile:focus-visible,input:focus-visible{outline:3px solid var(--neon);outline-offset:3px}
+.linkbtn{background:none;border:0;padding:4px 0;font:700 13px var(--font-body);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);cursor:pointer}
+.linkbtn:hover{color:var(--neon)}
+.netpill{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:6px 10px;border-radius:999px;background:rgba(185,166,232,.16);color:var(--text)}
+.netpill::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:#5BE38B;margin-right:6px}
+
+.app{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:28px;align-items:start}
+@media (max-width:900px){.app{grid-template-columns:minmax(0,1fr)}}
+.panel{background:linear-gradient(180deg,var(--panel-a),var(--panel-b));border-radius:18px;padding:18px 20px;box-shadow:0 0 0 5px var(--frame),0 16px 36px rgba(0,0,0,.4)}
+.panel+.panel{margin-top:22px}
+.panel h3{margin:0 0 12px;font-family:var(--font-script);font-weight:700;font-size:30px;color:var(--neon);text-shadow:0 0 10px rgba(199,125,255,.45);display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.panel h3 span{font-family:var(--font-body);font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);text-shadow:none}
+.label{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.label.hot{color:var(--peach)}
+.hint{font-size:14px;color:var(--muted);margin:0;line-height:1.45}
+
+/* Blatt (Menü, Lobby, Auswertung) */
+.sheet{max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+.sheet h2{margin:0;font-family:var(--font-script);font-weight:700;font-size:clamp(38px,5vw,52px);line-height:1.05;color:var(--neon);text-shadow:0 0 12px rgba(199,125,255,.5);text-wrap:balance}
+.sheet p{margin:0;color:var(--muted)}
+.choices{display:grid;gap:12px}
+.choice{display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left;border:2px solid var(--line);background:var(--soft);border-radius:16px;padding:14px 16px;cursor:pointer;font-family:var(--font-body);color:var(--text)}
+.choice b{font-family:var(--font-script);font-weight:700;font-size:30px;color:var(--neon)}
+.choice span{font-size:14px;color:var(--muted)}
+.choice:hover:not([disabled]){border-color:var(--glow);box-shadow:0 0 18px rgba(199,125,255,.35)}
+.choice[disabled]{opacity:.5;cursor:not-allowed}
+.field{display:flex;flex-direction:column;gap:8px}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg button{flex:1 1 auto;font:700 14px var(--font-body);padding:10px 14px;border-radius:12px;border:2px solid var(--line);background:var(--soft);color:var(--text);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--moon);color:var(--btn-ink);border-color:var(--moon);box-shadow:0 0 14px rgba(253,213,187,.45)}
+.seg button[disabled]{cursor:default}
+.txt{width:100%;min-width:0;font:600 18px var(--font-body);color:var(--text);background:rgba(10,8,30,.35);border:2px solid var(--line);border-radius:12px;padding:12px 14px;outline:none}
+.txt:focus{border-color:var(--glow);box-shadow:0 0 14px rgba(199,125,255,.35)}
+.namerow{display:flex;gap:10px;align-items:center}
+.namerow .num{width:28px;flex:none;font-weight:700;color:var(--lavender)}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.games{display:flex;flex-direction:column;gap:8px}
+.game{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:12px 14px;border-radius:14px;background:var(--soft);border:2px solid var(--line)}
+.game .t{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.game .s{font-size:13px;color:var(--muted);font-weight:600}
+.empty{font-size:14px;color:var(--muted);padding:14px;border:2px dashed var(--line);border-radius:14px;text-align:center}
+.rules{display:grid;gap:10px;margin:0;padding:0;list-style:none;counter-reset:r}
+.rules li{display:grid;grid-template-columns:30px 1fr;gap:8px;font-size:14.5px;color:var(--text);counter-increment:r}
+.rules li::before{content:counter(r);font-family:var(--font-script);font-weight:700;font-size:24px;line-height:1;color:var(--moon)}
+table.res{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+table.res td{padding:9px 4px;border-bottom:1px solid var(--line);font-weight:700}
+table.res td:last-child{text-align:right}
+table.res tr.win td{color:var(--ok)}
+
+/* Spielfeld */
+.cardhead{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:16px;margin-bottom:18px}
+.cardhead h2{margin:4px 0 0;font-family:var(--font-script);font-weight:700;font-size:clamp(40px,5.4vw,60px);line-height:1;color:var(--neon);text-shadow:0 0 8px var(--glow),0 0 24px rgba(199,125,255,.6)}
+.pot{text-align:right}
+.pot b{display:block;font-size:52px;font-weight:700;line-height:1;color:var(--moon);text-shadow:0 0 18px rgba(253,213,187,.5);font-variant-numeric:tabular-nums}
+.prompt{min-height:170px}
+.prompt .who{font-family:var(--font-script);font-weight:700;font-size:clamp(30px,3.6vw,42px);line-height:1.1;color:var(--neon)}
+.prompt .who em{font-style:normal;color:var(--moon)}
+.prompt .clue{font-size:clamp(22px,2.6vw,30px);font-weight:600;line-height:1.3;margin:6px 0 18px;text-wrap:pretty}
+.prompt .msg{margin-top:12px;font-size:17px;color:var(--peach);font-weight:600}
+.guessrow{display:flex;gap:10px;flex-wrap:wrap}
+.guessrow .txt{flex:1 1 260px}
+.peek{display:inline-flex;align-items:center;gap:10px;flex-wrap:wrap}
+.peek .ans{font-family:var(--font-script);font-weight:700;font-size:30px;color:var(--moon);text-shadow:0 0 12px rgba(253,213,187,.5)}
+.peek:not(.on) .ans{display:none}
+.wait{display:flex;align-items:center;gap:10px;color:var(--muted);font-weight:600}
+.dots::after{content:"";animation:dots 1.4s steps(4) infinite}
+@keyframes dots{0%{content:""}25%{content:"."}50%{content:".."}75%{content:"..."}}
+
+.tiles{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-top:22px}
+@media (max-width:560px){.tiles{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.tile{min-height:78px;padding:8px}.tile.act .tx{font-size:9.5px;letter-spacing:.04em}.tile.open .tx{font-size:11.5px}}
+.tile{position:relative;overflow:hidden;min-height:100px;border-radius:14px;border:0;padding:10px;font-family:var(--font-body);color:var(--text);text-align:left;display:flex;flex-direction:column;gap:4px;
+  background:linear-gradient(180deg,#2B2358,#211B46);box-shadow:0 0 0 3px var(--frame),0 8px 18px rgba(0,0,0,.35)}
+.tile .n{font-weight:700;font-size:13px;color:var(--lavender)}
+.tile.closed{align-items:center;justify-content:center;text-align:center}
+.tile.closed .big{font-family:var(--font-script);font-weight:700;font-size:clamp(34px,3.6vw,44px);line-height:1;color:var(--neon);text-shadow:0 0 10px rgba(199,125,255,.55)}
+button.tile.closed{cursor:pointer;transition:transform .15s,box-shadow .15s}
+button.tile.closed:hover{transform:translateY(-3px);box-shadow:0 0 0 3px var(--lavender),0 0 24px rgba(199,125,255,.5),0 10px 22px rgba(0,0,0,.4)}
+div.tile.closed .big{opacity:.55;text-shadow:none}
+.tile.open{background:linear-gradient(180deg,#463C82,#3A3170)}
+.tile.open .tx{font-size:13.5px;line-height:1.3;color:var(--text);display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+.tile.current{box-shadow:0 0 0 3px var(--moon),0 0 22px rgba(253,213,187,.45)}
+.tile.act{background:radial-gradient(120% 120% at 50% 0%,#5B3A9A,#2A1E4F)}
+.tile.act .tx{overflow-wrap:anywhere;hyphens:auto;font-size:11.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--moon)}
+.tile.act svg{width:22px;height:22px;margin-top:auto}
+.log{margin-top:20px;display:flex;flex-wrap:wrap;gap:8px 18px;align-items:baseline}
+.log .g{font-size:16px}
+.log .g i{font-style:normal;color:var(--muted)}
+
+.answer{font-family:var(--font-script);font-weight:700;font-size:clamp(52px,8vw,92px);line-height:1;color:var(--neon);text-shadow:0 0 8px var(--glow),0 0 30px rgba(199,125,255,.6);margin:6px 0 10px}
+.gains{display:flex;flex-wrap:wrap;gap:36px;border-top:1px solid var(--line);padding-top:18px;margin:18px 0 22px}
+.gains b{display:block;font-size:56px;line-height:1;font-weight:700;color:var(--moon);text-shadow:0 0 16px rgba(253,213,187,.45)}
+.allhints{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:0 28px;margin-top:10px}
+.allhints div{display:grid;grid-template-columns:28px 1fr;gap:8px;padding:8px 0;border-bottom:1px solid var(--line);font-size:15px}
+.allhints div span{color:var(--lavender);font-weight:700}
+.allhints div.closed{color:var(--muted);opacity:.7}
+
+/* Punktestand */
+.score{display:flex;flex-direction:column;gap:4px}
+.sc{padding:10px 10px;border-radius:12px;border:2px solid transparent}
+.sc.me{border-color:rgba(199,125,255,.55);background:rgba(199,125,255,.08)}
+.sc.off{opacity:.45}
+.sc .top{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.sc .nm{font-weight:700;overflow-wrap:anywhere}
+.sc .pt{font-size:26px;font-weight:700;color:var(--neon);font-variant-numeric:tabular-nums}
+.bar{height:5px;border-radius:5px;background:rgba(255,255,255,.1);overflow:hidden;margin-top:6px}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--glow),var(--moon));border-radius:5px}
+.chip{display:inline-block;margin-top:6px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;border-radius:999px;background:rgba(185,166,232,.16);color:var(--lavender)}
+.chip.hot{background:var(--moon);color:var(--btn-ink)}
+
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--neon);color:var(--btn-ink);box-shadow:0 0 20px rgba(199,125,255,.6);font-weight:700;padding:10px 16px;border-radius:999px;font-size:14px;pointer-events:none;opacity:0;transition:opacity .2s;max-width:calc(100% - 32px);text-align:center;z-index:5}
+.toast.show{opacity:1}
+@media (prefers-reduced-motion:reduce){.btn,.toast,button.tile.closed{transition:none}.dots::after{animation:none;content:"…"}}
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background-image:
+    radial-gradient(1.2px 1.2px at 12% 18%,rgba(246,230,255,.9),transparent 60%),
+    radial-gradient(1px 1px at 34% 8%,rgba(246,230,255,.7),transparent 60%),
+    radial-gradient(1.4px 1.4px at 58% 22%,rgba(246,230,255,.8),transparent 60%),
+    radial-gradient(1px 1px at 76% 12%,rgba(246,230,255,.7),transparent 60%),
+    radial-gradient(1.3px 1.3px at 90% 30%,rgba(246,230,255,.8),transparent 60%),
+    radial-gradient(1px 1px at 22% 46%,rgba(246,230,255,.6),transparent 60%),
+    radial-gradient(1.2px 1.2px at 48% 60%,rgba(246,230,255,.6),transparent 60%),
+    radial-gradient(1px 1px at 68% 52%,rgba(246,230,255,.5),transparent 60%),
+    radial-gradient(1px 1px at 8% 72%,rgba(246,230,255,.5),transparent 60%),
+    radial-gradient(1.2px 1.2px at 86% 70%,rgba(246,230,255,.5),transparent 60%),
+    radial-gradient(60vmax 50vmax at 92% -8%,rgba(253,213,187,.16),transparent 60%),
+    radial-gradient(90vmax 50vmax at 50% 120%,rgba(242,167,168,.28),transparent 60%),
+    linear-gradient(180deg,#120F2E 0%,#1D1842 55%,#3B2E66 88%,#5E4373 100%);}
+</style>
+<script>window.KB_LOBBY='lobby-zw';
+// Verbindung zum Kugelblitz-Server (Cloudflare Durable Objects) per WebSocket.
+// Stellt dieselbe Schnittstelle bereit, die das Spiel erwartet: window.claude.use("room"|"user").
+(()=>{
+  const rid=()=>Math.random().toString(36).slice(2,12).padEnd(10,'0');
+  const peerId=rid();
+  let uid=null;try{uid=localStorage.getItem('kb_uid')}catch(e){}
+  if(!uid||!/^u_[a-z0-9]{10}$/.test(uid)){uid='u_'+rid();try{localStorage.setItem('kb_uid',uid)}catch(e){}}
+  const ADJ=['Flinke','Schnelle','Wilde','Kluge','Mutige','Lustige','Wache','Freche','Coole','Starke','Fixe','Heitere'];
+  const TIER=['Eule','Katze','Ente','Robbe','Maus','Biene','Kröte','Möwe','Ziege','Qualle','Hummel','Taube'];
+  const pick=a=>a[Math.floor(Math.random()*a.length)];
+  const newName=()=>pick(ADJ)+' '+pick(TIER);
+  let myName=null;try{myName=localStorage.getItem('kb_name')}catch(e){}
+  if(!myName||myName.length>30)myName=newName();
+  const names={};names[uid]=myName;
+  const conns=new Set();
+  const cleanName=s=>typeof s==='string'?s.replace(/[^\p{L}\p{N} ._-]/gu,'').slice(0,30):'';
+
+  function conn(roomName){
+    const peers=new Map();const listeners=new Set();const connL=new Set();
+    let readyRes;const ready=new Promise(r=>readyRes=r);setTimeout(()=>readyRes(false),5000);
+    let ws=null,open=false,closed=false,my={nm:myName},snap=null,sendTimer=null,notifyQ=false,retry=0;
+    peers.set(peerId,{by:uid,pr:my,t:Date.now()});
+    const snapshot=()=>{if(!snap)snap=Object.freeze([...peers.entries()].map(([peer,v])=>Object.freeze({peer,by:v.by,isMe:peer===peerId,sameTab:peer===peerId,kind:'viewer',guest:false,presence:Object.freeze(v.pr||{}),updatedAt:v.t})));return snap};
+    const changed=()=>{snap=null;if(notifyQ)return;notifyQ=true;setTimeout(()=>{notifyQ=false;const p=snapshot();listeners.forEach(fn=>{try{fn({peers:p,joined:[],left:[],updated:[]})}catch(e){console.error(e)}})},0)};
+    const flush=()=>{sendTimer=null;if(open&&ws&&ws.readyState===1){try{ws.send(JSON.stringify({t:'p',pr:my}))}catch(e){}}};
+    const queueSend=()=>{if(!sendTimer)sendTimer=setTimeout(flush,30)};
+    const setOpen=v=>{if(open===v)return;open=v;connL.forEach(fn=>{try{fn(v)}catch(e){}})};
+    function connect(){
+      if(closed)return;
+      const proto=location.protocol==='https:'?'wss':'ws';
+      ws=new WebSocket(`${proto}://${location.host}/ws?room=${encodeURIComponent(roomName)}&peer=${peerId}&by=${uid}`);
+      ws.onopen=()=>{retry=0;setOpen(true);readyRes(true);flush()};
+      ws.onmessage=e=>{let m;try{m=JSON.parse(e.data)}catch(_){return}
+        if(m.t==='snap'&&Array.isArray(m.peers)){for(const k of [...peers.keys()])if(k!==peerId)peers.delete(k);
+          for(const p of m.peers){if(p&&p.peer&&p.peer!==peerId){peers.set(p.peer,{by:p.by,pr:p.pr||{},t:Date.now()});if(p.pr&&p.pr.nm)names[p.by]=cleanName(p.pr.nm)}}changed()}
+        else if(m.t==='p'&&m.peer&&m.peer!==peerId){if(m.pr===null)peers.delete(m.peer);else{peers.set(m.peer,{by:m.by,pr:m.pr,t:Date.now()});if(m.pr.nm)names[m.by]=cleanName(m.pr.nm)}changed()}};
+      ws.onclose=()=>{setOpen(false);readyRes(false);if(closed)return;for(const k of [...peers.keys()])if(k!==peerId)peers.delete(k);changed();retry=Math.min(retry+1,6);setTimeout(connect,400*retry)};
+      ws.onerror=()=>{};
+    }
+    connect();
+    const api={
+      name:roomName.replace(/^g-/,''),
+      presence(patch){if(!patch||typeof patch!=='object')return Promise.resolve();const n={...my};for(const k in patch){if(patch[k]===null)delete n[k];else n[k]=patch[k]}n.nm=myName;my=n;peers.set(peerId,{by:uid,pr:my,t:Date.now()});changed();queueSend();return Promise.resolve()},
+      peers:snapshot,
+      onPeers(fn){listeners.add(fn);setTimeout(()=>{try{fn({peers:snapshot(),joined:snapshot(),left:[],updated:[]})}catch(e){}},0);return()=>listeners.delete(fn)},
+      emit(){return Promise.resolve()},on(){return()=>{}},
+      connected:()=>open,
+      onConnection(fn){connL.add(fn);setTimeout(()=>fn(open),0);return()=>connL.delete(fn)},
+      leave(){closed=true;conns.delete(api);try{ws&&ws.close()}catch(e){}return Promise.resolve()},
+      _ready:ready,
+      _rename(){my={...my,nm:myName};peers.set(peerId,{by:uid,pr:my,t:Date.now()});changed();queueSend()}
+    };
+    conns.add(api);
+    return api;
+  }
+
+  const lobby=conn(window.KB_LOBBY==='lobby-zw'?'lobby-zw':'lobby');
+  const room=Object.freeze({...lobby,join:n=>/^(kb|zw)-[a-z0-9]{4}$/.test(n)?Promise.resolve(conn('g-'+n)):Promise.reject({code:'invalid_argument',message:'bad name'})});
+  const user=Object.freeze({
+    profiles(ids){const o={};(Array.isArray(ids)?ids:[ids]).forEach(id=>{o[id]={id,name:names[id]||'',avatarUrl:'',color:'#888',email:null,isMe:id===uid,guest:false}});return Promise.resolve(o)},
+    id:()=>Promise.resolve(uid),name:()=>Promise.resolve(myName),
+    me:()=>Promise.resolve({id:uid,name:myName,avatarUrl:'',color:'#888',email:null,isOwner:false,canEdit:false}),
+    isOwner:()=>Promise.resolve(false),canEdit:()=>Promise.resolve(false),can:()=>Promise.resolve(null)
+  });
+  // Name für die Anzeige im Spiel
+  window.kbName={get:()=>myName,set(v){const c=cleanName(String(v||'')).trim();if(!c)return myName;myName=c;names[uid]=myName;try{localStorage.setItem('kb_name',myName)}catch(e){}conns.forEach(x=>x._rename());return myName},reroll(){myName=newName();names[uid]=myName;try{localStorage.setItem('kb_name',myName)}catch(e){}conns.forEach(c=>c._rename());return myName}};
+  // Online nur anbieten, wenn der Server antwortet (z. B. nicht bei reinem Static Hosting)
+  const roomP=lobby._ready.then(ok=>{if(!ok){lobby.leave();return null}return room});
+  window.claude={use:n=>n==='room'?roomP:Promise.resolve(n==='user'?user:null)};
+})();
+
+</script>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1 class="logo">Zwanzig<small>Lunacynas Spielezimmer · Rate-Spiel in 20 Hinweisen</small></h1>
+    <div class="navr"><span class="netpill" id="netpill" hidden>Online bereit</span><a class="btn ghost" href="/">Alle Spiele</a><button class="btn ghost" id="btnMenu" type="button">Menü</button></div>
+  </header>
+  <div class="app">
+    <section id="main" aria-live="polite"></section>
+    <aside id="side"></aside>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(()=>{
+const CARDS=[{"answer": "Albert Einstein", "category": "Person", "aliases": ["einstein"], "hints": ["Ich wurde in Ulm geboren.", "Dass ich in der Schule schlecht war, ist ein Mythos über mich.", "Eine Zeit lang arbeitete ich in einem Patentamt in Bern.", "Das Jahr 1905 nennt man mein „Wunderjahr\".", "Ich spielte gern Geige.", "Meinen Nobelpreis bekam ich für die Erklärung des photoelektrischen Effekts.", "1933 verließ ich Deutschland und lebte danach in den USA.", "Zuletzt forschte ich in Princeton.", "Man bot mir an, Präsident Israels zu werden – ich lehnte ab.", "Ein chemisches Element ist nach mir benannt.", "Ein berühmtes Foto zeigt mich mit herausgestreckter Zunge.", "Meine Frisur ist fast so berühmt wie ich.", "Mein Name ist ein Synonym für „Genie\".", "1939 warnte ich US-Präsident Roosevelt in einem Brief vor einer deutschen Atombombe.", "Ich beschäftigte mich mit Licht, Raum und Zeit.", "Ich habe die Relativitätstheorie entwickelt.", "E = mc² stammt von mir."], "level": 1}, {"answer": "Marie Curie", "category": "Person", "aliases": ["curie", "madame curie", "marie sklodowska curie", "maria sklodowska"], "hints": ["Geboren wurde ich in Warschau.", "Mein Geburtsname war Skłodowska.", "Zum Studieren zog ich nach Paris.", "Ich war die erste Frau mit einer Professur an der Sorbonne.", "Ich habe zwei Nobelpreise gewonnen – in zwei verschiedenen Fächern.", "Mein Mann Pierre forschte mit mir zusammen.", "Auch meine Tochter Irène bekam später einen Nobelpreis.", "Ich habe zwei chemische Elemente entdeckt.", "Eines davon habe ich nach meinem Heimatland benannt.", "Das andere heißt Radium.", "Den Begriff „Radioaktivität\" habe ich geprägt.", "Meine Notizbücher strahlen bis heute und lagern in Bleikisten.", "Im Ersten Weltkrieg organisierte ich mobile Röntgenwagen.", "Ich starb 1934, vermutlich an den Folgen der Strahlung.", "Ich liege im Panthéon in Paris.", "Ich war Physikerin und Chemikerin.", "Ich war die erste Frau, die einen Nobelpreis erhielt."], "level": 1}, {"answer": "Ludwig van Beethoven", "category": "Person", "aliases": ["beethoven", "ludwig beethoven"], "hints": ["Ich wurde 1770 geboren.", "Meine Geburtsstadt am Rhein war lange die Hauptstadt der Bundesrepublik.", "Die meiste Zeit meines Lebens lebte ich in Wien.", "Bei Joseph Haydn nahm ich Unterricht.", "Ich habe nur eine einzige Oper geschrieben: „Fidelio\".", "Wer meine „Unsterbliche Geliebte\" war, rätseln Forscher bis heute.", "Eine Sinfonie wollte ich Napoleon widmen – dann strich ich die Widmung.", "Ich habe neun Sinfonien komponiert.", "Meine „Mondscheinsonate\" bekam ihren Namen erst nach meinem Tod.", "Mein Klavierstück „Für Elise\" kennt fast jedes Kind.", "Im Laufe meines Lebens wurde ich taub.", "Trotz meiner Taubheit komponierte ich weiter.", "Die Melodie der Europahymne stammt von mir.", "Die „Ode an die Freude\" ist Teil meiner 9. Sinfonie.", "Der Anfang meiner 5. Sinfonie – ta-ta-ta-taaa – ist weltberühmt.", "Ich war Komponist und Pianist.", "Mein Vorname ist Ludwig."], "level": 1}, {"answer": "Pippi Langstrumpf", "category": "Person", "aliases": ["pippi", "pippilotta", "pippi langstrumpf"], "hints": ["Mein vollständiger Name ist ungewöhnlich lang.", "Erfunden wurde ich als Gute-Nacht-Geschichte für ein krankes Kind.", "Mein Vater ist Seefahrer und König auf einer Südseeinsel.", "Meine besten Freunde heißen Thomas und Annika.", "Ich wohne ganz ohne Erwachsene in der Villa Kunterbunt.", "Ich besitze einen Koffer voller Goldstücke.", "Mein Affe heißt Herr Nilsson.", "Mein Pferd heißt „Kleiner Onkel\".", "Ich kann mein Pferd hochheben.", "Ich bin das stärkste Mädchen der Welt.", "Meine Strümpfe passen nie zusammen.", "Ich habe rote, abstehende Zöpfe.", "Ich habe Sommersprossen.", "Ich stamme aus einem Kinderbuch aus Schweden.", "Astrid Lindgren hat mich erfunden.", "Ich erfinde gern neue Wörter, zum Beispiel „Spunk\".", "In meinem Nachnamen steckt ein Kleidungsstück."], "level": 1}, {"answer": "Venedig", "category": "Ort", "aliases": ["venezia", "venice"], "hints": ["Ich wurde auf über 100 kleinen Inseln gebaut.", "Meine Häuser stehen auf Millionen Holzpfählen.", "Ich war einmal eine mächtige Seerepublik.", "Marco Polo stammt von hier.", "Bei mir findet das älteste Filmfestival der Welt statt.", "Im Winter feiere ich Karneval mit kunstvollen Masken.", "Mein berühmtester Platz ist nach dem heiligen Markus benannt.", "Die Rialtobrücke gehört zu mir.", "Wenn das Wasser steigt, spricht man bei mir von „Acqua alta\".", "Kreuzfahrtschiffe sind bei mir sehr umstritten.", "Ich versinke ganz langsam.", "Statt Autos gibt es bei mir Boote.", "Der Canal Grande ist meine Hauptstraße.", "Gondolieri fahren bei mir Touristen herum.", "Ich liege in Italien.", "Ich bin eine Lagunenstadt an der Adria.", "Bei mir steht die Seufzerbrücke."], "level": 1}, {"answer": "Mount Everest", "category": "Ort", "aliases": ["everest", "mt everest", "chomolungma", "sagarmatha"], "hints": ["In Tibet nennt man mich Chomolungma.", "In Nepal heiße ich Sagarmatha.", "Benannt wurde ich nach einem britischen Landvermesser.", "Ich wachse jedes Jahr um ein paar Millimeter.", "Über mich verläuft die Grenze zwischen Nepal und China.", "1953 standen zum ersten Mal Menschen auf meiner Spitze.", "Edmund Hillary und Tenzing Norgay kamen als Erste ganz oben an.", "Reinhold Messner und Peter Habeler kamen 1978 ohne Flaschensauerstoff hinauf.", "In meiner „Todeszone\" wird die Luft gefährlich dünn.", "Viele meiner Besucher werden von Sherpas begleitet.", "Ich bin ein Berg.", "Ich gehöre zum Himalaya.", "Ich bin knapp 8.850 Meter hoch.", "An meinen Hängen liegt inzwischen viel Müll.", "Im Frühjahr gibt es bei mir manchmal regelrechte Staus.", "Mein Basislager liegt höher als jeder Gipfel der Alpen.", "Ich bin der höchste Berg der Welt."], "level": 1}, {"answer": "Sahara", "category": "Ort", "aliases": ["saharawueste", "sahara wueste"], "hints": ["Mein Name bedeutet auf Arabisch einfach „Wüste\".", "Vor rund 6.000 Jahren war ich grün, mit Seen und Giraffen.", "Mein Staub düngt den Amazonas-Regenwald.", "Ich bin ungefähr so groß wie die USA.", "Ich erstrecke mich über mehr als zehn Länder.", "Nur ein kleiner Teil von mir besteht aus Sanddünen.", "Die Tuareg leben seit Jahrhunderten bei mir.", "Der Nil fließt durch mich hindurch.", "Manchmal trägt mich der Wind bis nach Deutschland.", "Tagsüber ist es bei mir glühend heiß, nachts kann es frieren.", "Kamele sind bei mir das klassische Transportmittel.", "Bei mir gibt es Oasen.", "Fata Morganas sind bei mir keine Seltenheit.", "Im „Kleinen Prinzen\" muss der Pilot bei mir notlanden.", "Ich liege im Norden Afrikas.", "Ich bin die größte Hitzewüste der Welt.", "Ich bin eine Wüste."], "level": 1}, {"answer": "Mond", "category": "Ort", "aliases": ["der mond", "erdmond"], "hints": ["Ich entferne mich jedes Jahr knapp vier Zentimeter von meinem Partner.", "Ich zeige immer dieselbe Seite.", "Meine dunklen Flächen hielt man früher für Meere.", "Bei mir gibt es keine Luft zum Atmen.", "Auf mir wurden sechs amerikanische Flaggen aufgestellt.", "Zwölf Menschen sind bisher auf mir herumgelaufen.", "Ich sorge für Ebbe und Flut.", "Neil Armstrong betrat mich als Erster.", "Mein Licht ist eigentlich gar nicht meins.", "Manchmal verdecke ich die Sonne.", "Wölfe heulen mich angeblich an.", "Ich bin etwa 384.000 Kilometer von der Erde entfernt.", "Ich habe sehr viele Krater.", "Mal bin ich voll, mal halb, mal fast unsichtbar.", "Man erzählt sich, ich sei aus Käse.", "Am Nachthimmel bin ich das hellste Objekt.", "Ich bin der ständige Begleiter der Erde."], "level": 1}, {"answer": "Fahrrad", "category": "Ding", "aliases": ["rad", "velo", "drahtesel", "bike", "fahrraeder"], "hints": ["Mein Urahn wurde 1817 in Mannheim vorgestellt – noch ganz ohne Pedale.", "Meinen Vorfahren nannte man Laufmaschine oder Draisine.", "Es gab mich auch mit riesigem Vorderrad.", "In den Niederlanden gibt es mehr von mir als Einwohner.", "In der Schweiz sagt man „Velo\" zu mir.", "Umgangssprachlich nennt man mich auch Drahtesel.", "Die Tour de France ist mein berühmtestes Rennen.", "Heute gibt es mich oft mit Elektromotor.", "Ich habe eine Kette.", "Ich habe oft eine Gangschaltung.", "Wenn man mich nicht abschließt, werde ich gern geklaut.", "Ich habe eine Klingel.", "Man tritt in meine Pedale.", "Kinder lernen mich oft mit Stützrädern.", "Ich habe einen Sattel und einen Lenker.", "Ich bin klimafreundlicher als jedes Auto.", "Ich habe zwei Räder."], "level": 1}, {"answer": "Kaffee", "category": "Ding", "aliases": ["kaffeebohne", "kaffeebohnen", "coffee"], "hints": ["Der Legende nach entdeckte ein Ziegenhirte in Äthiopien meine Wirkung.", "Eine Hafenstadt im Jemen gab mir einen Spitznamen.", "Johann Sebastian Bach schrieb eine Kantate über mich.", "Ich wachse als rote Kirsche an einem Strauch.", "Arabica und Robusta sind meine bekanntesten Sorten.", "Brasilien produziert mehr von mir als jedes andere Land.", "In Deutschland trinkt man mehr von mir als Bier.", "In Wien gibt es eine ganze Kultur rund um mich und meine Häuser.", "Mich gibt es auch entkoffeiniert.", "Man trinkt mich gern mit Milchschaum.", "Bevor man mich genießt, werde ich geröstet.", "Ich mache wach.", "Ein ganzer Beruf dreht sich um mich: Barista.", "Am Nachmittag gibt es mich gern zum Kuchen.", "Mich gibt es als Bohne oder gemahlen.", "Ich enthalte Koffein.", "Ich bin ein Heißgetränk, oft schwarz."], "level": 1}, {"answer": "Regenschirm", "category": "Ding", "aliases": ["schirm", "knirps"], "hints": ["In England wurden Männer mit mir lange verspottet.", "Ursprünglich schützte ich vor allem vor der Sonne.", "Im alten China gab es mich schon vor über 2.000 Jahren.", "Ein berühmtes Kindermädchen fliegt mit mir durch die Luft.", "Eine Marke von mir zum Zusammenschieben ist in Deutschland zum Gattungsbegriff geworden.", "Gene Kelly tanzt in seiner berühmtesten Filmszene mit mir.", "Wer mich drinnen aufspannt, soll angeblich Pech haben.", "Ich habe Speichen – aber kein Rad.", "Bei starkem Wind stülpe ich mich gern um.", "Ich werde ständig in Bus und Bahn vergessen.", "Es gibt mich auch im Taschenformat.", "Mein Griff ist oft gebogen.", "Man spannt mich auf.", "Ich bestehe aus Stoff und einem Gestell.", "An grauen Tagen nimmt man mich lieber mit.", "Ich halte Nässe von oben ab.", "Wenn es regnet, braucht man mich."], "level": 1}, {"answer": "Schach", "category": "Ding", "aliases": ["schachspiel", "schachbrett"], "hints": ["Meine Wurzeln liegen vermutlich im Indien des 6. Jahrhunderts.", "Laut einer Legende wünschte sich mein Erfinder Reiskörner – auf jedem Feld doppelt so viele.", "1997 besiegte ein Computer namens Deep Blue einen Weltmeister in mir.", "Eine Netflix-Serie über mich löste einen weltweiten Boom aus.", "Mein wichtigstes Wort kommt wohl aus dem Persischen und bedeutet etwa: Der König ist hilflos.", "Bei Turnieren spielt man mich mit einer Uhr.", "Eine meiner Eröffnungen heißt „Sizilianisch\".", "Bei mir kann ein Bauer zur Dame werden.", "Das Pferd heißt bei mir Springer.", "Ich habe Türme, Läufer und Springer.", "Bei mir gibt es die Rochade.", "Ich werde auf 64 Feldern gespielt.", "Meine Figuren sind schwarz und weiß.", "Ziel ist es, den gegnerischen König mattzusetzen.", "Magnus Carlsen ist einer meiner berühmtesten Spieler.", "Ich gelte als Sport – mit eigener Olympiade.", "Ich bin ein Brettspiel für zwei."], "level": 1}, {"answer": "Ada Lovelace", "category": "Person", "aliases": ["lovelace", "ada", "augusta ada king", "augusta ada byron"], "hints": ["Ich wurde 1815 in London geboren.", "Mein Geburtsname war Augusta Ada Byron.", "Mein Vater war ein berühmter Dichter, den ich nie richtig kennengelernt habe.", "Meine Mutter ließ mich vor allem in Mathematik unterrichten – sie wollte nicht, dass ich nach meinem Vater komme.", "Als Kind entwarf ich Pläne für eine Flugmaschine.", "Ich war eine Adelige im England des 19. Jahrhunderts – ein Gräfinnentitel steckt in meinem bekanntesten Namen.", "Ich übersetzte den Aufsatz eines italienischen Ingenieurs und schrieb Anmerkungen dazu, die rund dreimal so lang wurden.", "In meiner „Note G“ steht ein Verfahren zur Berechnung von Bernoulli-Zahlen.", "Ich arbeitete eng mit Charles Babbage zusammen.", "Babbage nannte mich „Zauberin der Zahlen“.", "Die Maschine, für die ich schrieb, wurde zu meinen Lebzeiten nie gebaut.", "Ich ahnte schon damals, dass Maschinen eines Tages auch Musik komponieren könnten.", "Ich starb mit nur 36 Jahren – genauso alt wie mein Vater.", "Eine Programmiersprache des US-Verteidigungsministeriums trägt meinen Vornamen.", "Jedes Jahr im Oktober gibt es einen nach mir benannten Gedenktag für Frauen in Wissenschaft und Technik.", "Ich schrieb über eine „Analytical Engine“.", "Ich gelte oft als erste Programmiererin der Welt."], "level": 2}, {"answer": "Hedy Lamarr", "category": "Person", "aliases": ["lamarr", "hedy", "hedwig kiesler", "hedwig eva maria kiesler"], "hints": ["Ich wurde 1914 in Wien geboren.", "Mein Geburtsname war Hedwig Kiesler.", "Ein Film von 1933 machte mich schlagartig bekannt – und sorgte für einen Skandal.", "Mein erster Ehemann war ein österreichischer Waffenfabrikant.", "Ich floh aus dieser Ehe und ging nach Hollywood.", "Ein Filmstudio-Chef gab mir meinen Künstlernamen.", "Ich spielte die Delila in „Samson und Delilah“ von 1949.", "Mein Studio vermarktete mich als „schönste Frau der Welt“.", "Gemeinsam mit einem Komponisten meldete ich ein Patent an.", "Mein Partner kannte sich mit synchronisierten mechanischen Klavieren aus.", "Unsere Erfindung sollte ferngesteuerte Torpedos vor Störsendern schützen.", "Die Idee: Die Funkfrequenz springt ständig nach einem geheimen Muster hin und her.", "Unser Patent wurde 1942 erteilt.", "Meine Idee gilt als Vorläufer von Techniken, die heute in WLAN und Bluetooth stecken.", "Der „Tag der Erfinder“ in Deutschland fällt auf meinen Geburtstag, den 9. November.", "Ich starb im Jahr 2000 in Florida.", "Ich war Filmstar und Erfinderin zugleich."], "level": 2}, {"answer": "Alexander von Humboldt", "category": "Person", "aliases": ["humboldt", "alexander humboldt", "a. von humboldt"], "hints": ["Ich wurde 1769 in Berlin geboren.", "Mein älterer Bruder gründete eine berühmte Universität.", "Mein Reisebegleiter war der französische Botaniker Aimé Bonpland.", "Von 1799 bis 1804 reiste ich durch Süd- und Mittelamerika.", "Ich erforschte den Orinoco und eine natürliche Wasserverbindung zum Amazonas.", "Am Chimborazo stellte ich 1802 einen Höhenrekord auf – den Gipfel erreichte ich nicht.", "Ich zeichnete ein berühmtes Bild, das Pflanzen nach Höhenstufen an einem Vulkan zeigt.", "In Paris traf ich den jungen Simón Bolívar.", "Für meine Forschung gab ich fast mein ganzes Vermögen aus.", "Charles Darwin nannte mich ein großes Vorbild.", "Mein Spätwerk heißt „Kosmos“.", "Ich starb 1859 in Berlin.", "Eine kalte Meeresströmung vor der Westküste Südamerikas trägt meinen Namen.", "Auch ein Pinguin ist nach mir benannt.", "Kaum ein Mensch hat so viele Pflanzen, Tiere und Orte, die nach ihm benannt sind.", "Ein Forum im wiederaufgebauten Berliner Schloss trägt den Namen meines Bruders und meinen.", "Ich war Naturforscher und gelte als Mitbegründer der Geographie als Wissenschaft."], "level": 2}, {"answer": "Nikola Tesla", "category": "Person", "aliases": ["tesla", "nikola"], "hints": ["Ich wurde 1856 in Smiljan geboren, im heutigen Kroatien.", "1884 wanderte ich in die USA aus.", "Ich arbeitete kurz für Thomas Edison – Freunde wurden wir nicht.", "Im „Stromkrieg“ stand ich auf der Seite des Wechselstroms.", "George Westinghouse kaufte meine Patente.", "Ich entwickelte einen Motor, der mit Drehstrom läuft.", "Mein System half beim Bau eines der ersten großen Wasserkraftwerke an den Niagarafällen.", "Eine nach mir benannte Spule erzeugt meterlange künstliche Blitze.", "Ich träumte davon, Energie drahtlos um die ganze Welt zu schicken.", "Mein großer Funkturm auf Long Island wurde nie fertig.", "Ich lebte zuletzt in Hotelzimmern in New York.", "Ich fütterte leidenschaftlich gern Tauben.", "Ich starb 1943 verarmt in New York.", "Die Einheit der magnetischen Flussdichte ist nach mir benannt.", "Der Flughafen von Belgrad trägt meinen Namen.", "Ein Elektroauto-Hersteller trägt heute meinen Nachnamen.", "Ich war Erfinder und Elektroingenieur."], "level": 2}, {"answer": "Hildegard von Bingen", "category": "Person", "aliases": ["hildegard", "bingen", "heilige hildegard"], "hints": ["Ich lebte im 12. Jahrhundert.", "Schon als Kind wurde ich ins Kloster gegeben.", "Ich war Benediktinerin und später Äbtissin.", "Ich gründete ein eigenes Kloster auf dem Rupertsberg.", "Ich hatte Visionen und schrieb sie auf.", "Mein bekanntestes Buch heißt „Scivias“ – „Wisse die Wege“.", "Ich komponierte geistliche Musik, die heute noch gesungen wird.", "Ich schrieb ein geistliches Singspiel, das zu den ältesten seiner Art zählt.", "Ich erfand eine eigene Geheimsprache, die „Lingua ignota“.", "Ich schrieb über Heilkräuter, Krankheiten und Ernährung.", "Dinkel soll ich besonders geschätzt haben.", "Ich schrieb Briefe an Kaiser und Päpste.", "Ich ging auf Predigtreisen – für eine Frau damals sehr ungewöhnlich.", "Ich starb 1179.", "2012 wurde ich heiliggesprochen und zur Kirchenlehrerin erhoben.", "Mein Gedenktag ist der 17. September.", "Mein Name verrät die Stadt am Rhein, mit der man mich verbindet."], "level": 2}, {"answer": "Frida Kahlo", "category": "Person", "aliases": ["kahlo", "frida"], "hints": ["Ich wurde 1907 in Coyoacán bei Mexiko-Stadt geboren.", "Mein Vater war Fotograf und stammte aus Deutschland.", "Mit 18 Jahren überlebte ich einen schweren Busunfall.", "Viele Bilder malte ich im Liegen, mit einem Spiegel über meinem Bett.", "Etwa ein Drittel meiner Werke sind Selbstporträts.", "Ich war zweimal mit demselben Mann verheiratet.", "Mein Mann war ein berühmter Wandmaler.", "Ich trug gern traditionelle Kleidung aus der Region Tehuantepec.", "Leo Trotzki wohnte eine Zeit lang bei mir.", "1939 kaufte der französische Staat ein Bild von mir für den Louvre.", "Man zählt mich oft zum Surrealismus – ich selbst sagte, ich male meine eigene Wirklichkeit.", "Ich starb 1954.", "Mein Elternhaus ist heute ein Museum und heißt „Das Blaue Haus“.", "2002 spielte Salma Hayek mich im Kino.", "Zusammengewachsene Augenbrauen sind mein Markenzeichen.", "Ein Bild von mir heißt „Die zwei Fridas“.", "Ich war eine mexikanische Malerin."], "level": 2}, {"answer": "Petra", "category": "Ort", "aliases": ["felsenstadt petra"], "hints": ["Mein Name bedeutet auf Griechisch „Fels“.", "Die Nabatäer machten mich zu ihrer Hauptstadt.", "Ein ausgeklügeltes Wassersystem machte das Leben bei mir in der Wüste möglich.", "Ein Erdbeben im Jahr 363 zerstörte große Teile von mir.", "Lange lebten Beduinen in meinen Höhlen.", "1812 machte mich ein Schweizer Forscher in Europa wieder bekannt.", "Ein Dichter nannte mich „rosenrote Stadt, halb so alt wie die Zeit“.", "Viele meiner Bauten sind direkt in den Sandstein gehauen.", "Man betritt mich durch eine enge Schlucht, den Siq.", "Mein berühmtestes Gebäude heißt „Schatzhaus“.", "Zu meinem „Kloster“ führen rund 800 Stufen hinauf.", "Die Stadt Wadi Musa liegt direkt neben mir.", "Seit 1985 bin ich UNESCO-Welterbe.", "2007 wurde ich zu einem der „neuen sieben Weltwunder“ gewählt.", "Indiana Jones suchte bei mir nach dem Heiligen Gral.", "Ich liege in Jordanien.", "Ich bin eine antike Felsenstadt."], "level": 2}, {"answer": "Island", "category": "Ort", "aliases": ["iceland"], "hints": ["Zwei Kontinentalplatten driften bei mir auseinander.", "Mein Parlament gilt als eines der ältesten der Welt.", "Wikinger besiedelten mich im 9. Jahrhundert.", "Viele Familiennamen bei mir enden auf -son oder -dóttir.", "Mücken gibt es bei mir praktisch keine.", "Viele Häuser bei mir werden mit Erdwärme geheizt.", "Eine heiße Quelle bei mir gab allen Geysiren ihren Namen.", "Mein größter Gletscher heißt Vatnajökull.", "2010 legte einer meiner Vulkane den Flugverkehr in Europa lahm.", "Ich habe knapp 400.000 Einwohner.", "Eine eigene Armee habe ich nicht.", "Im Hochsommer wird es bei mir kaum dunkel.", "Meine Fußballfans wurden 2016 mit ihrem „Huh!“ weltberühmt.", "Der „Goldene Kreis“ ist meine bekannteste Touristenroute.", "Ich liege im Nordatlantik, knapp unterhalb des Polarkreises.", "Meine Hauptstadt heißt Reykjavík.", "Ich bin ein Inselstaat."], "level": 2}, {"answer": "Machu Picchu", "category": "Ort", "aliases": ["machupicchu", "machu pichu"], "hints": ["Mein Name bedeutet „alter Berg“.", "Ich wurde im 15. Jahrhundert gebaut.", "Die spanischen Eroberer haben mich offenbar nie gefunden.", "Viele meiner Mauern sind ohne Mörtel gebaut – und passen trotzdem perfekt.", "Ein Stein namens „Intihuatana“ hatte bei mir wohl astronomische Bedeutung.", "1911 machte mich der Amerikaner Hiram Bingham weltberühmt.", "Über mir ragt der steile Gipfel Huayna Picchu auf.", "Tief unter mir fließt der Urubamba.", "Das Dorf im Tal unter mir heißt Aguas Calientes.", "Man kann mich über einen mehrtägigen Fußweg erreichen.", "Von Cusco aus fährt ein Zug in meine Nähe.", "Lamas grasen zwischen meinen Ruinen.", "Die Zahl meiner Besucher ist streng begrenzt.", "Seit 1983 bin ich UNESCO-Welterbe.", "Ich liege auf rund 2.400 Metern Höhe in den Anden.", "Die Inka haben mich erbaut.", "Ich bin eine Ruinenstadt in Peru."], "level": 2}, {"answer": "Bhutan", "category": "Ort", "aliases": ["butan", "druk yul"], "hints": ["Mein eigener Name bedeutet „Land des Donnerdrachens“.", "Auf meiner Flagge ist ein Drache.", "Statt nur auf die Wirtschaftsleistung zu schauen, messe ich das „Bruttonationalglück“.", "Fernsehen und Internet gibt es bei mir erst seit 1999.", "Laut Verfassung muss ein Großteil meiner Fläche bewaldet bleiben.", "Meine Wälder binden mehr CO₂, als ich ausstoße.", "Touristen zahlen bei mir eine hohe Gebühr pro Tag.", "Mein bekanntestes Kloster hängt als „Tigernest“ an einer Felswand.", "Mein höchster Berg gilt als höchster unbestiegener Berg der Welt.", "Bogenschießen ist mein Nationalsport.", "Mein Nationalgericht besteht aus Chilis mit Käse.", "Viele Männer tragen bei mir ein Gewand namens Gho.", "In meiner Hauptstadt regelt ein Polizist den Verkehr statt einer Ampel.", "Der Anflug auf meinen Flughafen in Paro gilt als einer der schwierigsten der Welt.", "Ich werde von einem „Drachenkönig“ regiert.", "Ich liege im Himalaya zwischen Indien und China.", "Ich bin ein kleines Königreich in Südasien."], "level": 2}, {"answer": "Pompeji", "category": "Ort", "aliases": ["pompei", "pompeii"], "hints": ["Mein Untergang ist in Briefen von Plinius dem Jüngeren beschrieben.", "Sein Onkel starb bei dem Versuch, Menschen zu retten.", "Meine Nachbarstadt Herculaneum traf dasselbe Schicksal.", "Systematisch ausgegraben werde ich seit dem 18. Jahrhundert.", "Hohlräume in der Asche wurden mit Gips ausgegossen – so sieht man die Umrisse der Opfer.", "In meinem Straßenpflaster sieht man noch Spurrillen von Wagen.", "An meinen Wänden findet man antike Graffiti und Wahlwerbung.", "Ein Mosaik mit der Inschrift „Cave canem“ warnt vor dem Hund.", "Viele Imbissstuben zeugen vom Alltag meiner Bewohner.", "Mein Amphitheater gilt als eines der ältesten erhaltenen aus Stein.", "Pink Floyd spielte in meinem Amphitheater ein Konzert ohne Publikum.", "Ich bin UNESCO-Welterbe.", "Neapel liegt ganz in meiner Nähe.", "Ich liege in Kampanien in Italien.", "Im Jahr 79 wurde ich unter Asche und Bimsstein begraben.", "Der Vulkan, der mich zerstörte, ist bis heute aktiv.", "Ich bin eine antike römische Stadt."], "level": 2}, {"answer": "Marianengraben", "category": "Ort", "aliases": ["mariannengraben", "marianen graben", "marianas trench", "challengertief", "challenger tief"], "hints": ["Ich bin nach einer Inselgruppe benannt.", "Die Insel Guam liegt in meiner Nähe.", "Bei mir taucht eine Erdplatte unter eine andere ab.", "Ich bin sichelförmig und rund 2.500 Kilometer lang.", "Bei mir ist es stockdunkel und nur wenige Grad warm.", "Der Wasserdruck bei mir ist über tausendmal höher als an der Oberfläche.", "Schneckenfische leben bei mir noch in rund 8.000 Metern Tiefe.", "Sogar Plastikmüll wurde schon an meinem Grund gefunden.", "Ein Teil von mir ist ein Meeresschutzgebiet der USA.", "1960 erreichten Jacques Piccard und Don Walsh meinen Grund.", "2012 tauchte ein Hollywood-Regisseur allein zu meinem tiefsten Punkt.", "Mein tiefster Punkt heißt Challengertief.", "Würde man den Mount Everest in mich stellen, läge sein Gipfel noch unter Wasser.", "Ich bin fast 11.000 Meter tief.", "Ich liege im westlichen Pazifik.", "Ich bin die tiefste Stelle der Weltmeere.", "Ich bin ein Tiefseegraben."], "level": 2}, {"answer": "Enigma", "category": "Ding", "aliases": ["enigma maschine", "enigmamaschine", "chiffriermaschine enigma"], "hints": ["Mein Name ist griechisch und bedeutet „Rätsel“.", "In den 1920er-Jahren wurde ich zuerst an Firmen verkauft.", "Ich sehe aus wie eine Schreibmaschine in einem Holzkasten.", "Statt Papier habe ich kleine Lampen mit Buchstaben.", "Bei jedem Tastendruck drehen sich meine Walzen weiter.", "Ein Steckbrett vervielfacht meine Möglichkeiten.", "Ein Buchstabe wird bei mir nie zu sich selbst.", "Für jeden Tag gab es neue Einstellungen aus einem Schlüsselheft.", "Eine Version für die Marine hatte vier Walzen.", "Polnische Mathematiker durchschauten mich als Erste.", "In Bletchley Park arbeiteten Tausende daran, mich zu knacken.", "Alan Turing entwarf eine Maschine gegen mich, die „Bombe“ hieß.", "Der Film „The Imitation Game“ dreht sich um mich.", "Erhaltene Exemplare von mir werden heute für hohe Summen versteigert.", "Im Zweiten Weltkrieg benutzte mich vor allem das deutsche Militär.", "Ich verwandle Klartext in Geheimtext.", "Ich bin eine Verschlüsselungsmaschine."], "level": 2}, {"answer": "Bernstein", "category": "Ding", "aliases": ["amber"], "hints": ["Mein Name behauptet, ich sei ein Stein – bin ich aber nicht.", "Mein Name kommt vom niederdeutschen Wort für „brennen“.", "Ich bin Millionen Jahre alt.", "Ich brenne und rieche dabei nach Harz.", "Ich bin so leicht, dass ich in Salzwasser schwimme.", "Reibt man mich, lade ich mich elektrisch auf.", "Das Wort „Elektrizität“ stammt von meinem griechischen Namen.", "Im Englischen heiße ich wie das Gelb an der Ampel.", "Schon in der Antike wurde ich über weite Strecken gehandelt.", "Eine Handelsroute zwischen Ostsee und Mittelmeer ist nach mir benannt.", "Ein berühmtes Zimmer aus mir ist seit dem Zweiten Weltkrieg verschollen.", "In „Jurassic Park“ gewinnt man aus mir Dinosaurier-DNA.", "Manchmal sind Insekten in mir eingeschlossen.", "Meist bin ich honiggelb bis orange.", "An der Ostseeküste findet man mich nach Stürmen am Strand.", "Ich werde gern zu Schmuck verarbeitet.", "Ich bin fossiles Baumharz."], "level": 2}, {"answer": "Zauberwürfel", "category": "Ding", "aliases": ["rubiks cube", "rubik's cube", "rubikwuerfel", "rubik wuerfel", "zauberwuerfel", "rubikswuerfel", "magic cube"], "hints": ["Ich wurde 1974 in Ungarn erfunden.", "Mein Erfinder lehrte Architektur und Design.", "Er brauchte selbst etwa einen Monat, um mich zum ersten Mal zu lösen.", "Mein ungarischer Name bedeutet „magischer Würfel“.", "In den 1980er-Jahren war ich ein weltweiter Trend.", "Ich bin eines der meistverkauften Spielzeuge aller Zeiten.", "Ich habe über 43 Trillionen mögliche Stellungen.", "Jede Stellung lässt sich in höchstens 20 Zügen lösen.", "Meine Mittelsteine verändern ihre Lage zueinander nie.", "Ich bestehe aus 26 sichtbaren Teilsteinen.", "Speedcuber schaffen mich in gut drei Sekunden.", "Manche lösen mich sogar mit verbundenen Augen.", "Mich gibt es auch als 2×2 oder 7×7.", "Ich habe sechs Seiten in sechs Farben.", "Ich bin ein Drehpuzzle.", "Mein deutscher Name klingt nach Magie.", "Auf Englisch trage ich den Namen meines Erfinders."], "level": 2}, {"answer": "Stethoskop", "category": "Ding", "aliases": ["stetoskop", "stethoscope"], "hints": ["Ich wurde 1816 in Paris erfunden.", "Mein Erfinder hieß René Laennec.", "Ganz am Anfang war ich ein zusammengerolltes Blatt Papier.", "Danach war ich ein einfaches Holzrohr.", "Mein Name bedeutet ungefähr „Brust betrachten“.", "Vor mir legte man oft das Ohr direkt auf den Körper.", "Ich bin meist aus Metall und Kunststoff.", "Mein Bruststück hat eine Membran für hohe und einen Trichter für tiefe Töne.", "Ich habe meist zwei Ohrbügel.", "Auch beim Blutdruckmessen werde ich gebraucht.", "Mich gibt es heute auch elektronisch, mit Verstärker.", "Auch Tierärzte benutzen mich.", "Viele tragen mich um den Hals.", "In Arztserien bin ich fast immer zu sehen.", "In Spielzeug-Arztkoffern liege ich oft obenauf.", "Mit mir hört man Herz und Lunge ab.", "Ich bin ein medizinisches Gerät."], "level": 2}];
+const ACTS=[
+  {ty:'skip',t:'Pech gehabt – du setzt beim nächsten Mal aus.'},
+  {ty:'plus',n:3,t:'Glück gehabt – du bekommst sofort 3 Punkte.'},
+  {ty:'minus',n:2,t:'Ups – dir werden 2 Punkte abgezogen.'},
+  {ty:'again',t:'Freie Wahl – du darfst sofort noch eine Zahl wählen.'}
+];
+const DIFFS=[['normal','Leicht'],['mix','Gemischt'],['hard','Schwer']];
+const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const clone=o=>JSON.parse(JSON.stringify(o));
+let toastT;function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),1800)}
+
+// ---------- Antwort prüfen (kleine Tippfehler sind okay) ----------
+function norm(s){return (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/ß/g,'ss').trim().replace(/^(der|die|das|the|ein|eine)\s+/,'').replace(/[^a-z0-9]/g,'')}
+function lev(a,b){const m=a.length,n=b.length;let p=Array.from({length:n+1},(_,j)=>j);for(let i=1;i<=m;i++){const c=[i];for(let j=1;j<=n;j++)c[j]=Math.min(p[j]+1,c[j-1]+1,p[j-1]+(a[i-1]===b[j-1]?0:1));p=c}return p[n]}
+function isCorrect(guess,card){const g=norm(guess);if(g.length<2)return false;
+  return [card.answer,...(card.aliases||[])].some(a=>{const n=norm(a);if(n===g)return true;const d=lev(n,g);return (n.length>=5&&d<=1)||(n.length>=9&&d<=2)})}
+
+// ================= Spiel-Regeln (gleich für lokal und online) =================
+function deckFor(diff){return CARDS.map((c,i)=>i).filter(i=>diff==='mix'||CARDS[i].level===(diff==='hard'?2:1))}
+function findEligible(pl,order,start){pl=pl.map(p=>({...p}));let pos=start%order.length;
+  for(let k=0;k<=order.length;k++){const p=pl[order[pos]];if(p.sk){p.sk=false;pos=(pos+1)%order.length}else break}return {pl,tp:pos}}
+function buildRound(G){
+  let deck=(G.deck||[]).slice();if(!deck.length)deck=shuffle(deckFor(G.diff));
+  const ci=deck.pop(),c=CARDS[ci];
+  const hints=shuffle(c.hints).slice(0,17),acts=shuffle(ACTS).slice(0,20-hints.length);
+  const tiles=shuffle([...hints.map(t=>({k:'h',t})),...acts.map(a=>({k:'a',ty:a.ty,n:a.n||0,t:a.t}))]).map((t,i)=>({...t,num:i+1,o:false}));
+  const n=G.pl.length,order=[];for(let k=1;k<n;k++)order.push((G.vl+k)%n);
+  const el=findEligible(G.pl,order,0);
+  return {...G,deck,ci,tiles,order,pl:el.pl,tp:el.tp,opened:0,cur:null,log:[],msg:null,lw:null,res:null,ph:'pick'};
+}
+function newGame(cfg,players){return buildRound({goal:cfg.goal,mode:cfg.mode,diff:cfg.diff,pl:players.map(p=>({...p,pts:0,sk:false})),vl:0,rd:1,deck:[]})}
+function advance(G,extra){G={...G,...(extra||{})};if(G.opened>=20)return endRound(G,null);const r=findEligible(G.pl,G.order,G.tp+1);return {...G,pl:r.pl,tp:r.tp,ph:'pick',cur:null}}
+function endRound(G,w){
+  const pl=G.pl.map(p=>({...p})),v=G.vl;let gains;
+  if(w!=null){const gw=20-G.opened,gv=G.opened;pl[w].pts+=gw;pl[v].pts+=gv;gains=[{i:w,role:'hat erraten',pts:gw},{i:v,role:'liest vor',pts:gv}]}
+  else{pl[v].pts+=20;gains=[{i:v,role:'liest vor',pts:20}]}
+  return {...G,pl,ph:'roundEnd',res:{w,gains,opened:G.opened}};
+}
+// actor = Spieler-Index; free = lokal (eine Maus/ein Bildschirm) oder Spielleiter-Sonderrechte
+function apply(G,actor,a,free){
+  if(!G||!a)return null;
+  const cur=G.order?G.order[G.tp]:-1,isCur=free||actor===cur,isVl=free||actor===G.vl;
+  switch(a.t){
+    case 'pick':{
+      if(G.ph!=='pick'||!isCur)return null;const i=a.i|0,t=G.tiles[i];if(!t||t.o)return null;
+      const tiles=G.tiles.map((x,j)=>j===i?{...x,o:true}:x),opened=G.opened+1;
+      if(t.k==='h')return {...G,tiles,opened,cur:i,ph:'guess',msg:null,lw:null};
+      const pl=G.pl.map(p=>({...p})),p=pl[cur];
+      if(t.ty==='skip')p.sk=true;if(t.ty==='plus')p.pts+=t.n;if(t.ty==='minus')p.pts=Math.max(0,p.pts-t.n);
+      return {...G,tiles,opened,pl,cur:i,ph:'action',msg:null,lw:null};
+    }
+    case 'guess':{
+      if(G.ph!=='guess'||G.mode!=='typed'||!isCur)return null;
+      const g=String(a.g||'').trim().slice(0,60);if(!g)return null;
+      if(isCorrect(g,CARDS[G.ci]))return endRound(G,cur);
+      return advance(G,{log:[...G.log,{g,i:cur}].slice(-14),msg:{k:'wrong',i:cur,g},lw:{i:cur,g}});
+    }
+    case 'pass':if(G.ph!=='guess'||!isCur)return null;return advance(G,{msg:{k:'pass',i:cur},lw:null});
+    case 'judge':if(G.ph!=='guess'||G.mode!=='spoken'||!isVl)return null;return a.ok?endRound(G,cur):advance(G,{msg:{k:'no',i:cur},lw:null});
+    case 'cont':{
+      if(G.ph!=='action'||!isCur)return null;
+      if(G.opened>=20)return endRound(G,null);
+      if(G.tiles[G.cur].ty==='again')return {...G,ph:'pick',cur:null};
+      return advance(G);
+    }
+    case 'override':if(G.ph!=='pick'||!G.lw||!isVl)return null;return endRound({...G,log:G.log.slice(0,-1),lw:null},G.lw.i);
+    case 'skip':if(!free||!['pick','guess','action'].includes(G.ph))return null;return advance(G,{msg:{k:'skip',i:cur},lw:null});
+    case 'next':
+      if(G.ph!=='roundEnd'||!free)return null;
+      if(G.pl.some(p=>p.pts>=G.goal))return {...G,ph:'gameEnd'};
+      return buildRound({...G,vl:(G.vl+1)%G.pl.length,rd:G.rd+1});
+    case 'rematch':if(G.ph!=='gameEnd'||!free)return null;return newGame(G,G.pl.map(p=>({name:p.name,p:p.p,b:p.b})));
+  }
+  return null;
+}
+// Was alle sehen dürfen: geschlossene Felder bleiben geheim
+function pub(G){
+  if(!G||!G.tiles)return G;
+  const reveal=G.ph==='roundEnd'||G.ph==='gameEnd';
+  const {deck,...rest}=G;
+  return {...rest,tiles:G.tiles.map(t=>t.o||reveal?t:{k:'?',num:t.num,o:false})};
+}
+
+// ================= Namen =================
+const NET={room:null,user:null,state:'checking',names:{},asked:new Set()};
+function resolveNames(ids){
+  const u=NET.user;if(!u)return;const need=ids.filter(id=>id&&!NET.asked.has(id));if(!need.length)return;need.forEach(id=>NET.asked.add(id));
+  u.profiles(need).then(ps=>{let ch=false;for(const id of need){const n=(ps&&ps[id]&&ps[id].name)||'';if(n){NET.names[id]=n;ch=true}else NET.asked.delete(id)}if(ch)render(true)}).catch(()=>{});
+}
+function nameOf(G,i){const p=G&&G.pl&&G.pl[i];if(!p)return '?';return p.name||(p.b&&NET.names[p.b])||('Spieler '+(i+1))}
+
+// ================= Ansicht / Zustand der Seite =================
+// view: menu | local-setup | local | lobby | online
+const V={view:'menu',local:null,setup:{names:['','',''],goal:60,mode:'typed',diff:'mix'}};
+try{const s=JSON.parse(localStorage.getItem('zwanzig-lunacyna-v1')||'null');if(s&&s.setup)V.setup=Object.assign(V.setup,s.setup);if(s&&s.local&&s.local.ph)V.local=s.local}catch(e){}
+function saveLocal(){try{localStorage.setItem('zwanzig-lunacyna-v1',JSON.stringify({setup:V.setup,local:V.local}))}catch(e){}}
+
+// ================= Online =================
+const ON={gr:null,code:null,host:false,H:null,g:null,seq:0,seen:{},hostSeenAt:0,hostGone:false,lastPub:0,dirty:false,joinedAt:0};
+function myPeer(){const r=NET.room;if(!r)return null;const m=r.peers().find(p=>p.sameTab);return m?m.peer:null}
+function myIndex(G){const me=myPeer();if(!G||!G.pl||!me)return -1;return G.pl.findIndex(p=>p.p===me)}
+async function onlineCreate(){
+  const code='zw-'+Math.random().toString(36).slice(2,6).padEnd(4,'x');
+  try{ON.gr=await NET.room.join(code)}catch(e){toast('Spiel konnte nicht eröffnet werden');return}
+  ON.code=code;ON.host=true;ON.seen={};ON.hostGone=false;ON.joinedAt=Date.now();
+  ON.H={ph:'lobby',goal:V.setup.goal,mode:V.setup.mode,diff:V.setup.diff,pl:[]};
+  ON.gr.presence({j:1}).catch(()=>{});V.view='online';hostTick();render(true);
+}
+async function onlineJoin(code){
+  if(!/^zw-[a-z0-9]{4}$/.test(code))return;
+  try{ON.gr=await NET.room.join(code)}catch(e){toast('Beitreten hat nicht geklappt');return}
+  ON.code=code;ON.host=false;ON.g=null;ON.hostGone=false;ON.hostSeenAt=Date.now();ON.joinedAt=Date.now();
+  ON.gr.presence({j:1}).catch(()=>{});V.view='online';render(true);
+}
+function onlineLeave(){
+  if(ON.gr){try{ON.gr.leave()}catch(e){}}
+  if(ON.host&&NET.room)NET.room.presence({host:null}).catch(()=>{});
+  ON.gr=null;ON.host=false;ON.H=null;ON.g=null;ON.code=null;V.view=NET.room?'lobby':'menu';render(true);
+}
+function hostSyncLobby(){
+  const H=ON.H,me=myPeer(),peers=ON.gr.peers();
+  const present=new Map(peers.filter(p=>p.presence&&p.presence.j===1).map(p=>[p.peer,p]));
+  let pl=H.pl.filter(x=>present.has(x.p));
+  if(me&&!pl.some(x=>x.p===me))pl.unshift({p:me,b:(present.get(me)||{}).by||null});
+  for(const [peer,p] of present){if(pl.length>=6)break;if(!pl.some(x=>x.p===peer))pl.push({p:peer,b:p.by||null})}
+  const nxt=pl.map(x=>({p:x.p,b:x.b}));
+  if(JSON.stringify(nxt)!==JSON.stringify(H.pl)){H.pl=nxt;ON.dirty=true}
+}
+function hostApply(actor,a,free){const G2=apply(ON.H,actor,a,free);if(G2){ON.H=G2;ON.dirty=true;return true}return false}
+function hostTick(){
+  if(!ON.host||!ON.gr||!ON.H)return;
+  if(ON.H.ph==='lobby')hostSyncLobby();
+  for(const p of ON.gr.peers()){
+    if(p.sameTab)continue;const a=p.presence&&p.presence.a;
+    if(!Array.isArray(a)||!Number.isInteger(a[0])||a[0]<=(ON.seen[p.peer]||0))continue;
+    ON.seen[p.peer]=a[0];
+    const actor=ON.H.pl?ON.H.pl.findIndex(x=>x.p===p.peer):-1;if(actor<0)continue;
+    const t=String(a[1]||'');if(!['pick','guess','pass','judge','cont','override'].includes(t))continue;
+    const arg=a[2]&&typeof a[2]==='object'?a[2]:{};
+    hostApply(actor,{t,i:arg.i,g:typeof arg.g==='string'?arg.g:'',ok:!!arg.ok},false);
+  }
+  const now=Date.now();
+  if(ON.dirty||now-ON.lastPub>2000){
+    ON.dirty=false;ON.lastPub=now;
+    ON.gr.presence({g:pub(ON.H)}).catch(()=>{});
+    if(NET.room)NET.room.presence({host:{code:ON.code,n:(ON.H.pl||[]).length,ph:ON.H.ph==='lobby'?'lobby':'play',diff:ON.H.diff,goal:ON.H.goal}}).catch(()=>{});
+    render();
+  }
+}
+function send(t,arg){
+  if(V.view==='local'){const G2=apply(V.local,-1,{t,...(arg||{})},true);if(G2){V.local=G2;saveLocal();render(true)}return}
+  if(ON.host){const i=myIndex(ON.H);if(hostApply(i,{t,...(arg||{})},false))hostTick();return}
+  if(ON.gr){ON.gr.presence({a:[++ON.seq,t,arg||{}]}).catch(()=>{})}
+}
+function hostOnly(t){if(!ON.host)return;if(hostApply(-1,{t},true))hostTick()}
+function readHost(){
+  if(!ON.gr)return;
+  if(ON.host){ON.g=pub(ON.H);ON.hostSeenAt=Date.now();return}
+  const hp=ON.gr.peers().find(p=>p.presence&&p.presence.g&&typeof p.presence.g==='object');
+  if(hp){ON.g=hp.presence.g;ON.hostSeenAt=Date.now();ON.hostGone=false}
+  else if(Date.now()-ON.hostSeenAt>6000)ON.hostGone=true;
+}
+
+// ================= Darstellung =================
+const CAT={Person:'eine Person.',Ort:'ein Ort.',Ding:'ein Ding.'};
+const STAR='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l2.9 6.3 6.9.7-5.2 4.6 1.5 6.8L12 17l-6.1 3.4 1.5-6.8L2.2 9l6.9-.7z" fill="#FDD5BB"/></svg>';
+let lastMain='',lastSide='';
+function segHtml(id,cur,opts,disabled){return `<div class="seg" data-seg="${id}">${opts.map(([v,l])=>`<button type="button" data-v="${v}" aria-pressed="${String(cur)===String(v)}" ${disabled?'disabled':''}>${l}</button>`).join('')}</div>`}
+function msgText(G,m){if(!m)return '';const n=esc(nameOf(G,m.i));
+  if(m.k==='wrong')return `„${esc(m.g)}“ ist es leider nicht, ${n}.`;if(m.k==='pass')return `${n} passt.`;if(m.k==='no')return `Leider falsch, ${n}.`;if(m.k==='skip')return `${n} wurde übersprungen.`;return ''}
+
+function viewMenu(){
+  const on=!!NET.room,note=NET.state==='checking'?'Verbindung wird geprüft …':on?'Jede Person spielt am eigenen Gerät. Ideal mit Discord oder im Stream.':'Kein Spielserver gefunden. Online geht nur, wenn die Seite als Cloudflare Worker läuft.';
+  return `<div class="panel sheet"><h2>Wie wollt ihr spielen?</h2>
+    <div class="choices">
+      <button class="choice" type="button" data-do="goOnline" ${on?'':'disabled'}><b>Online</b><span>${esc(note)}</span></button>
+      <button class="choice" type="button" data-do="goLocal"><b>Am selben Bildschirm</b><span>Ein Gerät für alle – reihum klicken.${V.local&&V.local.ph?' Ein laufendes Spiel wird fortgesetzt.':''}</span></button>
+    </div></div>`;
+}
+function settingsHtml(cfg,disabled){
+  return `<div class="field"><span class="label">Schwierigkeit</span>${segHtml('diff',cfg.diff,DIFFS,disabled)}<p class="hint">${cfg.diff==='normal'?'Bekannte Persönlichkeiten, Orte und Dinge.':cfg.diff==='hard'?'Knifflige Karten mit kniffligen Hinweisen – für Rate-Profis.':'Leichte und schwere Karten gemischt.'}</p></div>
+    <div class="field"><span class="label">Gespielt wird bis</span>${segHtml('goal',cfg.goal,[[40,'40 Punkte'],[60,'60 Punkte'],[100,'100 Punkte']],disabled)}</div>
+    <div class="field"><span class="label">Antworten</span>${segHtml('mode',cfg.mode,[['typed','Eintippen'],['spoken','Laut sagen']],disabled)}
+      <p class="hint">${cfg.mode==='typed'?'Antworten werden eingetippt und automatisch geprüft – kleine Tippfehler sind okay.':'Antworten laut sagen (z. B. im Voice-Chat). Wer vorliest, sieht die Lösung und entscheidet.'}</p></div>`;
+}
+function viewLocalSetup(){
+  const s=V.setup;
+  return `<div class="panel sheet"><h2>Am selben Bildschirm</h2>
+    <div class="field"><span class="label">Mitspielende (2–6)</span>
+      ${s.names.map((n,i)=>`<div class="namerow"><span class="num">${i+1}</span><input class="txt" id="nm${i}" data-name="${i}" value="${esc(n)}" placeholder="Person ${i+1}" maxlength="24" autocomplete="off">${s.names.length>2?`<button class="linkbtn" type="button" data-do="rmName" data-i="${i}">Entfernen</button>`:''}</div>`).join('')}
+      ${s.names.length<6?`<div><button class="linkbtn" type="button" data-do="addName">+ Person hinzufügen</button></div>`:''}
+    </div>
+    ${settingsHtml(s,false)}
+    <div class="row"><button class="btn" type="button" data-do="startLocal">Spiel starten</button><button class="btn ghost" type="button" data-do="menu">Zurück</button></div></div>`;
+}
+function viewLobby(){
+  const peers=NET.room?NET.room.peers():[];
+  const games=peers.filter(p=>!p.sameTab&&p.presence&&p.presence.host&&typeof p.presence.host.code==='string'&&/^zw-[a-z0-9]{4}$/.test(p.presence.host.code));
+  resolveNames(games.map(p=>p.by));
+  const myNm=window.kbName?window.kbName.get():'';
+  const list=games.length?games.map(p=>{const h=p.presence.host,n=Math.min(6,h.n|0),open=h.ph==='lobby'&&n<6;const d=(DIFFS.find(x=>x[0]===h.diff)||['',''])[1];
+    return `<div class="game"><div style="min-width:0"><div class="t">Spiel von ${esc((p.by&&NET.names[p.by])||'jemandem')}</div><div class="s">${esc(d)} · bis ${h.goal|0} Punkte · ${n}/6 Spieler · ${open?'wartet':'läuft'}</div></div>
+      <button class="btn small ${open?'':'ghost'}" type="button" data-do="join" data-code="${esc(h.code)}">${open?'Mitspielen':'Zuschauen'}</button></div>`}).join('')
+    :`<div class="empty">Gerade ist kein offenes Spiel da. Eröffne eins – deine Mitspieler sehen es dann hier.</div>`;
+  return `<div class="panel sheet"><div class="label">Online</div><h2>Spiel finden</h2>
+    <div class="field"><span class="label">Dein Name</span><div class="namerow"><input class="txt" id="myName" value="${esc(myNm)}" maxlength="24" autocomplete="off"><button class="btn small ghost" type="button" data-do="saveName">Speichern</button></div></div>
+    <div class="games">${list}</div>
+    <div class="row"><button class="btn" type="button" data-do="create">Neues Spiel eröffnen</button><button class="btn ghost" type="button" data-do="menu">Zurück</button></div></div>`;
+}
+function viewWaiting(G,me){
+  resolveNames((G.pl||[]).map(p=>p.b));
+  const rows=(G.pl||[]).map((p,i)=>`<tr><td>${esc(nameOf(G,i))}${i===me?' (du)':''}${i===0?' · Spielleitung':''}</td><td></td></tr>`).join('');
+  const n=(G.pl||[]).length;
+  if(ON.host)return `<div class="panel sheet"><div class="label">Warteraum · ${n}/6 Spieler</div><h2>Dein Online-Spiel</h2><table class="res">${rows}</table>
+    ${settingsHtml(G,false)}<p>${n<2?'Warte auf Mitspieler: Sie öffnen diese Seite, wählen „Online“ und klicken bei deinem Spiel auf „Mitspielen“.':'Alle da? Dann los.'}</p>
+    <div class="row"><button class="btn" type="button" data-do="hostStart" ${n<2?'disabled':''}>Spiel starten</button><button class="btn ghost" type="button" data-do="leave">Verlassen</button></div></div>`;
+  return `<div class="panel sheet"><div class="label">Warteraum · ${n}/6 Spieler</div><h2>${me>=0?'Du bist dabei':'Du schaust zu'}</h2><table class="res">${rows}</table>
+    ${settingsHtml(G,true)}<p>Die Spielleitung startet das Spiel.</p><div class="row"><button class="btn ghost" type="button" data-do="leave">Verlassen</button></div></div>`;
+}
+// me: eigener Index (online), -1 = Zuschauer, null = lokal (alle)
+function viewBoard(G,me,ctl){
+  const local=me===null,cur=G.order[G.tp],card=CARDS[G.ci];
+  const isCur=local||me===cur,isVl=local||me===G.vl;
+  const curName=esc(nameOf(G,cur)),vlName=esc(nameOf(G,G.vl));
+  const t=G.cur!=null?G.tiles[G.cur]:null;
+  let prompt='';
+  const peekBtn=(!local||G.mode==='spoken')&&isVl&&card?`<span class="peek" data-peek><button class="linkbtn" type="button" data-hold>Lösung (gedrückt halten)</button><span class="ans">${esc(card.answer)}</span></span>`:'';
+  if(G.ph==='pick'){
+    prompt=`<div class="label hot">Am Zug</div><div class="who">${isCur&&!local?'Du bist dran<em>, wähl eine Zahl.</em>':curName+'<em>, wähl eine Zahl.</em>'}</div>`;
+    if(!isCur)prompt+=`<div class="wait" style="margin-top:10px"><span class="dots">${curName} überlegt</span></div>`;
+    if(G.msg)prompt+=`<div class="msg">${msgText(G,G.msg)}</div>`;
+    if(G.lw&&isVl&&G.mode==='typed')prompt+=`<div style="margin-top:8px"><button class="linkbtn" type="button" data-do="override">${local?'Vorleser·in: ':''}Das war doch richtig</button></div>`;
+  }else if(G.ph==='guess'){
+    prompt=`<div class="label hot">Hinweis ${t.num} · für ${curName}</div><div class="clue">${esc(t.t)}</div>`;
+    if(G.mode==='typed'){
+      if(isCur)prompt+=`<div class="guessrow"><input class="txt" id="guess" placeholder="Deine Antwort …" maxlength="60" autocomplete="off"><button class="btn" type="button" data-do="guess">Raten</button><button class="btn ghost" type="button" data-do="pass">Passen</button></div>`;
+      else prompt+=`<div class="wait"><span class="dots">${curName} tippt eine Antwort</span></div>`;
+    }else{
+      if(isVl)prompt+=`<p class="hint" style="margin-bottom:12px">${local?curName+' sagt die Antwort laut – die Vorleser·in entscheidet.':curName+' sagt die Antwort laut. Du liest vor und entscheidest.'}</p>
+        <div class="row"><button class="btn" type="button" data-do="right">Richtig</button><button class="btn ghost" type="button" data-do="wrong">Falsch</button></div>`;
+      else prompt+=`<div class="wait"><span class="dots">${isCur?'Sag deine Antwort laut! '+vlName+' entscheidet':curName+' rät laut – '+vlName+' entscheidet'}</span></div>`;
+      if(isCur&&!local&&!isVl)prompt+=`<div style="margin-top:10px"><button class="linkbtn" type="button" data-do="pass">Passen</button></div>`;
+    }
+  }else if(G.ph==='action'){
+    prompt=`<div class="label hot">Sonderfeld ${t.num} · ${curName}</div><div class="clue">${esc(t.t)}</div>`;
+    prompt+=isCur?`<button class="btn" type="button" data-do="cont">Weiter</button>`:`<div class="wait"><span class="dots">Warte auf ${curName}</span></div>`;
+  }
+  if(peekBtn)prompt+=`<div style="margin-top:14px">${peekBtn}</div>`;
+  if(ctl&&!local&&['pick','guess','action'].includes(G.ph))prompt+=`<div style="margin-top:8px"><button class="linkbtn" type="button" data-do="skipTurn">Spielleitung: ${curName} überspringen</button></div>`;
+  const canPick=G.ph==='pick'&&isCur;
+  const tiles=G.tiles.map((x,i)=>{
+    if(!x.o)return canPick?`<button class="tile closed" type="button" data-pick="${i}" aria-label="Feld ${x.num}"><span class="big">${x.num}</span></button>`:`<div class="tile closed"><span class="big">${x.num}</span></div>`;
+    const curr=i===G.cur&&G.ph!=='pick';
+    if(x.k==='a')return `<div class="tile act${curr?' current':''}"><span class="n">${x.num}</span><span class="tx">Sonderfeld</span>${STAR}</div>`;
+    return `<div class="tile open${curr?' current':''}"><span class="n">${x.num}</span><span class="tx">${esc(x.t)}</span></div>`;
+  }).join('');
+  const log=G.mode==='typed'&&G.log.length?`<div class="log"><span class="label">Schon geraten</span>${G.log.map(l=>`<span class="g">„${esc(l.g)}“ <i>· ${esc(nameOf(G,l.i))}</i></span>`).join('')}</div>`:'';
+  return `<div class="cardhead"><div><div class="label">Runde ${G.rd} · Es liest vor: ${vlName}${!local&&me===G.vl?' (du)':''}</div><h2>Ich bin ${CAT[card.category]||'gesucht.'}</h2></div>
+    <div class="pot"><b>${20-G.opened}</b><span class="label">Punkte im Topf</span></div></div>
+    <div class="panel prompt" id="promptBox">${prompt}</div>
+    <div class="tiles">${tiles}</div>${log}`;
+}
+function viewRoundEnd(G,me,ctl){
+  const card=CARDS[G.ci],r=G.res,last=G.pl.some(p=>p.pts>=G.goal);
+  const text=r.w!=null?`${esc(nameOf(G,r.w))} hat es nach ${r.opened} ${r.opened===1?'geöffnetem Feld':'geöffneten Feldern'} erraten.`:'Niemand ist draufgekommen – alle 20 Punkte gehen an die Vorleser·in.';
+  return `<div class="panel"><div class="label hot">Aufgelöst · Runde ${G.rd}</div><div class="answer">${esc(card.answer)}</div><p style="margin:0;font-size:19px">${text}</p>
+    <div class="gains">${r.gains.map(g=>`<div><b>+${g.pts}</b><span class="label">${esc(nameOf(G,g.i))} · ${g.role}</span></div>`).join('')}</div>
+    ${ctl?`<button class="btn" type="button" data-do="next">${last?'Zur Siegerehrung':'Nächste Karte'}</button>`:`<p class="hint">Die Spielleitung zieht gleich die nächste Karte.</p>`}
+    <div class="label" style="margin-top:26px">Alle Hinweise dieser Karte</div>
+    <div class="allhints">${G.tiles.filter(t=>t.k==='h').map(t=>`<div class="${t.o?'':'closed'}"><span>${t.num}</span>${esc(t.t)}</div>`).join('')}</div></div>`;
+}
+function viewGameEnd(G,me,ctl){
+  const order=G.pl.map((p,i)=>({i,pts:p.pts})).sort((a,b)=>b.pts-a.pts),top=order.filter(o=>o.pts===order[0].pts);
+  return `<div class="panel sheet" style="max-width:none"><div class="label hot">Spielende nach ${G.rd} Runden</div>
+    <h2>${top.length>1?'Gleichstand!':esc(nameOf(G,top[0].i))+' gewinnt!'}</h2>
+    <table class="res">${order.map((o,r)=>`<tr class="${o.pts===order[0].pts?'win':''}"><td>${r+1}. ${esc(nameOf(G,o.i))}${o.i===me?' (du)':''}</td><td>${o.pts} Punkte</td></tr>`).join('')}</table>
+    <div class="row">${ctl?`<button class="btn" type="button" data-do="rematch">Revanche</button><button class="btn ghost" type="button" data-do="${me===null?'newSetup':'toLobby'}">Neu einrichten</button>`:'<p class="hint">Die Spielleitung kann eine Revanche starten.</p>'}${me!==null?`<button class="btn ghost" type="button" data-do="leave">Verlassen</button>`:''}</div></div>`;
+}
+function viewSide(G,me){
+  if(!G||!G.pl||!G.pl.length||G.ph==='lobby'){
+    return `<div class="panel"><h3>So geht's</h3><ol class="rules">
+      <li>Eine Person liest vor. Alle anderen raten, wer oder was auf der Karte steht.</li>
+      <li>Wer dran ist, wählt eine Zahl von 1 bis 20, bekommt einen Hinweis und darf einmal raten.</li>
+      <li>Pro Karte gibt es 20 Punkte. Wer errät, bekommt 20 minus geöffnete Felder – den Rest die Vorleser·in.</li>
+      <li>Drei Felder sind Sonderfelder: aussetzen, Punkte gewinnen, Punkte verlieren oder nochmal wählen.</li></ol></div>`;
+  }
+  const playing=['pick','guess','action'].includes(G.ph),cur=G.order?G.order[G.tp]:-1;
+  const peers=ON.gr&&me!==null?new Set(ON.gr.peers().map(p=>p.peer)):null;
+  return `<div class="panel"><h3>Punktestand <span>Ziel ${G.goal}</span></h3><div class="score">${G.pl.map((p,i)=>{
+    const role=i===G.vl?'Liest vor':(i===cur&&playing?'Am Zug':(p.sk?'Setzt aus':''));
+    return `<div class="sc ${i===me?'me':''} ${peers&&p.p&&!peers.has(p.p)?'off':''}"><div class="top"><span class="nm">${esc(nameOf(G,i))}${i===me?' (du)':''}</span><span class="pt">${p.pts}</span></div>
+      <div class="bar"><i style="width:${Math.min(100,Math.round(p.pts/G.goal*100))}%"></i></div>${role?`<span class="chip ${role==='Am Zug'?'hot':''}">${role}</span>`:''}${peers&&p.p&&!peers.has(p.p)?' <span class="chip">offline</span>':''}</div>`}).join('')}</div>${me===null?`<div style="margin-top:12px"><button class="linkbtn" type="button" data-do="newSetup">Neues Spiel einrichten</button></div>`:''}</div>`;
+}
+
+let forced=false;
+function render(force){
+  if(force)forced=true;
+  let main='',side='',G=null,me=null,ctl=false;
+  if(V.view==='menu')main=viewMenu();
+  else if(V.view==='local-setup')main=viewLocalSetup();
+  else if(V.view==='lobby')main=viewLobby();
+  else if(V.view==='local'){G=V.local;me=null;ctl=true}
+  else if(V.view==='online'){
+    readHost();G=ON.g;me=myIndex(G);ctl=ON.host;
+    if(G&&G.pl)resolveNames(G.pl.map(p=>p.b));
+    if(ON.hostGone&&!ON.host)main=`<div class="panel sheet"><h2>Die Spielleitung ist weg</h2><p>Das Spiel läuft im Browser der Spielleitung. Ohne sie geht es nicht weiter.</p><div class="row"><button class="btn" type="button" data-do="leave">Zurück zur Spielsuche</button></div></div>`;
+    else if(!G)main=`<div class="panel sheet"><h2>Verbinde …</h2><p>Einen Moment.</p><div class="row"><button class="btn ghost" type="button" data-do="leave">Abbrechen</button></div></div>`;
+    else if(G.ph==='lobby')main=viewWaiting(G,me);
+  }
+  if(G&&!main){
+    if(['pick','guess','action'].includes(G.ph))main=viewBoard(G,me,ctl);
+    else if(G.ph==='roundEnd')main=viewRoundEnd(G,me,ctl);
+    else if(G.ph==='gameEnd')main=viewGameEnd(G,me,ctl);
+  }
+  side=viewSide(G,me);
+  const nameKey=JSON.stringify(NET.names);
+  const mk=main+'|'+nameKey;
+  if(mk!==lastMain||forced){
+    const ae=document.activeElement,keep=ae&&ae.id&&ae.tagName==='INPUT'?{id:ae.id,v:ae.value,s:ae.selectionStart}:null;
+    const guessVal=$('guess')?$('guess').value:null;
+    $('main').innerHTML=main;lastMain=mk;
+    if(guessVal!=null&&$('guess'))$('guess').value=guessVal;
+    if(keep&&$(keep.id)){const el=$(keep.id);el.value=keep.v;el.focus();try{el.setSelectionRange(keep.s,keep.s)}catch(e){}}
+    else if($('guess'))$('guess').focus({preventScroll:true});
+  }
+  if(side!==lastSide||forced){$('side').innerHTML=side;lastSide=side}
+  forced=false;
+}
+
+// ================= Eingaben =================
+function readNames(){document.querySelectorAll('[data-name]').forEach(el=>{V.setup.names[+el.dataset.name]=el.value})}
+document.addEventListener('click',e=>{
+  const seg=e.target.closest('[data-seg] button');
+  if(seg&&!seg.disabled){const key=seg.parentElement.dataset.seg,v=key==='goal'?+seg.dataset.v:seg.dataset.v;
+    if(V.view==='local-setup'){readNames();V.setup[key]=v;saveLocal();render(true)}
+    else if(V.view==='online'&&ON.host&&ON.H&&ON.H.ph==='lobby'){ON.H[key]=v;V.setup[key]=v;saveLocal();ON.dirty=true;hostTick();render(true)}
+    return}
+  const pk=e.target.closest('[data-pick]');if(pk){send('pick',{i:+pk.dataset.pick});return}
+  const b=e.target.closest('[data-do]');if(!b)return;const d=b.dataset.do;
+  switch(d){
+    case 'goOnline':V.view='lobby';render(true);break;
+    case 'goLocal':V.view=V.local&&V.local.ph?'local':'local-setup';render(true);break;
+    case 'menu':if(V.view==='local-setup')readNames();V.view='menu';saveLocal();render(true);break;
+    case 'addName':readNames();if(V.setup.names.length<6)V.setup.names.push('');render(true);break;
+    case 'rmName':readNames();V.setup.names.splice(+b.dataset.i,1);render(true);break;
+    case 'startLocal':{readNames();const pl=V.setup.names.map((n,i)=>({name:(n||'').trim()||('Person '+(i+1))}));V.local=newGame(V.setup,pl);V.view='local';saveLocal();render(true);break}
+    case 'newSetup':V.setup.names=V.local?V.local.pl.map(p=>p.name):V.setup.names;V.local=null;V.view='local-setup';saveLocal();render(true);break;
+    case 'saveName':{const el=$('myName');if(el&&window.kbName){window.kbName.set(el.value);toast('Name gespeichert');render(true)}break}
+    case 'create':{const el=$('myName');if(el&&window.kbName&&el.value.trim())window.kbName.set(el.value);onlineCreate();break}
+    case 'join':{const el=$('myName');if(el&&window.kbName&&el.value.trim())window.kbName.set(el.value);onlineJoin(b.dataset.code);break}
+    case 'leave':onlineLeave();break;
+    case 'toLobby':if(ON.host&&ON.H){ON.H={ph:'lobby',goal:ON.H.goal,mode:ON.H.mode,diff:ON.H.diff,pl:ON.H.pl.map(p=>({p:p.p,b:p.b}))};ON.dirty=true;hostTick();render(true)}break;
+    case 'hostStart':if(ON.host&&ON.H&&ON.H.pl.length>=2){ON.H=newGame(ON.H,ON.H.pl.map(p=>({p:p.p,b:p.b})));ON.dirty=true;hostTick();render(true)}break;
+    case 'guess':{const el=$('guess');if(el&&el.value.trim()){send('guess',{g:el.value.trim()});el.value=''}break}
+    case 'pass':send('pass');break;
+    case 'right':send('judge',{ok:true});break;
+    case 'wrong':send('judge',{ok:false});break;
+    case 'cont':send('cont');break;
+    case 'override':send('override');break;
+    case 'skipTurn':hostOnly('skip');break;
+    case 'next':if(V.view==='local')send('next');else hostOnly('next');break;
+    case 'rematch':if(V.view==='local')send('rematch');else hostOnly('rematch');break;
+  }
+});
+document.addEventListener('keydown',e=>{
+  if(e.key!=='Enter')return;
+  if(e.target.id==='guess'){e.preventDefault();const v=e.target.value.trim();if(v){send('guess',{g:v});e.target.value=''}}
+  if(e.target.id==='myName'){e.preventDefault();if(window.kbName){window.kbName.set(e.target.value);toast('Name gespeichert');render(true)}}
+});
+document.addEventListener('input',e=>{if(e.target.dataset&&e.target.dataset.name!=null){V.setup.names[+e.target.dataset.name]=e.target.value;saveLocal()}});
+// Lösung nur zeigen, solange gedrückt
+document.addEventListener('pointerdown',e=>{const h=e.target.closest('[data-hold]');if(h)h.parentElement.classList.add('on')});
+['pointerup','pointercancel','pointerleave'].forEach(t=>document.addEventListener(t,()=>document.querySelectorAll('[data-peek].on').forEach(x=>x.classList.remove('on')),true));
+$('btnMenu').onclick=()=>{if(V.view==='online')onlineLeave();V.view='menu';render(true)};
+
+// ================= Verbindung =================
+setInterval(()=>{if(V.view==='online'){hostTick();render()}else if(V.view==='lobby')render()},200);
+(async()=>{
+  const c=window.claude;
+  if(!c||typeof c.use!=='function'){NET.state='off';render(true);return}
+  try{NET.user=await c.use('user')}catch(e){}
+  try{const room=await c.use('room');if(room){NET.room=room;room.onPeers(()=>{},()=>{NET.room=null;$('netpill').hidden=true;if(V.view==='online'||V.view==='lobby'){ON.gr=null;V.view='menu'}render(true)})}}catch(e){}
+  NET.state=NET.room?'on':'off';$('netpill').hidden=!NET.room;render(true);
+})();
+render(true);
+})();
+</script>
+</body>
+</html>

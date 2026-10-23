@@ -33,22 +33,7 @@
 html,body{height:100%}
 body{
   background-color:var(--table);
-  background-image:
-    radial-gradient(1.2px 1.2px at 12% 18%,rgba(246,230,255,.9),transparent 60%),
-    radial-gradient(1px 1px at 34% 8%,rgba(246,230,255,.7),transparent 60%),
-    radial-gradient(1.4px 1.4px at 58% 22%,rgba(246,230,255,.8),transparent 60%),
-    radial-gradient(1px 1px at 76% 12%,rgba(246,230,255,.7),transparent 60%),
-    radial-gradient(1.3px 1.3px at 90% 30%,rgba(246,230,255,.8),transparent 60%),
-    radial-gradient(1px 1px at 22% 46%,rgba(246,230,255,.6),transparent 60%),
-    radial-gradient(1.2px 1.2px at 48% 60%,rgba(246,230,255,.6),transparent 60%),
-    radial-gradient(1px 1px at 68% 52%,rgba(246,230,255,.5),transparent 60%),
-    radial-gradient(1px 1px at 8% 72%,rgba(246,230,255,.5),transparent 60%),
-    radial-gradient(1.2px 1.2px at 86% 70%,rgba(246,230,255,.5),transparent 60%),
-    radial-gradient(60vmax 50vmax at 92% -8%,rgba(253,213,187,.16),transparent 60%),
-    radial-gradient(90vmax 50vmax at 50% 120%,rgba(242,167,168,.28),transparent 60%),
-    linear-gradient(180deg,#120F2E 0%,#1D1842 55%,#3B2E66 88%,#5E4373 100%);
-  background-attachment:fixed;
-  min-height:100%;
+    min-height:100%;
   color:var(--on-table);
   font-family:var(--font-body);
   font-size:15px;
@@ -144,6 +129,20 @@ table.res tr.win td{color:var(--ok)}
 .netpill{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:6px 10px;border-radius:999px;background:rgba(185,166,232,.16);color:var(--on-table)}
 .netpill.ok::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:#5BE38B;margin-right:6px}
 @media (prefers-reduced-motion:reduce){.btn,.toast{transition:none}}
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background-image:
+    radial-gradient(1.2px 1.2px at 12% 18%,rgba(246,230,255,.9),transparent 60%),
+    radial-gradient(1px 1px at 34% 8%,rgba(246,230,255,.7),transparent 60%),
+    radial-gradient(1.4px 1.4px at 58% 22%,rgba(246,230,255,.8),transparent 60%),
+    radial-gradient(1px 1px at 76% 12%,rgba(246,230,255,.7),transparent 60%),
+    radial-gradient(1.3px 1.3px at 90% 30%,rgba(246,230,255,.8),transparent 60%),
+    radial-gradient(1px 1px at 22% 46%,rgba(246,230,255,.6),transparent 60%),
+    radial-gradient(1.2px 1.2px at 48% 60%,rgba(246,230,255,.6),transparent 60%),
+    radial-gradient(1px 1px at 68% 52%,rgba(246,230,255,.5),transparent 60%),
+    radial-gradient(1px 1px at 8% 72%,rgba(246,230,255,.5),transparent 60%),
+    radial-gradient(1.2px 1.2px at 86% 70%,rgba(246,230,255,.5),transparent 60%),
+    radial-gradient(60vmax 50vmax at 92% -8%,rgba(253,213,187,.16),transparent 60%),
+    radial-gradient(90vmax 50vmax at 50% 120%,rgba(242,167,168,.28),transparent 60%),
+    linear-gradient(180deg,#120F2E 0%,#1D1842 55%,#3B2E66 88%,#5E4373 100%);}
 </style>
 <script>
 // Verbindung zum Kugelblitz-Server (Cloudflare Durable Objects) per WebSocket.
@@ -202,8 +201,8 @@ table.res tr.win td{color:var(--ok)}
     return api;
   }
 
-  const lobby=conn('lobby');
-  const room=Object.freeze({...lobby,join:n=>/^kb-[a-z0-9]{4}$/.test(n)?Promise.resolve(conn('g-'+n)):Promise.reject({code:'invalid_argument',message:'bad name'})});
+  const lobby=conn(window.KB_LOBBY==='lobby-zw'?'lobby-zw':'lobby');
+  const room=Object.freeze({...lobby,join:n=>/^(kb|zw)-[a-z0-9]{4}$/.test(n)?Promise.resolve(conn('g-'+n)):Promise.reject({code:'invalid_argument',message:'bad name'})});
   const user=Object.freeze({
     profiles(ids){const o={};(Array.isArray(ids)?ids:[ids]).forEach(id=>{o[id]={id,name:names[id]||'',avatarUrl:'',color:'#888',email:null,isMe:id===uid,guest:false}});return Promise.resolve(o)},
     id:()=>Promise.resolve(uid),name:()=>Promise.resolve(myName),
@@ -211,7 +210,7 @@ table.res tr.win td{color:var(--ok)}
     isOwner:()=>Promise.resolve(false),canEdit:()=>Promise.resolve(false),can:()=>Promise.resolve(null)
   });
   // Name für die Anzeige im Spiel
-  window.kbName={get:()=>myName,reroll(){myName=newName();names[uid]=myName;try{localStorage.setItem('kb_name',myName)}catch(e){}conns.forEach(c=>c._rename());return myName}};
+  window.kbName={get:()=>myName,set(v){const c=cleanName(String(v||'')).trim();if(!c)return myName;myName=c;names[uid]=myName;try{localStorage.setItem('kb_name',myName)}catch(e){}conns.forEach(x=>x._rename());return myName},reroll(){myName=newName();names[uid]=myName;try{localStorage.setItem('kb_name',myName)}catch(e){}conns.forEach(c=>c._rename());return myName}};
   // Online nur anbieten, wenn der Server antwortet (z. B. nicht bei reinem Static Hosting)
   const roomP=lobby._ready.then(ok=>{if(!ok){lobby.leave();return null}return room});
   window.claude={use:n=>n==='room'?roomP:Promise.resolve(n==='user'?user:null)};
