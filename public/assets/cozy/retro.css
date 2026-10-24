@@ -1,0 +1,207 @@
+/* ==========================================================================
+   Lunacynas Spielezimmer – 8-Bit / Retro-Modus (CSS)
+   Aktiv nur mit <html class="retro-mode"> (gesetzt von retro.js, gespeichert in
+   localStorage "lz_retro"). Ohne die Klasse greift hier keine einzige Regel.
+   Der Modus liegt ÜBER der Farbstimmung: Sternennacht -> "Arcade-Nacht",
+   Kaminabend -> "Bernstein-Terminal".
+   Inhalt: 1 Schriften · 2 Palette · 3 Pixel-Rahmen · 4 Arcade-Bewegung
+           5 CRT-Overlay · 6 Schalter · 7 Easter-Egg-Shake
+   ========================================================================== */
+
+/* 1 · Schriften ----------------------------------------------------------
+   Selbst gehostet (OFL), kein Google-Server -> DSGVO-freundlich. Der Browser lädt
+   eine @font-face-Datei erst, wenn ein Element sie benutzt – also nur im Retro-Modus.
+   size-adjust gleicht die Größen an: Press Start 2P füllt das ganze Geviert (riesig),
+   VT323 ist sehr klein. So passen die bestehenden Schriftgrößen weiter. */
+@font-face{font-family:"LZ Pixel";src:url("/assets/fonts/press-start-2p.woff2") format("woff2");font-display:swap;size-adjust:46%}
+@font-face{font-family:"LZ Terminal";src:url("/assets/fonts/vt323.woff2") format("woff2");font-display:swap;size-adjust:128%}
+
+:root.retro-mode{
+  --font-script:"LZ Pixel",ui-monospace,monospace;
+  --font-display:"LZ Pixel",ui-monospace,monospace;
+  --font-num:"LZ Pixel",ui-monospace,monospace;
+  --font-body:"LZ Terminal",ui-monospace,"Courier New",monospace;
+  font-synthesis:none;               /* kein künstliches Fett – Pixel bleiben scharf */
+  -webkit-font-smoothing:none;
+}
+
+/* 2 · Palette (reduziert, hoher Kontrast) ----------------------------------- */
+:root.retro-mode{
+  --c-night:#0D0A22; --c-night-2:#120E30; --c-dusk:#1F1850; --c-horizon:#341C5C;
+  --c-panel-a:#1E1748; --c-panel-b:#160F3A; --c-frame:#5B3FD6; --c-frame-hi:#8A6CFF;
+  --c-text:#FFFFFF; --c-muted:#BDB7EC; --c-neon:#FFE66D; --c-glow:#FF4FA3; --c-lavender:#7FE3FF;
+  --c-moon:#FFB86B; --c-moon-deep:#D9822B; --c-peach:#FF6F91; --c-ink:#120A2E;
+  --rgb-neon:255,230,109; --rgb-glow:255,79,163; --rgb-lav:127,227,255; --rgb-moon:255,184,107;
+  --rgb-peach:255,111,145; --rgb-night:13,10,34; --rgb-deep:6,4,18;
+  --lz-focus:#FFE66D; --lz-focus-halo:rgba(255,79,163,.55);
+  --px:4px; --px-c:var(--c-frame-hi); --px-dark:rgba(0,0,0,.55);
+
+  /* Seiten-Variablen auf die Retro-Palette umbiegen */
+  --night:var(--c-night); --wall:var(--c-panel-b); --wall-2:var(--c-panel-a);
+  --panel-a:var(--c-panel-a); --panel-b:var(--c-panel-b); --frame:var(--c-frame);
+  --text:var(--c-text); --muted:var(--c-muted); --neon:var(--c-neon);
+  --glow:var(--c-glow); --neon-glow:var(--c-glow); --lavender:var(--c-lavender);
+  --moon:var(--c-moon); --moon-deep:var(--c-moon-deep); --peach:var(--c-peach);
+  --btn-ink:var(--c-ink); --paper-ink:var(--c-ink); --line:rgba(127,227,255,.35);
+  --table:var(--c-night); --table-deep:var(--c-frame); --card:var(--c-panel-a);
+  --ink:var(--c-text); --ink-soft:var(--c-muted); --on-table:var(--c-text);
+  --saffron:var(--c-moon); --saffron-deep:var(--c-moon-deep);
+  --ok:#3DFF8B; --bad:#FF4D6D;
+}
+:root.retro-mode[data-theme="kamin"]{
+  --c-night:#140D07; --c-night-2:#1B120A; --c-dusk:#2B1C0E; --c-horizon:#4A2A10;
+  --c-panel-a:#2A1B0D; --c-panel-b:#1F1409; --c-frame:#A8661F; --c-frame-hi:#E09A3E;
+  --c-text:#FFF0D6; --c-muted:#D9B68A; --c-neon:#FFD166; --c-glow:#FF7A1A; --c-lavender:#FFC27A;
+  --c-moon:#FFB347; --c-moon-deep:#C9741E; --c-peach:#FF7B54; --c-ink:#1A0F05;
+  --rgb-neon:255,209,102; --rgb-glow:255,122,26; --rgb-lav:255,194,122; --rgb-moon:255,179,71;
+  --rgb-peach:255,123,84; --rgb-night:20,13,7; --rgb-deep:10,6,2;
+  --lz-focus:#FFD166; --lz-focus-halo:rgba(255,122,26,.55); --line:rgba(255,194,122,.35);
+}
+/* Spielseiten-Hintergrund: flacher, dunkler Verlauf mit groben "Pixel-Sternen" */
+:root.retro-mode body::before{
+  background:
+    linear-gradient(rgba(var(--rgb-neon),.9) 0 0) 12% 18%/3px 3px no-repeat,
+    linear-gradient(rgba(var(--rgb-neon),.7) 0 0) 34% 9%/3px 3px no-repeat,
+    linear-gradient(rgba(var(--rgb-lav),.8) 0 0) 58% 22%/3px 3px no-repeat,
+    linear-gradient(rgba(var(--rgb-neon),.7) 0 0) 77% 12%/3px 3px no-repeat,
+    linear-gradient(rgba(var(--rgb-lav),.7) 0 0) 90% 31%/3px 3px no-repeat,
+    linear-gradient(rgba(var(--rgb-neon),.5) 0 0) 22% 47%/3px 3px no-repeat,
+    linear-gradient(rgba(var(--rgb-glow),.6) 0 0) 69% 53%/3px 3px no-repeat,
+    linear-gradient(180deg,var(--c-night) 0%,var(--c-night-2) 55%,var(--c-dusk) 85%,var(--c-horizon) 100%);
+}
+
+/* 3 · Pixel-Rahmen ---------------------------------------------------------
+   Keine Rundungen. Rahmen = vier versetzte Schatten (ergibt die typischen
+   "abgeknabberten" Pixel-Ecken) + harter Schlagschatten ohne Unschärfe. */
+:root.retro-mode *,:root.retro-mode *::before,:root.retro-mode *::after{border-radius:0!important}
+:root.retro-mode :is(h1,h2,h3,.sign,.answer,.verdict,.w,.fs-v,.counter b,.pot b,.big){
+  text-shadow:3px 3px 0 rgba(0,0,0,.7)!important;letter-spacing:.02em;
+}
+
+/* Container */
+:root.retro-mode :is(.panel,.frame,.sheet,.wordcard,.fs-tile,dialog.lz-fb,a.game,.side-note){
+  background:var(--c-panel-a)!important;
+  box-shadow:
+    0 calc(-1*var(--px)) 0 0 var(--px-c), 0 var(--px) 0 0 var(--px-c),
+    calc(-1*var(--px)) 0 0 0 var(--px-c), var(--px) 0 0 0 var(--px-c),
+    calc(2*var(--px)) calc(3*var(--px)) 0 0 var(--px-dark)!important;
+}
+:root.retro-mode .thumb{box-shadow:0 0 0 var(--px) var(--c-ink)!important}
+:root.retro-mode a.game{transform:none!important}
+:root.retro-mode a.game::before{display:none}                /* Klebeband passt nicht zu Pixeln */
+:root.retro-mode .fs-tile::after{display:none}
+
+/* Knöpfe */
+:root.retro-mode :is(.btn,.play,.lz-btn,.authbtn,.twbtn){
+  background:var(--c-neon)!important;color:var(--c-ink)!important;border:0!important;
+  box-shadow:
+    0 calc(-1*var(--px)) 0 0 var(--c-ink), 0 var(--px) 0 0 var(--c-ink),
+    calc(-1*var(--px)) 0 0 0 var(--c-ink), var(--px) 0 0 0 var(--c-ink),
+    inset calc(-1*var(--px)) calc(-1*var(--px)) 0 0 rgba(0,0,0,.28),
+    inset var(--px) var(--px) 0 0 rgba(255,255,255,.45),
+    calc(1.5*var(--px)) calc(1.5*var(--px)) 0 calc(.5*var(--px)) var(--px-dark)!important;
+  text-shadow:none!important;
+}
+:root.retro-mode :is(.btn.ghost,.btn.line,.lz-btn.ghost,.lz-fb-open){
+  background:transparent!important;color:var(--c-text)!important;
+  box-shadow:
+    0 calc(-1*var(--px)) 0 0 var(--px-c), 0 var(--px) 0 0 var(--px-c),
+    calc(-1*var(--px)) 0 0 0 var(--px-c), var(--px) 0 0 0 var(--px-c)!important;
+}
+/* Auswahl-Knöpfe, Chips, Felder, Zettel */
+:root.retro-mode :is(.choice,.seg button,.chips button,.toggles button,.tile,.clues .clue,.lz-theme,.lz-mute,.lz-fb .lz-seg span,.netpill,.chip,.badge-cat,.badge-players){
+  border-color:transparent!important;
+  box-shadow:0 0 0 calc(.5*var(--px)) var(--px-c), calc(.75*var(--px)) calc(.75*var(--px)) 0 calc(.5*var(--px)) var(--px-dark)!important;
+}
+:root.retro-mode :is(.seg button,.chips button,.toggles button)[aria-pressed="true"],
+:root.retro-mode .lz-fb .lz-seg input:checked+span{
+  background:var(--c-moon)!important;color:var(--c-ink)!important;
+  box-shadow:0 0 0 calc(.5*var(--px)) var(--c-ink), inset calc(-.5*var(--px)) calc(-.5*var(--px)) 0 0 rgba(0,0,0,.3)!important;
+}
+:root.retro-mode :is(.txt,.lz-fb input[type=text],.lz-fb input[type=email],.lz-fb textarea){
+  background:var(--c-ink)!important;border:0!important;
+  box-shadow:inset 0 0 0 calc(.5*var(--px)) var(--px-c), inset var(--px) var(--px) 0 0 rgba(0,0,0,.5)!important;
+  caret-color:var(--c-neon);
+}
+:root.retro-mode :is(.txt,.lz-fb input,.lz-fb textarea):focus{box-shadow:inset 0 0 0 calc(.5*var(--px)) var(--c-neon), inset var(--px) var(--px) 0 0 rgba(0,0,0,.5)!important}
+/* Focus-Ring: gestrichelter Pixel-Rahmen */
+:root.retro-mode :where(a,button,input,select,textarea,summary,[tabindex]:not([tabindex="-1"])):focus-visible{
+  outline:var(--px) dashed var(--lz-focus)!important;outline-offset:calc(1.5*var(--px))!important;
+}
+/* Pixelgrafik bleibt pixelig */
+:root.retro-mode :is(canvas,img,svg){image-rendering:pixelated}
+
+/* 4 · Arcade-Bewegung -------------------------------------------------------
+   Hover: einen Schritt hoch. Klick: "eindrücken" – der Knopf rutscht in seinen Schatten. */
+@media (prefers-reduced-motion:no-preference){
+  :root.retro-mode :is(.btn,.play,.lz-btn,.choice,.seg button,.chips button,.toggles button,button.tile,.clue[data-toggle],.lz-theme,.lz-mute,.lz-fb-open,.lz-retro,a.game){
+    transition:transform .08s steps(2,end),filter .08s steps(2,end)!important;
+  }
+  :root.retro-mode :is(.btn,.play,.lz-btn,.choice,.seg button,.chips button,.toggles button,button.tile,.clue[data-toggle],.lz-fb-open,a.game):hover:not([disabled]){
+    transform:translate(-2px,-2px)!important;filter:brightness(1.12);
+  }
+}
+:root.retro-mode :is(.btn,.play,.lz-btn,.choice,.seg button,.chips button,.toggles button,button.tile,.clue[data-toggle],.lz-theme,.lz-mute,.lz-fb-open,a.game):active:not([disabled]){
+  transform:translate(2px,2px)!important;filter:brightness(.95);
+}
+:root.retro-mode :is(.btn,.play,.lz-btn):active:not([disabled]){
+  box-shadow:
+    0 calc(-1*var(--px)) 0 0 var(--c-ink), 0 var(--px) 0 0 var(--c-ink),
+    calc(-1*var(--px)) 0 0 0 var(--c-ink), var(--px) 0 0 0 var(--c-ink),
+    inset var(--px) var(--px) 0 0 rgba(0,0,0,.28)!important;
+}
+/* Wartepunkte im Takt eines alten Displays */
+@media (prefers-reduced-motion:no-preference){
+  :root.retro-mode .bulb{animation-timing-function:steps(3,end)!important}
+}
+
+/* 5 · CRT-Overlay -----------------------------------------------------------
+   Ein einziges fixiertes Element, keine Animation, pointer-events:none:
+   Scanlines + dunkle, gewölbt wirkende Ränder (Vignette). Kostet praktisch nichts. */
+.lz-crt{display:none}
+:root.retro-mode .lz-crt{
+  display:block;position:fixed;inset:0;z-index:2147483000;pointer-events:none;
+  background:
+    repeating-linear-gradient(180deg,rgba(0,0,0,.20) 0 1px,transparent 1px 3px),
+    radial-gradient(ellipse 120% 100% at 50% 50%,transparent 62%,rgba(0,0,0,.42) 100%);
+  box-shadow:inset 0 0 90px rgba(0,0,0,.55),inset 0 0 0 1px rgba(255,255,255,.04);
+  border-radius:28px/22px!important;
+}
+@media (prefers-contrast:more){:root.retro-mode .lz-crt{display:none}}
+@media print{.lz-crt{display:none!important}}
+
+/* 6 · Schalter im Stil des Game-Boy-Power-Schiebers ---------------------------- */
+.lz-retro{display:inline-flex;align-items:center;gap:7px;height:44px;padding:0 10px 0 9px;flex:none;border:0;cursor:pointer;
+  border-radius:999px;background:transparent;color:var(--c-text);font:700 11px/1 var(--font-body,system-ui);letter-spacing:.08em;
+  box-shadow:inset 0 0 0 2px rgba(var(--rgb-lav),.45);transition:box-shadow .15s}
+.lz-retro:hover{box-shadow:inset 0 0 0 2px var(--c-neon),0 0 16px rgba(var(--rgb-glow),.45)}
+.lz-retro-led{width:7px;height:7px;border-radius:50%;background:#4a2030;box-shadow:inset 0 0 0 1px rgba(0,0,0,.4);transition:background .15s,box-shadow .15s}
+.lz-retro-track{position:relative;width:26px;height:12px;border-radius:6px;background:rgba(var(--rgb-deep),.6);box-shadow:inset 0 1px 2px rgba(0,0,0,.6),inset 0 0 0 1px rgba(var(--rgb-lav),.35)}
+.lz-retro-knob{position:absolute;top:1px;left:1px;width:12px;height:10px;border-radius:3px;background:linear-gradient(180deg,#e9e4f5,#a9a2c2);
+  box-shadow:0 1px 0 rgba(0,0,0,.4);transition:transform .16s cubic-bezier(.3,1.6,.6,1)}
+.lz-retro-knob::before{content:"";position:absolute;inset:3px 4px;background:repeating-linear-gradient(90deg,rgba(0,0,0,.35) 0 1px,transparent 1px 2px)}
+.lz-retro[aria-checked="true"] .lz-retro-knob{transform:translateX(12px)}
+.lz-retro[aria-checked="true"] .lz-retro-led{background:#ff3355;box-shadow:0 0 6px 1px #ff3355,inset 0 0 0 1px rgba(255,255,255,.3)}
+.lz-retro-txt{white-space:nowrap}
+.lz-retro-fixed{position:fixed;right:max(12px,env(safe-area-inset-right,0px));bottom:max(64px,calc(env(safe-area-inset-bottom,0px) + 64px));z-index:40;background:rgba(var(--rgb-night),.8)}
+@media (max-width:480px){.lz-retro{padding:0 8px}.lz-retro-txt{font-size:10px}}
+/* im Retro-Modus: eckiger Arcade-Knopf statt Pille */
+:root.retro-mode .lz-retro{font-family:"LZ Pixel",monospace;font-size:20px;letter-spacing:0;
+  box-shadow:0 0 0 calc(.5*var(--px)) var(--px-c),calc(.75*var(--px)) calc(.75*var(--px)) 0 calc(.5*var(--px)) var(--px-dark)!important}
+:root.retro-mode .lz-retro-track{background:var(--c-ink)}
+@media (max-width:480px){:root.retro-mode .lz-retro .lz-retro-txt{font-size:17px}}
+:root.retro-mode .lz-retro-knob{background:var(--c-neon)}
+
+/* 7 · Easter Egg: Bildschirm wackelt kurz ------------------------------------- */
+@media (prefers-reduced-motion:no-preference){
+  html.lz-shake body{animation:lzShake .5s steps(8,end)}
+  @keyframes lzShake{0%,100%{transform:none}12%{transform:translate(-6px,3px)}25%{transform:translate(5px,-4px)}37%{transform:translate(-4px,-2px)}
+    50%{transform:translate(6px,4px)}62%{transform:translate(-3px,5px)}75%{transform:translate(4px,-3px)}87%{transform:translate(-2px,2px)}}
+}
+html.lz-flash .lz-crt{display:block;background:rgba(255,255,255,.18);transition:background .4s}
+
+/* Feinschliff: Abstände für die dickeren Pixel-Rahmen, deckende Kopfzeilen-Knöpfe */
+:root.retro-mode .fs-grid{gap:20px 18px;padding:4px}
+:root.retro-mode .funstats{margin-bottom:26px}
+:root.retro-mode :is(.chips,.toggles,.seg){gap:10px}
+:root.retro-mode :is(.lz-theme,.lz-mute,.lz-retro){background:var(--c-panel-b)!important}

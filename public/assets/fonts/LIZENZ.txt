@@ -1,0 +1,5 @@
+Press Start 2P – Copyright 2012 The Press Start 2P Project Authors (cody@zone38.net), with Reserved Font Name "Press Start 2P"
+VT323 – Copyright 2011, The VT323 Project Authors (peter.hull@oikoi.com)
+
+Beide Schriften stehen unter der SIL Open Font License 1.1: https://openfontlicense.org
+Selbst gehostet (statt von Google Fonts geladen), damit keine Besucherdaten an Google gehen.

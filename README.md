@@ -17,6 +17,8 @@ Kleine Browser-Spiele mit Online-Multiplayer:
 | `public/assets/og.jpg` | Vorschaubild, das Discord & Co. beim Teilen des Links zeigen |
 | `public/favicon.ico`, `public/assets/icons/`, `public/site.webmanifest` | Favicons, Touch-Icons fürs Handy und Web-App-Manifest |
 | `public/assets/cozy/cozy.css`, `cozy.js` | Gemeinsames Modul für alle Seiten: Farbstimmung (Sternennacht/Kaminabend), Focus-Ringe, Screenreader-Ansagen, Pfeiltasten, Feedback-Dialog |
+| `public/assets/cozy/retro.css`, `retro.js` | 8-Bit-/Retro-Modus: Pixel-Look, CRT-Effekt, Chip-Sounds, Konami-Code |
+| `public/assets/fonts/` | Pixel-Schriften (Press Start 2P, VT323) – selbst gehostet, Lizenz liegt daneben |
 | `public/assets/cozy/sky.js` | Interaktiver Sternenhimmel der Startseite (Pfotenabdrücke bei Klick auf freie Flächen) |
 | `src/worker.js` | Cloudflare Worker: liefert die Seiten aus, betreibt die Online-Räume und speichert eigene Karten und die Bestenliste (Durable Objects) |
 | `wrangler.jsonc` | Cloudflare-Konfiguration |
@@ -122,6 +124,15 @@ Oben neben dem Lautsprecher sitzt ein runder Knopf: **Mond** = Sternennacht (lil
 - Ohne Auswahl richtet sich die Seite nach dem Gerät: Dunkelmodus → Sternennacht, Hellmodus → Kaminabend.
 - Die Wahl wird im Browser gespeichert (`lz_theme`) und gilt auf allen Seiten und in allen offenen Tabs.
 - Farben anpassen: `public/assets/cozy/cozy.css`, Abschnitt „Tokens“. Danach in `theme.py` `COZY_VERSION` hochzählen (oder in allen Seiten `cozy.css?v=1` → `?v=2`), damit Browser die neue Datei laden.
+
+## 8-Bit-Modus
+
+Der kleine Schiebeschalter „8-BIT“ (mit roter Power-LED) neben dem Mond/Flamme-Knopf schaltet den Retro-Look ein: Pixel-Schriften, eckige Pixel-Rahmen, Scanlines, Arcade-„Eindrücken“ beim Klicken und Töne wie aus einem alten Soundchip.
+- Gilt auf allen Seiten und bleibt beim Neuladen erhalten (`lz_retro` im Browser). Funktioniert mit beiden Farbstimmungen: Sternennacht → Arcade-Nacht, Kaminabend → Bernstein-Terminal.
+- Die Schriften liegen auf deinem eigenen Server (nicht bei Google) und werden erst geladen, wenn der Modus an ist.
+- Stumm bleibt stumm. Hover-Töne gibt es nur mit Maus und erst nach dem ersten Klick (Browser-Regeln).
+- Easter Egg: ↑ ↑ ↓ ↓ ← → ← → B A schaltet den Modus mit Münz-Sound und Wackel-Effekt ein.
+- Wer „Bewegung reduzieren“ eingestellt hat, bekommt kein Wackeln (nur ein kurzes Aufblitzen); bei „Mehr Kontrast“ entfallen die Scanlines.
 
 ## Tastatur & Barrierefreiheit
 

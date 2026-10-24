@@ -32,7 +32,14 @@
     kamin: { sky: ['#1A1714', '#221E1A', '#342A23', '#5A3826'], glow: 'rgba(255,201,156,.10)', haze: 'rgba(245,120,70,.32)',
              star: '255,214,170', paw: '255,233,207', pawGlow: 'rgba(255,169,77,.9)', spark: ['255,214,170', '255,169,77', '245,130,80'] }
   };
-  function themeName() { return document.documentElement.getAttribute('data-theme') === 'kamin' ? 'kamin' : 'nacht'; }
+  // 8-Bit-Modus: reduzierte Paletten, Canvas in Viertel-Auflösung (CSS skaliert pixelig hoch)
+  PAL.nacht8 = { sky: ['#0D0A22', '#120E30', '#1F1850', '#341C5C'], glow: 'rgba(255,184,107,.10)', haze: 'rgba(255,79,163,.22)',
+                 star: '255,230,109', paw: '255,255,255', pawGlow: 'rgba(0,0,0,0)', spark: ['255,230,109', '127,227,255', '255,79,163'] };
+  PAL.kamin8 = { sky: ['#140D07', '#1B120A', '#2B1C0E', '#4A2A10'], glow: 'rgba(255,179,71,.10)', haze: 'rgba(255,122,26,.25)',
+                 star: '255,209,102', paw: '255,240,214', pawGlow: 'rgba(0,0,0,0)', spark: ['255,209,102', '255,122,26', '255,240,214'] };
+  var RETRO_DPR = 0.25;
+  function isRetro() { return document.documentElement.classList.contains('retro-mode'); }
+  function themeName() { return (document.documentElement.getAttribute('data-theme') === 'kamin' ? 'kamin' : 'nacht') + (isRetro() ? '8' : ''); }
   var theme = themeName(), pal = PAL[theme];
 
   var W = 0, H = 0, dpr = 1, stars = [];
@@ -61,10 +68,11 @@
   }
   var lastArea = 0;
   function size() {
-    dpr = Math.min(2, window.devicePixelRatio || 1);
+    dpr = isRetro() ? RETRO_DPR : Math.min(2, window.devicePixelRatio || 1);
     W = innerWidth; H = innerHeight;
     cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.imageSmoothingEnabled = !isRetro();
     var area = W * H;
     // Sterne nur neu würfeln, wenn sich die Fläche deutlich ändert (nicht bei der Adressleiste)
     if (!stars.length || Math.abs(area - lastArea) / (lastArea || 1) > 0.25) { makeStars(); lastArea = area; }
@@ -78,14 +86,14 @@
   function addPaw(x, y) {
     if (paws.length >= MAX_PAWS) paws.shift();
     // leicht zufällig gedreht, wie ein Kätzchen, das vorbeitapst
-    paws.push({ x: x, y: y, rot: (Math.random() - 0.5) * 0.9, size: 13 + Math.random() * 4, born: performance.now(), life: 1600 });
+    paws.push({ x: x, y: y, rot: (Math.random() - 0.5) * 0.9, size: (13 + Math.random() * 4) * (isRetro() ? 1.9 : 1), born: performance.now(), life: 1600 });
     if (reduce) return;
     var n = 9;
     for (var i = 0; i < n; i++) {
       if (parts.length >= MAX_PARTS) break;
       var a = (i / n) * Math.PI * 2 + Math.random() * 0.5, sp = 0.6 + Math.random() * 1.6;
       parts.push({ x: x, y: y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 0.4, r: 1 + Math.random() * 1.8,
-                   life: 1, decay: 0.012 + Math.random() * 0.012, c: pal.spark[i % pal.spark.length], star: Math.random() < 0.35, g: theme === 'kamin' ? -0.02 : 0.012 });
+                   life: 1, decay: 0.012 + Math.random() * 0.012, c: pal.spark[i % pal.spark.length], star: Math.random() < 0.35, g: theme.indexOf('kamin') === 0 ? -0.02 : 0.012 });
     }
   }
   function drawPaw(p, now) {
@@ -122,7 +130,8 @@
       if (q.life <= 0) { parts[i] = parts[parts.length - 1]; parts.pop(); continue; }   // Cleanup ohne neue Arrays
       ctx.globalAlpha = q.life;
       ctx.fillStyle = 'rgb(' + q.c + ')';
-      if (q.star) drawStar4(q.x, q.y, q.r * 0.9);
+      if (theme.length > 5) ctx.fillRect(Math.floor(q.x * dpr) / dpr, Math.floor(q.y * dpr) / dpr, 1 / dpr, 1 / dpr);
+      else if (q.star) drawStar4(q.x, q.y, q.r * 0.9);
       else { ctx.beginPath(); ctx.arc(q.x, q.y, q.r * (0.5 + q.life * 0.5), 0, 6.283); ctx.fill(); }
     }
     ctx.globalAlpha = 1;
@@ -131,7 +140,7 @@
   /* ---- Ambient: Sternschnuppen bzw. aufsteigende Funken ----------------- */
   var nextShoot = 1500, nextEmber = 0;
   function ambient(t) {
-    if (theme === 'nacht') {
+    if (theme.indexOf('nacht') === 0) {
       if (t > nextShoot) {
         nextShoot = t + 3500 + Math.random() * 5000;
         var ang = Math.PI * (0.78 + Math.random() * 0.1);
@@ -158,11 +167,14 @@
     ctx.drawImage(bgCv, 0, 0, W, H);
     var c = 'rgb(' + pal.star + ')';
     ctx.fillStyle = c;
-    var dim = theme === 'kamin' ? 0.55 : 1;
+    var dim = theme.indexOf('kamin') === 0 ? 0.55 : 1;
     for (var i = 0; i < stars.length; i++) {
       var s = stars[i];
-      ctx.globalAlpha = dim * (reduce ? 0.7 : 0.45 + 0.55 * Math.abs(Math.sin(s.p + t / 1000 * s.s * 0.5)));
-      ctx.beginPath(); ctx.arc(s.fx * W, s.fy * H, s.r, 0, 6.283); ctx.fill();
+      var a = dim * (reduce ? 0.7 : 0.45 + 0.55 * Math.abs(Math.sin(s.p + t / 1000 * s.s * 0.5)));
+      if (theme.length > 5) {               // nacht8 / kamin8: ein Bildschirm-Pixel pro Stern, 3 Helligkeitsstufen
+        if (s.r < 0.9) continue;
+        ctx.globalAlpha = Math.ceil(a * 3) / 3; ctx.fillRect(Math.floor(s.fx * W * dpr) / dpr, Math.floor(s.fy * H * dpr) / dpr, 1 / dpr, 1 / dpr);
+      } else { ctx.globalAlpha = a; ctx.beginPath(); ctx.arc(s.fx * W, s.fy * H, s.r, 0, 6.283); ctx.fill(); }
     }
     ctx.globalAlpha = 1;
     if (!reduce) ambient(t);
@@ -198,6 +210,7 @@
   }
   if (window.LZCozy) LZCozy.theme.onChange(onTheme);
   else new MutationObserver(onTheme).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+  window.addEventListener('lzretro', function () { theme = ''; size(); onTheme(); });
   var onMotion = function () { reduce = rmq.matches; if (!reduce) ensureLoop(); };
   rmq.addEventListener ? rmq.addEventListener('change', onMotion) : rmq.addListener(onMotion);
 
