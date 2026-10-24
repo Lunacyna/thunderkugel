@@ -190,7 +190,6 @@
     id: 'c4', title: 'Vier gewinnt', sub: 'Zwei Farben, ein Brett, vier in einer Reihe',
     modes: {
       solo: { desc: 'Puzzle: Finde den Siegeszug gegen einen Bot, der perfekt verteidigt. Von „Sieg in 1“ bis „Sieg in 3“.' },
-      local: { desc: 'Abwechselnd an einem Gerät.' },
       bot: { desc: 'Der Bot rechnet voraus: Leicht 1 Zug, Mittel 4, Schwer 7 Züge tief.' },
       online: { desc: 'Jede Person am eigenen Gerät, abwechselnd.' }
     },

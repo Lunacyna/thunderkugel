@@ -104,7 +104,14 @@ export class Room extends DurableObject {
 // Store: dauerhafte Daten (eigene Karten für 20 Questions, Vorschläge, Bestenliste)
 // ---------------------------------------------------------------------------
 const CATS = ["Person", "Ort", "Ding"];
-const GAMES = ["kb", "zw"];
+const GAMES = ["kb", "zw", "c4", "dots", "memo", "dung"];   // Spiele mit Siegen (Mensch gegen Mensch)
+// Solo-Rekorde: plausible Wertebereiche, "lower" = kleiner ist besser (Zeit)
+const RECORDS = {
+  stack: { min: 1, max: 400 },             // Turmhöhe in Blöcken
+  pong: { min: 1, max: 5000 },             // Squash-Treffer
+  memo: { min: 5, max: 3600, lower: true, dec: 1 },   // Sekunden inkl. Strafzeit
+  dung: { min: 1, max: 400 },              // Gold + übrige HP, nur wenn überlebt
+};
 // Obergrenzen pro gemeldeter Runde: offene/vergessene Tabs zählen nicht als Stunden
 const STAT_GAMES = {
   kb: { sec: 15 * 60, balls: 20, shakes: 12 },   // eine Kugelblitz-Karte (bis 4 Spieler × 5 Kugeln / 3 Joker)
@@ -112,7 +119,7 @@ const STAT_GAMES = {
   ne: { sec: 15 * 60 },                           // eine Nur-Einer-Karte
   // Mini-Spiele: eine Partie, nur Spielzeit
   stack: { sec: 20 * 60 }, pong: { sec: 20 * 60 }, c4: { sec: 20 * 60 }, dots: { sec: 20 * 60 },
-  slf: { sec: 20 * 60 }, memo: { sec: 20 * 60 }, dung: { sec: 30 * 60 },
+  memo: { sec: 20 * 60 }, dung: { sec: 30 * 60 },
 };
 const clean = (v, max) => String(v == null ? "" : v).replace(/[\u0000-\u001f\u007f]/g, " ").replace(/\s+/g, " ").trim().slice(0, max);
 const GENERIC_NAME = /^(spieler|person) ?\d+$/i;
@@ -242,6 +249,27 @@ export class Store extends DurableObject {
     const z = o => ({ sec: 0, rounds: 0, zw: 0, ne: 0, balls: 0, shakes: 0, ...(o || {}) });
     return { month, m: z(got.get("st:" + month)), all: z(got.get("st:all")) };
   }
+  // ---- Solo-Rekorde: pro Spiel und Monat der beste Wert je Person -------------------
+  async record(input, ip, user) {
+    const R = input && RECORDS[input.game]; if (!R) return { error: "Unbekanntes Spiel." };
+    let v = +input.value; if (!Number.isFinite(v)) return { error: "Kein Wert." };
+    v = R.dec ? Math.round(v * 10) / 10 : Math.round(v);
+    if (v < R.min || v > R.max) return { error: "Unplausibler Wert." };
+    if (await this.limited("rc:" + ip, 60)) return { error: "Zu viele Meldungen." };
+    let name = user ? clean(user.name, 30) : clean(input.name, 30);
+    if (!user && (name.length < 2 || GENERIC_NAME.test(name))) return { ok: true, counted: 0 };
+    const month = new Date().toISOString().slice(0, 7), key = "rec:" + input.game + ":" + month;
+    const board = (await this.ctx.storage.get(key)) || {};
+    if (!user && Object.values(board).some(e => e.v && e.name.toLowerCase() === name.toLowerCase())) name = name.slice(0, 22) + " (Gast)";
+    const k = user ? "tw:" + user.id : name.toLowerCase();
+    const old = board[k], better = !old || (R.lower ? v < old.s : v > old.s);
+    if (better) { board[k] = { name, v: !!user, s: v, at: Date.now() }; await this.ctx.storage.put(key, board); }
+    return { ok: true, best: better };
+  }
+  async records(month, game) {
+    const R = RECORDS[game], b = (await this.ctx.storage.get("rec:" + game + ":" + month)) || {};
+    return Object.values(b).sort((x, y) => R.lower ? x.s - y.s || x.at - y.at : y.s - x.s || x.at - y.at).slice(0, 30).map(e => ({ name: e.name, v: e.v, s: e.s }));
+  }
   async scores(month, game) {
     const games = game === "all" ? GAMES : [game];
     const merged = {};
@@ -329,7 +357,8 @@ async function api(request, env, url) {
     const input = await body();
     let vu = {};
     const room = input && typeof input.room === "string" ? input.room : "";
-    if (/^(kb|zw)-[a-z0-9]{4}$/.test(room) && input.game === room.slice(0, 2)) {
+    const arcade = ["c4", "dots", "memo", "dung"].includes(input && input.game);
+    if ((/^(kb|zw)-[a-z0-9]{4}$/.test(room) && input.game === room.slice(0, 2)) || (arcade && /^ar-[a-z0-9]{4}$/.test(room))) {
       try { vu = await env.ROOMS.get(env.ROOMS.idFromName("g-" + room)).verifiedUsers(); } catch {}
     }
     const r = await store.report(input, ip, vu); return json(r, r.error ? 400 : 200);
@@ -343,9 +372,20 @@ async function api(request, env, url) {
     const month = /^\d{4}-\d{2}$/.test(url.searchParams.get("month") || "") ? url.searchParams.get("month") : new Date().toISOString().slice(0, 7);
     return json(await store.stats(month));
   }
+  if (path === "/api/records" && method === "POST") {
+    const origin = request.headers.get("origin");
+    if (origin && origin !== url.origin) return json({ error: "Nicht erlaubt." }, 403);
+    const r = await store.record(await body(), ip, await readSession(request, env)); return json(r, r.error ? 400 : 200);
+  }
+  if (path === "/api/records" && method === "GET") {
+    const month = /^\d{4}-\d{2}$/.test(url.searchParams.get("month") || "") ? url.searchParams.get("month") : new Date().toISOString().slice(0, 7);
+    const game = RECORDS[url.searchParams.get("game")] ? url.searchParams.get("game") : null;
+    if (!game) return json({ error: "Unbekanntes Spiel." }, 400);
+    return json(await store.records(month, game));
+  }
   if (path === "/api/scores" && method === "GET") {
     const month = /^\d{4}-\d{2}$/.test(url.searchParams.get("month") || "") ? url.searchParams.get("month") : new Date().toISOString().slice(0, 7);
-    const game = ["kb", "zw", "all"].includes(url.searchParams.get("game")) ? url.searchParams.get("game") : "all";
+    const game = GAMES.concat("all").includes(url.searchParams.get("game")) ? url.searchParams.get("game") : "all";
     return json(await store.scores(month, game));
   }
   if (path.startsWith("/api/admin/")) {
@@ -458,6 +498,8 @@ class AbsUrl {
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+    // Entfernte Spiele: alte Links landen auf der Startseite statt auf einer toten Seite
+    if (/^\/stadtlandfluss(\/|$)|^\/assets\/arcade\/stadtlandfluss\./.test(url.pathname)) return Response.redirect(url.origin + "/", 301);
     if (url.pathname === "/ws") {
       if (request.headers.get("Upgrade") !== "websocket") {
         return new Response("Expected WebSocket", { status: 426 });

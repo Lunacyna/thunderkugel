@@ -87,7 +87,7 @@
     turn: () => -1,
     over(s) {
       if (!s.done) return null;
-      if (s.solo) return { title: 'Ball verloren', text: `<b>${s.hits}</b> Treffer an der Wand.`, best: { key: 'squash', value: s.hits, fmt: v => v + ' Treffer' } };
+      if (s.solo) return { title: 'Ball verloren', text: `<b>${s.hits}</b> Treffer an der Wand.`, best: { key: 'squash', value: s.hits, fmt: v => v + ' Treffer' }, record: s.hits };
       return { winner: s.win, text: `${s.score[0]} : ${s.score[1]}` };
     }
   };
@@ -127,7 +127,7 @@
   const LW = 640, LH = 400, K = LW / FW;
   let C = null, sent = [null, null], trail = [], last = { ev: 0, hits: 0, flash: null }, touchSeat = {};
   function seatsByKeys(ctx) {
-    const k = ctx.keys, two = ctx.mode === 'local';
+    const k = ctx.keys, two = false;              // nur ein Mensch pro Gerät: beide Tastenpaare steuern deinen Schläger
     const d0 = (k.has('s') ? 1 : 0) - (k.has('w') ? 1 : 0), dA = (k.has('ArrowDown') ? 1 : 0) - (k.has('ArrowUp') ? 1 : 0);
     return two ? [d0, dA] : [Math.max(-1, Math.min(1, d0 + dA)), null];
   }
@@ -136,7 +136,7 @@
       root.innerHTML = '<div class="pg-wrap"></div>';
       C = LZArcade.canvas(root.querySelector('.pg-wrap'), LW, LH, 'Pong-Spielfeld');
       sent = [null, null]; trail = []; last = { ev: 0, hits: 0, flash: null }; touchSeat = {};
-      const seatFor = (x, id) => ctx.mode === 'local' ? (x < FW / 2 ? 0 : 1) : 0;
+      const seatFor = () => 0;
       const move = e => { const q = C.toLogic(e), seat = touchSeat[e.pointerId]; if (seat == null) return; ctx.act('aim', { y: q.y * FH / LH }, seat); };
       C.cv.addEventListener('pointerdown', e => { e.preventDefault(); C.cv.setPointerCapture(e.pointerId); const q = C.toLogic(e); touchSeat[e.pointerId] = seatFor(q.x * FW / LW); move(e); });
       C.cv.addEventListener('pointermove', e => { if (e.pointerType === 'mouse' && !e.buttons) return; move(e); });
@@ -188,11 +188,10 @@
     id: 'pong', title: 'Curve-Ball', sub: 'Pixel-Pong mit Schnitt',
     modes: {
       solo: { desc: 'Squash an der Wand: Jeder Treffer zählt, drei Bälle darfst du verlieren.' },
-      local: { desc: 'Duell an einer Tastatur: links W/S, rechts ↑/↓. Am Handy: jede Hälfte mit einem Finger.' },
       bot: { desc: 'Der Bot reagiert mit Verzögerung, ist begrenzt schnell und verschätzt sich manchmal.' }
     },
-    rules: ['Triffst du den Ball mit der Schlägerkante, fliegt er steiler zurück.', 'Bewegst du den Schläger beim Treffer, bekommt der Ball Schnitt und fliegt eine Kurve.', 'Jeder Treffer macht den Ball etwas schneller. Zu zweit gewinnt, wer zuerst 7 Punkte hat.'],
-    keys: '<b>Tastatur:</b> <kbd class="lz-kbd">W</kbd>/<kbd class="lz-kbd">S</kbd> links · <kbd class="lz-kbd">↑</kbd>/<kbd class="lz-kbd">↓</kbd> rechts (allein gehen beide) · Maus/Finger: auf dem Feld ziehen',
+    rules: ['Triffst du den Ball mit der Schlägerkante, fliegt er steiler zurück.', 'Bewegst du den Schläger beim Treffer, bekommt der Ball Schnitt und fliegt eine Kurve.', 'Jeder Treffer macht den Ball etwas schneller. Gegen den Bot gewinnt, wer zuerst 7 Punkte hat. Deine meisten Squash-Treffer kommen in die Bestenliste.'],
+    keys: '<b>Tastatur:</b> <kbd class="lz-kbd">W</kbd>/<kbd class="lz-kbd">S</kbd> oder <kbd class="lz-kbd">↑</kbd>/<kbd class="lz-kbd">↓</kbd> · Maus/Finger: auf dem Feld ziehen',
     logic, bot, view, announceStatus: false,
     scores(s, ctx) {
       if (s.solo) return [{ name: ctx.names[0], value: s.hits, sub: 'Treffer · ' + s.lives + ' ' + (s.lives === 1 ? 'Ball' : 'Bälle') + ' übrig', on: true }];

@@ -13,7 +13,7 @@ Kleine Browser-Spiele mit Online-Multiplayer:
 | `public/kugelblitz/index.html` | Das Spiel Kugelblitz |
 | `public/zwanzig/index.html` | Das Rate-Spiel 20 Questions (2–6 Spieler, leichte und schwere Karten) |
 | `public/nureiner/index.html` | Das kooperative Wort-Spiel Nur Einer! (über 300 Begriffe) |
-| `public/stacker/`, `pong/`, `viergewinnt/`, `kaesekaestchen/`, `stadtlandfluss/`, `memory/`, `dungeon/` | Die sieben Mini-Spiele (je Solo, zu zweit, gegen Bots; die rundenbasierten auch online) |
+| `public/stacker/`, `pong/`, `viergewinnt/`, `kaesekaestchen/`, `memory/`, `dungeon/` | Die sechs Mini-Spiele |
 | `public/assets/arcade/` | Gemeinsamer Rahmen der Mini-Spiele + ein Skript/Stylesheet pro Spiel – Aufbau siehe `ARCADE.md` |
 | `public/zwanzig/karten/index.html` | Eigene Karten für 20 Questions: Vorschläge einschicken und (mit Admin-Schlüssel) verwalten |
 | `public/assets/og.jpg` | Vorschaubild, das Discord & Co. beim Teilen des Links zeigen |
@@ -146,8 +146,16 @@ Der kleine Schiebeschalter „8-BIT“ (mit roter Power-LED) neben dem Mond/Flam
 
 ## Mini-Spiele
 
-Turmbau zu Babel, Curve-Ball, Vier gewinnt, Käsekästchen, Stadt-Land-Fluss, Speed-Memory und Karten-Dungeon. Alle haben Solo, „Zu zweit hier“ und „Gegen den Bot“ (Leicht/Mittel/Schwer). Vier gewinnt, Käsekästchen, Stadt-Land-Fluss, Memory und Dungeon gehen auch online zu zweit (über die bestehenden Räume, keine neue Einrichtung nötig).
-Solo-Rekorde merkt sich der Browser. Gespielte Zeit fließt in „Zeitverschwendung in Zahlen“ ein.
+| Spiel | Modi |
+|---|---|
+| Turmbau zu Babel | Solo (Rekord) |
+| Curve-Ball | Solo-Squash (Rekord), gegen Bot |
+| Vier gewinnt | Puzzles, gegen Bot, online |
+| Käsekästchen | gegen Bot, online |
+| Speed-Memory | Solo auf Zeit (Rekord), zu zweit hier, gegen Bot, online |
+| Karten-Dungeon | Solo (Rekord), gegen Bot, online |
+
+Online-Siege und Solo-Rekorde stehen in der Bestenliste (Reiter je Spiel). Gespielte Zeit fließt in „Zeitverschwendung in Zahlen“ ein.
 Wie die Spiele aufgebaut sind (Datenstruktur, Spielschleife, Bot-Logik): `ARCADE.md`.
 
 ## Zeitverschwendung in Zahlen (Fun Metrics)

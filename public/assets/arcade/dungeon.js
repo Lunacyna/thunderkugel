@@ -81,7 +81,7 @@
         const p = s.pl[0];
         if (p.hp <= 0) return { title: 'Im Dungeon gefallen', text: `Du hattest <b>${p.gold}</b> Gold gesammelt. Noch ${s.grid.filter(Boolean).length + s.deck.length} Karten übrig.` };
         const pts = p.gold + p.hp;
-        return { title: 'Dungeon geschafft!', text: `${p.gold} Gold + ${p.hp} HP = <b>${pts}</b> Punkte.`, best: { key: 'solo', value: pts, fmt: v => v + ' Punkte' } };
+        return { title: 'Dungeon geschafft!', text: `${p.gold} Gold + ${p.hp} HP = <b>${pts}</b> Punkte.`, best: { key: 'solo', value: pts, fmt: v => v + ' Punkte' }, record: pts };
       }
       const [a, b] = s.pl;
       if (a.hp <= 0 || b.hp <= 0) { const w = a.hp > 0 ? 0 : 1; return { winner: w, text: 'K.o. im Dungeon!' }; }
@@ -181,13 +181,13 @@
     id: 'dung', title: 'Karten-Dungeon', sub: 'Roguelite mit Karten',
     modes: {
       solo: { desc: 'Überlebe den ganzen Dungeon-Stapel. Teile dir Lebenspunkte, Waffen und Tränke klug ein.' },
-      local: { desc: 'Abwechselnd aus derselben Auslage ziehen – mit Wurfdolchen und Ködern gegeneinander.' },
       bot: { desc: 'Der Bot wägt Schaden, Gold und Ausrüstung ab. Schwer denkt auch an deinen nächsten Zug.' },
       online: { desc: 'Jede Person am eigenen Gerät, gemeinsame Auslage.' }
     },
     rules: ['Nimm eine Karte aus der 3×3-Auslage – die Lücke wird sofort aus dem Stapel gefüllt.', 'Monster schaden dir (Waffe zieht ab, Schild fängt auf), geben aber Kopfgeld. Tränke heilen, Gold zählt.', 'Im Duell: Wurfdolche treffen den Gegner, Köder zwingen ihn, das stärkste Monster zu nehmen. Wer als Zweites zieht, startet mit 16 statt 13 HP. 0 HP = verloren, sonst gewinnt mehr Gold.'],
     keys: '<b>Tastatur:</b> <kbd class="lz-kbd">Pfeile</kbd> wandern über die Karten · <kbd class="lz-kbd">Enter</kbd> nimmt sie',
     logic, bot, view,
+    points: (s, i) => s.pl[i].gold,
     scores(s, ctx) {
       return s.pl.map((p, i) => ({ name: ctx.names[i], vb: ctx.vb && ctx.vb[i], value: p.gold, sub: `Gold · ${p.hp} HP`, on: s.duo && logic.turn(s) === i }));
     },

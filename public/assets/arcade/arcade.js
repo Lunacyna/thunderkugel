@@ -172,6 +172,7 @@
     }
     const authority = V.mode !== 'online' || ON.host;
     if (authority && window.LZCozy && LZCozy.stats) LZCozy.stats.round({ game: DEF.id, id: gid + ':1', start: startedAt });
+    reportBoard(o);
     const won = o.winner != null && o.winner >= 0 && ctx.canAct(o.winner) && V.mode !== 'local';
     const lost = o.winner != null && o.winner >= 0 && !ctx.canAct(o.winner) && V.mode !== 'local';
     if (window.LZSound) LZSound.play(V.mode === 'solo' ? (rec.includes('Neuer') ? 'fanfare' : 'win') : won ? 'fanfare' : lost ? 'lose' : 'win');
@@ -184,6 +185,19 @@
     box.hidden = false;
     if (window.LZCozy) LZCozy.announce((o.title || 'Spielende') + '. ' + LZCozy.text(o.text || ''), { assertive: true });
     const f = box.querySelector('.btn'); if (f) setTimeout(() => f.focus({ preventScroll: true }), 60);
+  }
+
+  // ---- Bestenliste ----------------------------------------------------------------------
+  // Siege zählen nur zwischen zwei Menschen online (die Spielleitung meldet, der Server prüft
+  // per Raum, wer wirklich mitgespielt hat). Solo-Rekorde meldet das eigene Gerät.
+  function post(url, body) { try { fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body), credentials: 'same-origin', keepalive: true }).catch(() => {}); } catch (e) {} }
+  function reportBoard(o) {
+    if (!window.KB_SERVER) return;
+    if (V.mode === 'online' && ON.host && ON.seats.length === 2) {
+      const players = ON.seats.map((x, i) => ({ name: ctx.names[i] || '', b: (x && x.by) || '', pts: DEF.points ? DEF.points(S, i) | 0 : 0, win: o.winner === i }));
+      post('/api/scores', { game: DEF.id, gid: ON.gid, room: ON.code, players });
+    }
+    if (V.mode === 'solo' && o.record != null) post('/api/records', { game: DEF.id, value: o.record, name: myName() });
   }
 
   // ---- Schleife: Ticks, Echtzeit-Bots, rundenbasierte Bots, Canvas -------------------

@@ -49,7 +49,7 @@
       if (!logic.done(s)) return null;
       if (s.solo) {
         const t = Math.round((s.tEnd - s.t0) / 100) / 10 + s.misses;
-        return { title: 'Alle Paare gefunden!', text: `Zeit: <b>${fmt(t)} s</b> (davon ${s.misses} s Strafe für ${s.misses} ${s.misses === 1 ? 'Fehlversuch' : 'Fehlversuche'}).`, best: { key: 'time', value: t, lower: true, fmt: v => fmt(v) + ' s' } };
+        return { title: 'Alle Paare gefunden!', text: `Zeit: <b>${fmt(t)} s</b> (davon ${s.misses} s Strafe für ${s.misses} ${s.misses === 1 ? 'Fehlversuch' : 'Fehlversuche'}).`, best: { key: 'time', value: t, lower: true, fmt: v => fmt(v) + ' s' }, record: t };
       }
       const [a, b] = s.score;
       return a === b ? { winner: -1, title: 'Unentschieden', text: `${a} : ${b} Paare` } : { winner: a > b ? 0 : 1, text: `${a} : ${b} Paare` };
@@ -149,6 +149,7 @@
     rules: ['Deck zwei Karten auf. Gleiches Motiv? Dann bleibt das Paar liegen.', 'Passen sie nicht, werden sie wieder umgedreht – merk dir, wo was lag.', 'Zu zweit: Wer ein Paar findet, ist nochmal dran. Die meisten Paare gewinnen.'],
     keys: '<b>Tastatur:</b> <kbd class="lz-kbd">Pfeile</kbd> wandern über die Karten · <kbd class="lz-kbd">Enter</kbd> deckt auf',
     logic, bot, view,
+    points: (s, i) => s.score[i],
     scores(s, ctx) {
       if (s.solo) return [{ name: ctx.names[0], value: s.score[0] + '/8', sub: s.misses + ' Fehlversuche', on: true }];
       return [0, 1].map(i => ({ name: ctx.names[i], vb: ctx.vb && ctx.vb[i], value: s.score[i], sub: 'Paare', on: logic.turn(s) === i }));

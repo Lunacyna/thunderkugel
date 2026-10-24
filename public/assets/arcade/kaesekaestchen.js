@@ -9,12 +9,10 @@
    Bot (Heuristik):  1. Kästchen schließen (Ketten weiterverfolgen)
                      2. sichere Kante (macht kein Kästchen zur "dritten Seite")
                      3. sonst die Kante, die dem Gegner die kürzeste Kette schenkt
-   Solo "Blitz": 60 Sekunden gegen einen flotten Bot, volle Bretter werden
-           sofort neu aufgebaut – gezählt werden deine Kästchen.
+   Modi: gegen den Bot oder online zu zweit.
    ========================================================================== */
 (function () {
   'use strict';
-  const SOLO_MS = 60000;
   function fresh(n) { const b = n - 1; return { n, b, h: new Array(n * b).fill(-1), v: new Array(b * n).fill(-1), box: new Array(b * b).fill(-1) }; }
   function sides(g, r, c) { const { n, b } = g; return [g.h[r * b + c], g.h[(r + 1) * b + c], g.v[r * n + c], g.v[r * n + c + 1]]; }
   const filled = (g, r, c) => sides(g, r, c).filter(x => x >= 0).length;
@@ -36,7 +34,6 @@
     init(cfg) {
       const n = +(cfg.opt && cfg.opt.size) || 5;
       const s = { mode: cfg.mode, ...fresh(n), turn: cfg.rematch ? (Math.random() < 0.5 ? 0 : 1) : 0, score: [0, 0], last: null, moves: 0 };
-      if (cfg.mode === 'solo') { s.blitz = true; s.endAt = Date.now() + SOLO_MS; s.boards = 1; }
       return s;
     },
     act(s, seat, type, arg, now) {
@@ -47,15 +44,12 @@
       const n = { ...s, ...g, last: { k, i, seat, closed, t: now }, moves: s.moves + 1, score: s.score.slice() };
       n.score[seat] += closed;
       if (!closed) n.turn = 1 - seat;
-      if (n.blitz && n.box.every(x => x >= 0)) { Object.assign(n, fresh(n.n)); n.boards = s.boards + 1; n.turn = 0; n.newBoard = now; }
       return n;
     },
-    tick(s, dt, now) { if (s.blitz && !s.timeUp && now >= s.endAt) return { ...s, timeUp: true }; return null; },
-    done: s => s.blitz ? !!s.timeUp : s.box.every(x => x >= 0),
+    done: s => s.box.every(x => x >= 0),
     turn: s => logic.done(s) ? -1 : s.turn,
     over(s) {
       if (!logic.done(s)) return null;
-      if (s.blitz) return { title: 'Zeit um!', text: `Du hast <b>${s.score[0]}</b> ${s.score[0] === 1 ? 'Kästchen' : 'Kästchen'} geschlossen (der Bot ${s.score[1]}).`, best: { key: 'blitz' + s.n, value: s.score[0], fmt: v => v + ' Kästchen' } };
       const [a, b] = s.score;
       return a === b ? { winner: -1, title: 'Unentschieden', text: `${a} : ${b}` } : { winner: a > b ? 0 : 1, text: `${a} : ${b} Kästchen` };
     }
@@ -73,7 +67,7 @@
     return total;
   }
   const bot = {
-    delay: (s, level) => s.blitz ? 170 + Math.random() * 120 : 420 + Math.random() * 380 - level * 60,
+    delay: (s, level) => 420 + Math.random() * 380 - level * 60,
     think(s, seat, level) {
       const moves = freeMoves(s); if (!moves.length) return null;
       const info = moves.map(([k, i]) => ({ k, i, ...analyse(s, k, i) }));
@@ -106,13 +100,13 @@
   // ---- View: CSS-Raster aus Punkten, Kanten-Knöpfen und Kästchen ----
   let el, seen = { moves: -1 };
   const view = {
-    mount(root, ctx) { el = root; root.innerHTML = '<div class="db-wrap"><div class="ar-timer" id="dbTimer" hidden><i></i></div><div class="db-grid" id="dbGrid"></div></div>'; seen = { moves: -1, n: 0, boards: 0 };
+    mount(root, ctx) { el = root; root.innerHTML = '<div class="db-wrap"><div class="db-grid" id="dbGrid"></div></div>'; seen = { moves: -1, n: 0, boards: 0 };
       root.addEventListener('click', e => { const b = e.target.closest('[data-k]'); if (b && !b.disabled) ctx.act('line', { k: b.dataset.k, i: +b.dataset.i }); });
     },
     render(s, ctx) {
       const grid = el.querySelector('#dbGrid'), n = s.n, b = s.b, size = 2 * n - 1;
-      if (seen.n !== n || seen.boards !== s.boards) {
-        seen.n = n; seen.boards = s.boards;
+      if (seen.n !== n) {
+        seen.n = n;
         const tpl = Array(n - 1).fill('var(--dot) 1fr').join(' ') + ' var(--dot)';
         grid.style.gridTemplateColumns = tpl; grid.style.gridTemplateRows = tpl;
         let h = '';
@@ -134,40 +128,31 @@
       });
       grid.querySelectorAll('.db-box').forEach(x => { const o = s.box[+x.dataset.b]; x.className = 'db-box' + (o >= 0 ? ' own p' + o : ''); x.textContent = o >= 0 ? (ctx.names[o] || '?').slice(0, 1).toUpperCase() : ''; });
       if (s.moves !== seen.moves) {
-        if (seen.moves >= 0 && s.last) { ctx.sound(s.last.closed ? 'correct' : 'click'); if (s.last.closed && !s.blitz) ctx.say(`${ctx.names[s.last.seat]} schließt ${s.last.closed === 1 ? 'ein Kästchen' : s.last.closed + ' Kästchen'} und ist nochmal dran.`); }
+        if (seen.moves >= 0 && s.last) { ctx.sound(s.last.closed ? 'correct' : 'click'); if (s.last.closed) ctx.say(`${ctx.names[s.last.seat]} schließt ${s.last.closed === 1 ? 'ein Kästchen' : s.last.closed + ' Kästchen'} und ist nochmal dran.`); }
         seen.moves = s.moves;
       }
-      const tm = el.querySelector('#dbTimer'); tm.hidden = !s.blitz;
     },
-    frame(s) {
-      if (!s.blitz) return;
-      const left = Math.max(0, s.endAt - Date.now()), tm = el.querySelector('#dbTimer');
-      tm.querySelector('i').style.transform = `scaleX(${left / SOLO_MS})`; tm.classList.toggle('hot', left < 10000);
-    }
   };
 
   LZArcade.define({
     id: 'dots', title: 'Käsekästchen', sub: 'Kanten ziehen, Kästchen schließen',
     modes: {
-      solo: { desc: 'Blitz: 60 Sekunden gegen einen flinken Bot – wie viele Kästchen schnappst du dir?' },
-      local: { desc: 'Abwechselnd Linien ziehen an einem Gerät.' },
       bot: { desc: 'Der Bot schließt freie Kästchen sofort und meidet riskante dritte Kanten. Schwer verfolgt Ketten und rechnet Geschenke nach.' },
       online: { desc: 'Jede Person am eigenen Gerät.' }
     },
-    soloBot: { level: 2, name: 'Blitz-Bot' },
     options: [{ key: 'size', label: 'Brettgröße', values: [[4, '4 × 4 Punkte'], [5, '5 × 5 Punkte']], def: 5 }],
     rules: ['Abwechselnd verbindet ihr zwei benachbarte Punkte mit einer Linie.', 'Wer die vierte Seite eines Kästchens zieht, bekommt es – und ist gleich nochmal dran.', 'Vorsicht mit der dritten Seite: Die schenkt dem Gegner das Kästchen. Am Ende zählen die Kästchen.'],
     keys: '<b>Tastatur:</b> <kbd class="lz-kbd">Tab</kbd> oder <kbd class="lz-kbd">Pfeile</kbd> wandern über die Linien · <kbd class="lz-kbd">Enter</kbd> zieht sie',
     logic, bot, view,
+    points: (s, i) => s.score[i],
     scores(s, ctx) {
-      return [0, 1].map(i => ({ name: ctx.names[i] + (s.blitz && i === 0 ? '' : ''), vb: ctx.vb && ctx.vb[i], value: s.score[i], sub: s.blitz ? (i ? 'Gegner' : 'Brett ' + s.boards) : 'Kästchen', on: logic.turn(s) === i }));
+      return [0, 1].map(i => ({ name: ctx.names[i], vb: ctx.vb && ctx.vb[i], value: s.score[i], sub: 'Kästchen', on: logic.turn(s) === i }));
     },
     status(s, ctx) {
       if (logic.done(s)) return 'Vorbei!';
       const t = s.turn, nm = ctx.esc(ctx.names[t]);
-      if (s.blitz) return t === 0 ? 'Du bist dran – schnell!' : `<span class="dots">${nm}</span>`;
       if (ctx.isBot(t)) return `<span class="dots">${nm} überlegt</span>`;
-      if (ctx.canAct(t) && ctx.mode !== 'local') return 'Du bist dran';
+      if (ctx.canAct(t)) return 'Du bist dran';
       return `<em>${nm}</em> ist dran`;
     }
   });
