@@ -7,7 +7,7 @@
 
 import { DurableObject } from "cloudflare:workers";
 
-const ROOM_RE = /^(lobby|lobby-zw|lobby-ne|g-(kb|zw|ne)-[a-z0-9]{4})$/;
+const ROOM_RE = /^(lobby|lobby-zw|lobby-ne|lobby-ar|g-(kb|zw|ne|ar)-[a-z0-9]{4})$/;
 const ID_RE = /^[a-z0-9_]{4,24}$/;
 const MAX_MSG = 12000;     // Bytes pro Nachricht
 const MAX_PEERS = 64;      // Verbindungen pro Raum
@@ -110,6 +110,9 @@ const STAT_GAMES = {
   kb: { sec: 15 * 60, balls: 20, shakes: 12 },   // eine Kugelblitz-Karte (bis 4 Spieler × 5 Kugeln / 3 Joker)
   zw: { sec: 30 * 60 },                           // eine 20-Questions-Karte
   ne: { sec: 15 * 60 },                           // eine Nur-Einer-Karte
+  // Mini-Spiele: eine Partie, nur Spielzeit
+  stack: { sec: 20 * 60 }, pong: { sec: 20 * 60 }, c4: { sec: 20 * 60 }, dots: { sec: 20 * 60 },
+  slf: { sec: 20 * 60 }, memo: { sec: 20 * 60 }, dung: { sec: 30 * 60 },
 };
 const clean = (v, max) => String(v == null ? "" : v).replace(/[\u0000-\u001f\u007f]/g, " ").replace(/\s+/g, " ").trim().slice(0, max);
 const GENERIC_NAME = /^(spieler|person) ?\d+$/i;
@@ -229,7 +232,7 @@ export class Store extends DurableObject {
     const lim = STAT_GAMES[game], n = (v, max) => Math.max(0, Math.min(max, Math.round(+v || 0)));
     const add = { sec: n(input.sec, lim.sec), rounds: 1 };
     if (game === "kb") { add.balls = n(input.balls, lim.balls); add.shakes = n(input.shakes, lim.shakes); }
-    else add[game] = input.cards ? 1 : 0;
+    else if (game === "zw" || game === "ne") add[game] = input.cards ? 1 : 0;
     const bump = o => { o = o || {}; for (const k in add) o[k] = (o[k] || 0) + add[k]; return o; };
     await this.ctx.storage.put({ [mk]: bump(got.get(mk)), "st:all": bump(got.get("st:all")), "st:seen": seen });
     return { ok: true };

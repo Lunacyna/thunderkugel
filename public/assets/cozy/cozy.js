@@ -210,7 +210,7 @@
      Spielzeit = Rundenende − Rundenstart, abzüglich der Zeit, in der dieser
      Tab im Hintergrund lag, gedeckelt pro Spiel (der Server deckelt nochmal).
      Fire-and-forget: Fehler stören das Spiel nie. */
-  var STAT_CAP = { kb: 900, zw: 1800, ne: 900 };
+  var STAT_CAP = { kb: 900, zw: 1800, ne: 900, stack: 1200, pong: 1200, c4: 1200, dots: 1200, slf: 1200, memo: 1200, dung: 1800 };
   var hiddenSpans = [], hiddenSince = document.hidden ? Date.now() : null;
   document.addEventListener('visibilitychange', function () {
     var now = Date.now();

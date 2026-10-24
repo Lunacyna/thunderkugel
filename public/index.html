@@ -144,6 +144,7 @@ a.game:focus-visible{outline:2px solid var(--lz-focus,var(--c-neon,#F6E6FF));out
 .badge-cat.cat-skill{box-shadow:inset 0 0 0 2px #FF8A1F}
 .badge-cat.cat-quiz{box-shadow:inset 0 0 0 2px #2F7DF6}
 .badge-cat.cat-coop{box-shadow:inset 0 0 0 2px #7BE0A6}
+.badge-cat.cat-taktik{box-shadow:inset 0 0 0 2px var(--c-glow,#C77DFF)}
 .badge-players{position:absolute;top:8px;right:8px;z-index:1;display:inline-flex;align-items:center;gap:5px;font-size:20px;font-weight:700;line-height:1;padding:7px 12px 7px 9px;border-radius:999px;background:var(--moon);color:var(--c-ink,#2A1E4F);box-shadow:0 4px 12px rgba(0,0,0,.35);font-variant-numeric:tabular-nums}
 .thumb .badge-players svg{position:static;inset:auto;width:18px;height:18px;flex:none}
 /* Bestenliste */
@@ -215,7 +216,7 @@ footer a:hover{border-bottom-color:var(--neon)}
 :root[data-theme="kamin"] .thumb [stroke="#3A3170"]{stroke:#4A3F37}
 :root[data-theme="kamin"] .garland [stroke="#5B4E8A"]{stroke:#7A5A44}
 </style>
-<!--cozy--><link rel="stylesheet" href="/assets/cozy/cozy.css?v=2"><script src="/assets/cozy/cozy.js?v=2"></script><link rel="stylesheet" href="/assets/cozy/retro.css?v=2"><script src="/assets/cozy/retro.js?v=2"></script><!--/cozy-->
+<!--cozy--><link rel="stylesheet" href="/assets/cozy/cozy.css?v=3"><script src="/assets/cozy/cozy.js?v=3"></script><link rel="stylesheet" href="/assets/cozy/retro.css?v=3"><script src="/assets/cozy/retro.js?v=3"></script><!--/cozy-->
 </head>
 <body>
 <canvas id="sky" aria-hidden="true"></canvas>
@@ -347,7 +348,7 @@ window.LZSound = window.LZSound || (() => {
       <div class="fgroup" role="group" aria-labelledby="fPlayersL"><span class="flabel" id="fPlayersL">Wie viele seid ihr?</span>
         <div class="chips" data-filter="n"><button type="button" data-v="all" aria-pressed="true">Egal</button><button type="button" data-v="1" aria-pressed="false">Nur ich</button><button type="button" data-v="2" aria-pressed="false">2</button><button type="button" data-v="3" aria-pressed="false">3</button><button type="button" data-v="4" aria-pressed="false">4–5</button><button type="button" data-v="6" aria-pressed="false">6+</button></div></div>
       <div class="fgroup" role="group" aria-labelledby="fCatL"><span class="flabel" id="fCatL">Worauf habt ihr Lust?</span>
-        <div class="chips" data-filter="cat"><button type="button" data-v="all" aria-pressed="true">Alles</button><button type="button" data-v="skill" aria-pressed="false">Geschicklichkeit</button><button type="button" data-v="quiz" aria-pressed="false">Raten &amp; Wissen</button><button type="button" data-v="coop" aria-pressed="false">Miteinander</button></div></div>
+        <div class="chips" data-filter="cat"><button type="button" data-v="all" aria-pressed="true">Alles</button><button type="button" data-v="skill" aria-pressed="false">Geschicklichkeit</button><button type="button" data-v="quiz" aria-pressed="false">Raten &amp; Wissen</button><button type="button" data-v="coop" aria-pressed="false">Miteinander</button><button type="button" data-v="taktik" aria-pressed="false">Taktik</button></div></div>
     </div>
     <p class="nomatch" id="noMatch" hidden>Für diese Auswahl gibt es noch kein Spiel. Wünsch dir eins im Chat!</p>
 
@@ -405,6 +406,90 @@ window.LZSound = window.LZSound || (() => {
       <div class="tags"><span class="tag">Miteinander</span><span class="tag">Ab 3 Personen</span><span class="tag">Online &amp; am selben PC</span></div>
       <span class="play"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M3 1.5 L12 7 L3 12.5 Z" fill="currentColor"/></svg>Spielen</span>
     </a>
+    <a class="game" href="/stacker/" data-min="1" data-max="2" data-cat="skill">
+      <div class="thumb">
+        <span class="badge-cat cat-skill">Geschicklichkeit</span>
+        <span class="badge-players" aria-label="1 bis 2 Personen, auch gegen Bots"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" fill="currentColor"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7" fill="currentColor"/></svg>1–2</span>
+        <svg viewBox="0 0 400 300" aria-hidden="true"><rect x="120" y="250" width="160" height="22" rx="3" fill="#463C82"/><rect x="124" y="224" width="152" height="22" rx="3" fill="#FDD5BB"/><rect x="130" y="198" width="140" height="22" rx="3" fill="#F2A7A8"/><rect x="136" y="172" width="128" height="22" rx="3" fill="#B9A6E8"/><rect x="140" y="146" width="118" height="22" rx="3" fill="#C77DFF"/><rect x="146" y="120" width="106" height="22" rx="3" fill="#F6E6FF"/><rect x="150" y="94" width="96" height="22" rx="3" fill="#FDD5BB"/><rect x="196" y="62" width="96" height="22" rx="3" fill="#F2A7A8"/><path d="M300 73h30M306 63h18M306 83h18" stroke="#F6E6FF" stroke-width="4" stroke-linecap="round" opacity=".6"/><path d="M196 92v130" stroke="#F6E6FF" stroke-dasharray="4 6" stroke-width="2" opacity=".5"/></svg>
+      </div>
+      <h3>Turmbau zu Babel</h3>
+      <p>Leg die gleitenden Blöcke genau übereinander – was übersteht, fällt ab. Wie hoch kommst du?</p>
+      <div class="tags"><span class="tag">Solo-Rekord</span><span class="tag">Zu zweit</span><span class="tag">Gegen Bots</span></div>
+      <span class="play"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M3 1.5 L12 7 L3 12.5 Z" fill="currentColor"/></svg>Spielen</span>
+    </a>
+
+    <a class="game" href="/pong/" data-min="1" data-max="2" data-cat="skill">
+      <div class="thumb">
+        <span class="badge-cat cat-skill">Geschicklichkeit</span>
+        <span class="badge-players" aria-label="1 bis 2 Personen, auch gegen Bots"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" fill="currentColor"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7" fill="currentColor"/></svg>1–2</span>
+        <svg viewBox="0 0 400 300" aria-hidden="true"><rect x="40" y="40" width="320" height="220" rx="10" fill="#1E1945" stroke="#463C82" stroke-width="4"/><path d="M200 50v200" stroke="#F6E6FF" stroke-width="4" stroke-dasharray="10 12" opacity=".25"/><rect x="58" y="110" width="10" height="56" fill="#FFC857"/><rect x="332" y="150" width="10" height="56" fill="#6FD3FF"/><path d="M76 140 Q190 50 300 170" fill="none" stroke="#C77DFF" stroke-width="4" stroke-dasharray="2 9" stroke-linecap="round"/><rect x="292" y="162" width="14" height="14" fill="#F6E6FF"/><text x="160" y="92" font-family="Quicksand,sans-serif" font-weight="700" font-size="34" fill="#F6E6FF" opacity=".25">3</text><text x="226" y="92" font-family="Quicksand,sans-serif" font-weight="700" font-size="34" fill="#F6E6FF" opacity=".25">2</text></svg>
+      </div>
+      <h3>Curve-Ball</h3>
+      <p>Pixel-Pong mit Schnitt: Squash an der Wand, Duell an einer Tastatur oder gegen den Bot.</p>
+      <div class="tags"><span class="tag">Solo-Squash</span><span class="tag">Zu zweit</span><span class="tag">Gegen Bots</span></div>
+      <span class="play"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M3 1.5 L12 7 L3 12.5 Z" fill="currentColor"/></svg>Spielen</span>
+    </a>
+
+    <a class="game" href="/viergewinnt/" data-min="1" data-max="2" data-cat="taktik">
+      <div class="thumb">
+        <span class="badge-cat cat-taktik">Taktik</span>
+        <span class="badge-players" aria-label="1 bis 2 Personen, auch gegen Bots"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" fill="currentColor"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7" fill="currentColor"/></svg>1–2</span>
+        <svg viewBox="0 0 400 300" aria-hidden="true"><rect x="64" y="46" width="272" height="226" rx="16" fill="#463C82"/><circle cx="88" cy="248" r="14" fill="#FFC857"/><circle cx="88" cy="211" r="14" fill="#6FD3FF"/><circle cx="88" cy="174" r="14" fill="#16123A"/><circle cx="88" cy="137" r="14" fill="#16123A"/><circle cx="88" cy="100" r="14" fill="#16123A"/><circle cx="88" cy="63" r="14" fill="#16123A"/><circle cx="125" cy="248" r="14" fill="#6FD3FF"/><circle cx="125" cy="211" r="14" fill="#FFC857"/><circle cx="125" cy="174" r="14" fill="#FFC857"/><circle cx="125" cy="137" r="14" fill="#16123A"/><circle cx="125" cy="100" r="14" fill="#16123A"/><circle cx="125" cy="63" r="14" fill="#16123A"/><circle cx="162" cy="248" r="14" fill="#FFC857"/><circle cx="162" cy="211" r="14" fill="#6FD3FF"/><circle cx="162" cy="174" r="14" fill="#FFC857"/><circle cx="162" cy="137" r="14" fill="#6FD3FF"/><circle cx="162" cy="100" r="14" fill="#16123A"/><circle cx="162" cy="63" r="14" fill="#16123A"/><circle cx="199" cy="248" r="14" fill="#6FD3FF"/><circle cx="199" cy="211" r="14" fill="#16123A"/><circle cx="199" cy="174" r="14" fill="#16123A"/><circle cx="199" cy="137" r="14" fill="#16123A"/><circle cx="199" cy="100" r="14" fill="#16123A"/><circle cx="199" cy="63" r="14" fill="#16123A"/><circle cx="236" cy="248" r="14" fill="#FFC857"/><circle cx="236" cy="211" r="14" fill="#6FD3FF"/><circle cx="236" cy="174" r="14" fill="#FFC857"/><circle cx="236" cy="137" r="14" fill="#16123A"/><circle cx="236" cy="100" r="14" fill="#16123A"/><circle cx="236" cy="63" r="14" fill="#16123A"/><circle cx="273" cy="248" r="14" fill="#6FD3FF"/><circle cx="273" cy="211" r="14" fill="#FFC857"/><circle cx="273" cy="174" r="14" fill="#16123A"/><circle cx="273" cy="137" r="14" fill="#16123A"/><circle cx="273" cy="100" r="14" fill="#16123A"/><circle cx="273" cy="63" r="14" fill="#16123A"/><circle cx="310" cy="248" r="14" fill="#16123A"/><circle cx="310" cy="211" r="14" fill="#16123A"/><circle cx="310" cy="174" r="14" fill="#16123A"/><circle cx="310" cy="137" r="14" fill="#16123A"/><circle cx="310" cy="100" r="14" fill="#16123A"/><circle cx="310" cy="63" r="14" fill="#16123A"/><circle cx="199" cy="26" r="14" fill="#FFC857"/><path d="M199 46v12" stroke="#FFC857" stroke-width="4"/></svg>
+      </div>
+      <h3>Vier gewinnt</h3>
+      <p>Vier in einer Reihe – mit Puzzles für dich allein und einem Bot, der bis zu 7 Züge vorausrechnet.</p>
+      <div class="tags"><span class="tag">Puzzles</span><span class="tag">Zu zweit &amp; online</span><span class="tag">Gegen Bots</span></div>
+      <span class="play"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M3 1.5 L12 7 L3 12.5 Z" fill="currentColor"/></svg>Spielen</span>
+    </a>
+
+    <a class="game" href="/kaesekaestchen/" data-min="1" data-max="2" data-cat="taktik">
+      <div class="thumb">
+        <span class="badge-cat cat-taktik">Taktik</span>
+        <span class="badge-players" aria-label="1 bis 2 Personen, auch gegen Bots"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" fill="currentColor"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7" fill="currentColor"/></svg>1–2</span>
+        <svg viewBox="0 0 400 300" aria-hidden="true"><rect x="114" y="64" width="52" height="52" rx="6" fill="#FFC857" opacity=".85"/><rect x="174" y="124" width="52" height="52" rx="6" fill="#6FD3FF" opacity=".85"/><rect x="234" y="124" width="52" height="52" rx="6" fill="#6FD3FF" opacity=".85"/><g stroke-linecap="round" stroke-width="7"><path d="M110 60h60M110 120h60M110 60v60M170 60v60" stroke="#FFC857"/><path d="M170 120h120M170 180h120M170 120v60M230 120v60M290 120v60" stroke="#6FD3FF"/><path d="M230 60h60M290 60v60M110 180v60" stroke="#B9A6E8" opacity=".6"/></g><circle cx="110" cy="60" r="7" fill="#F6E6FF"/><circle cx="170" cy="60" r="7" fill="#F6E6FF"/><circle cx="230" cy="60" r="7" fill="#F6E6FF"/><circle cx="290" cy="60" r="7" fill="#F6E6FF"/><circle cx="110" cy="120" r="7" fill="#F6E6FF"/><circle cx="170" cy="120" r="7" fill="#F6E6FF"/><circle cx="230" cy="120" r="7" fill="#F6E6FF"/><circle cx="290" cy="120" r="7" fill="#F6E6FF"/><circle cx="110" cy="180" r="7" fill="#F6E6FF"/><circle cx="170" cy="180" r="7" fill="#F6E6FF"/><circle cx="230" cy="180" r="7" fill="#F6E6FF"/><circle cx="290" cy="180" r="7" fill="#F6E6FF"/><circle cx="110" cy="240" r="7" fill="#F6E6FF"/><circle cx="170" cy="240" r="7" fill="#F6E6FF"/><circle cx="230" cy="240" r="7" fill="#F6E6FF"/><circle cx="290" cy="240" r="7" fill="#F6E6FF"/></svg>
+      </div>
+      <h3>Käsekästchen</h3>
+      <p>Kanten ziehen, Kästchen schließen – und bloß keine dritte Seite verschenken.</p>
+      <div class="tags"><span class="tag">Blitz-Solo</span><span class="tag">Zu zweit &amp; online</span><span class="tag">Gegen Bots</span></div>
+      <span class="play"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M3 1.5 L12 7 L3 12.5 Z" fill="currentColor"/></svg>Spielen</span>
+    </a>
+
+    <a class="game" href="/stadtlandfluss/" data-min="1" data-max="2" data-cat="quiz">
+      <div class="thumb">
+        <span class="badge-cat cat-quiz">Raten &amp; Wissen</span>
+        <span class="badge-players" aria-label="1 bis 2 Personen, auch gegen Bots"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" fill="currentColor"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7" fill="currentColor"/></svg>1–2</span>
+        <svg viewBox="0 0 400 300" aria-hidden="true"><rect x="40" y="62" width="96" height="96" rx="20" fill="#FDD5BB"/><text x="88" y="132" text-anchor="middle" font-family="Dancing Script,cursive" font-weight="700" font-size="70" fill="#2A1E4F">K</text><rect x="160" y="50" width="200" height="38" rx="10" fill="#1E1945" stroke="#463C82" stroke-width="3"/><text x="174" y="75" font-family="Quicksand,sans-serif" font-weight="700" font-size="17" fill="#F6E6FF">Köln</text><rect x="160" y="102" width="200" height="38" rx="10" fill="#1E1945" stroke="#463C82" stroke-width="3"/><text x="174" y="127" font-family="Quicksand,sans-serif" font-weight="700" font-size="17" fill="#F6E6FF">Kanada</text><rect x="160" y="154" width="200" height="38" rx="10" fill="#1E1945" stroke="#463C82" stroke-width="3"/><text x="174" y="179" font-family="Quicksand,sans-serif" font-weight="700" font-size="17" fill="#F6E6FF">Koala</text><rect x="160" y="206" width="200" height="38" rx="10" fill="#1E1945" stroke="#463C82" stroke-width="3"/><text x="174" y="231" font-family="Quicksand,sans-serif" font-weight="700" font-size="17" fill="#B9A6E8">Koch|</text><circle cx="88" cy="230" r="34" fill="#F2A7A8"/><text x="88" y="238" text-anchor="middle" font-family="Quicksand,sans-serif" font-weight="700" font-size="17" fill="#2A1E4F">Buzz!</text></svg>
+      </div>
+      <h3>Stadt, Land, Fluss</h3>
+      <p>Blitz-Variante: ein Buchstabe, vier Kategorien. Wer alles hat, drückt den Buzzer.</p>
+      <div class="tags"><span class="tag">45-Sekunden-Solo</span><span class="tag">Zu zweit &amp; online</span><span class="tag">Gegen Bots</span></div>
+      <span class="play"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M3 1.5 L12 7 L3 12.5 Z" fill="currentColor"/></svg>Spielen</span>
+    </a>
+
+    <a class="game" href="/memory/" data-min="1" data-max="2" data-cat="taktik">
+      <div class="thumb">
+        <span class="badge-cat cat-taktik">Gedächtnis</span>
+        <span class="badge-players" aria-label="1 bis 2 Personen, auch gegen Bots"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" fill="currentColor"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7" fill="currentColor"/></svg>1–2</span>
+        <svg viewBox="0 0 400 300" aria-hidden="true"><rect x="58" y="48" width="62" height="92" rx="10" fill="#463C82"/><text x="89" y="104" text-anchor="middle" font-size="22" fill="#F6E6FF" opacity=".5">✦</text><rect x="132" y="48" width="62" height="92" rx="10" fill="#2E2659" stroke="#FFC857" stroke-width="3"/><path transform="translate(143 74) scale(.85)" d="M30 9a16 16 0 1 0 9 26A13 13 0 0 1 30 9z" fill="#FFD98A"/><rect x="206" y="48" width="62" height="92" rx="10" fill="#463C82"/><text x="237" y="104" text-anchor="middle" font-size="22" fill="#F6E6FF" opacity=".5">✦</text><rect x="280" y="48" width="62" height="92" rx="10" fill="#2E2659" stroke="#F2A7A8" stroke-width="3"/><path transform="translate(291 72) scale(.85)" d="M24 6l5 11 12 1-9 8 3 12-11-6-11 6 3-12-9-8 12-1z" fill="#FFE66D"/><rect x="58" y="152" width="62" height="92" rx="10" fill="#463C82"/><text x="89" y="208" text-anchor="middle" font-size="22" fill="#F6E6FF" opacity=".5">✦</text><rect x="132" y="152" width="62" height="92" rx="10" fill="#463C82"/><text x="163" y="208" text-anchor="middle" font-size="22" fill="#F6E6FF" opacity=".5">✦</text><rect x="206" y="152" width="62" height="92" rx="10" fill="#2E2659" stroke="#FFC857" stroke-width="3"/><path transform="translate(217 178) scale(.85)" d="M30 9a16 16 0 1 0 9 26A13 13 0 0 1 30 9z" fill="#FFD98A"/><rect x="280" y="152" width="62" height="92" rx="10" fill="#463C82"/><text x="311" y="208" text-anchor="middle" font-size="22" fill="#F6E6FF" opacity=".5">✦</text></svg>
+      </div>
+      <h3>Speed-Memory</h3>
+      <p>Acht Paare gegen die Uhr – oder gegen einen Bot, der manchmal vergisst.</p>
+      <div class="tags"><span class="tag">Auf Zeit</span><span class="tag">Zu zweit &amp; online</span><span class="tag">Gegen Bots</span></div>
+      <span class="play"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M3 1.5 L12 7 L3 12.5 Z" fill="currentColor"/></svg>Spielen</span>
+    </a>
+
+    <a class="game" href="/dungeon/" data-min="1" data-max="2" data-cat="taktik">
+      <div class="thumb">
+        <span class="badge-cat cat-taktik">Taktik</span>
+        <span class="badge-players" aria-label="1 bis 2 Personen, auch gegen Bots"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" fill="currentColor"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7" fill="currentColor"/></svg>1–2</span>
+        <svg viewBox="0 0 400 300" aria-hidden="true"><g transform="rotate(-6 102 150)"><rect x="62" y="70" width="84" height="116" rx="10" fill="#FF8FA3"/><text x="72" y="96" font-family="Quicksand,sans-serif" font-weight="700" font-size="22" fill="#2A1E4F">7</text><text x="104" y="172" text-anchor="middle" font-family="Quicksand,sans-serif" font-weight="700" font-size="12" fill="#2A1E4F">MONSTER</text></g><g transform="rotate(0 198 150)"><rect x="158" y="70" width="84" height="116" rx="10" fill="#BFD3FF"/><text x="168" y="96" font-family="Quicksand,sans-serif" font-weight="700" font-size="22" fill="#2A1E4F">5</text><text x="200" y="172" text-anchor="middle" font-family="Quicksand,sans-serif" font-weight="700" font-size="12" fill="#2A1E4F">WAFFE</text></g><g transform="rotate(6 294 150)"><rect x="254" y="70" width="84" height="116" rx="10" fill="#E5B8FF"/><text x="264" y="96" font-family="Quicksand,sans-serif" font-weight="700" font-size="22" fill="#2A1E4F">4</text><text x="296" y="172" text-anchor="middle" font-family="Quicksand,sans-serif" font-weight="700" font-size="12" fill="#2A1E4F">TRANK</text></g><path d="M120 116c-8 0-14 6-14 14v12l4-2 4 4 6-4 6 4 4-4 4 2v-12c0-8-6-14-14-14z" fill="#2A1E4F"/><rect x="62" y="214" width="276" height="20" rx="10" fill="#16123A"/><rect x="62" y="214" width="190" height="20" rx="10" fill="#7BE0A6"/><text x="200" y="229" text-anchor="middle" font-family="Quicksand,sans-serif" font-weight="700" font-size="13" fill="#2A1E4F">9/13 HP</text></svg>
+      </div>
+      <h3>Karten-Dungeon</h3>
+      <p>Monster, Waffen, Tränke: Überlebe den Kartenstapel – oder schick deinem Gegner die Monster.</p>
+      <div class="tags"><span class="tag">Roguelite solo</span><span class="tag">Zu zweit &amp; online</span><span class="tag">Gegen Bots</span></div>
+      <span class="play"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M3 1.5 L12 7 L3 12.5 Z" fill="currentColor"/></svg>Spielen</span>
+    </a>
+
   </section>
 
   <section class="board" aria-label="Bestenliste">

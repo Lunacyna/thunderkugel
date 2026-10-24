@@ -1,0 +1,29 @@
+/* Stadt, Land, Fluss */
+.sl-wrap{max-width:680px;margin:0 auto;display:grid;gap:16px}
+.sl-head{display:flex;align-items:center;gap:16px}
+.sl-letter{flex:none;width:96px;height:96px;display:grid;place-items:center;border-radius:22px;font:700 64px/1 var(--font-script);color:var(--c-ink);background:var(--c-moon);
+  box-shadow:0 6px 0 var(--c-moon-deep),0 0 30px rgba(var(--rgb-moon),.45)}
+.sl-letter.small{width:64px;height:64px;font-size:42px;border-radius:16px}
+@media (prefers-reduced-motion:no-preference){.sl-letter:not(.small){animation:slIn .5s cubic-bezier(.3,1.6,.6,1)}@keyframes slIn{from{transform:scale(.3) rotate(-25deg);opacity:0}}}
+.sl-info{flex:1;min-width:0;display:grid;gap:8px}
+.sl-opp{font-weight:700;font-size:14px;color:var(--c-muted);min-height:1.4em}
+.sl-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+@media (max-width:520px){.sl-fields{grid-template-columns:minmax(0,1fr)}}
+.sl-field{display:grid;gap:6px}
+.sl-field .txt.bad{border-color:var(--bad)}
+.sl-row{align-items:center}
+.sl-row .hint{flex:1;min-width:200px}
+.sl-buzz{background:var(--c-peach);box-shadow:0 5px 0 #b85c6e,0 0 22px rgba(var(--rgb-peach),.5)}
+.sl-res{width:100%;border-collapse:collapse;background:var(--soft);border-radius:16px;overflow:hidden}
+.sl-res th,.sl-res td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+.sl-res thead th{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--c-muted)}
+.sl-res tbody th{font-weight:700;color:var(--c-lavender);width:24%}
+.sl-res td .w{display:block;font-weight:700;overflow-wrap:anywhere}
+.sl-res td .pts{font-variant-numeric:tabular-nums;color:var(--c-neon);font-weight:700}
+.sl-res td .pts small{color:var(--c-muted);font-weight:700}
+.sl-res td.n-falsch .w{color:var(--bad);text-decoration:line-through}
+.sl-res td.n-leer .w{color:var(--c-muted)}
+.sl-res tr.sum th,.sl-res tr.sum td{border-bottom:0;font-size:18px}
+.sl-legend{font-size:12.5px}
+.sl-pass{text-align:center}
+.sl-pass .row{justify-content:center}

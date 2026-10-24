@@ -1,0 +1,24 @@
+/* Vier gewinnt */
+.c4-wrap{max-width:620px;margin:0 auto}
+.c4-board{display:grid;grid-template-columns:repeat(7,1fr);gap:clamp(4px,1.2vw,10px);padding:clamp(8px,2vw,16px);border-radius:22px;
+  background:linear-gradient(180deg,var(--c-frame-hi),var(--c-frame));box-shadow:0 0 0 5px var(--c-frame),0 18px 40px rgba(0,0,0,.45),inset 0 2px 0 rgba(255,255,255,.12)}
+.c4-col{position:relative;display:grid;gap:clamp(4px,1.2vw,10px);padding:0;border:0;background:transparent;border-radius:14px;cursor:pointer;touch-action:manipulation}
+.c4-col[disabled]{cursor:default}
+.c4-board.active .c4-col:not([disabled]):hover,.c4-board.active .c4-col.cur:not([disabled]){background:rgba(255,255,255,.08)}
+.c4-hover{position:absolute;left:50%;top:-14px;width:14px;height:14px;margin-left:-7px;border-radius:50%;opacity:0;transition:opacity .15s;background:var(--p1)}
+.c4-board[data-turn="1"] .c4-hover{background:var(--p2)}
+.c4-board.active .c4-col.cur:not([disabled]) .c4-hover,.c4-board.active .c4-col:not([disabled]):hover .c4-hover{opacity:1}
+.c4-cell{position:relative;display:block;aspect-ratio:1;border-radius:50%;background:var(--c-night);box-shadow:inset 0 4px 8px rgba(0,0,0,.6);overflow:visible}
+.c4-cell i{position:absolute;inset:7%;border-radius:50%;opacity:0}
+.c4-cell.p1 i{opacity:1;background:radial-gradient(circle at 35% 30%,#fff8,transparent 45%),var(--p1);box-shadow:inset 0 -4px 0 rgba(0,0,0,.18)}
+.c4-cell.p2 i{opacity:1;background:radial-gradient(circle at 35% 30%,#fff8,transparent 45%),var(--p2);box-shadow:inset 0 -4px 0 rgba(0,0,0,.18)}
+.c4-cell.win i{box-shadow:0 0 0 3px var(--c-neon),0 0 18px var(--c-neon)}
+@media (prefers-reduced-motion:no-preference){
+  .c4-cell.drop i{animation:c4fall calc(.12s + var(--fall,3) * .06s) cubic-bezier(.5,0,1,1)}
+  @keyframes c4fall{from{transform:translateY(calc(var(--fall,3) * -118%))}}
+  .c4-cell.win i{animation:c4glow 1s ease-in-out infinite alternate}
+  @keyframes c4glow{to{box-shadow:0 0 0 3px var(--c-neon),0 0 28px var(--c-neon)}}
+}
+.c4-hint{text-align:center;margin-top:12px;min-height:1.4em}
+:root.retro-mode .c4-board{background:var(--c-frame)!important}
+:root.retro-mode .c4-cell{border-radius:0!important}

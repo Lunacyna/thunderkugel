@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Speed-Memory · Lunacynas Spielezimmer</title>
+<meta name="description" content="Finde alle Paare – solo auf Zeit, im Duell, online oder gegen einen Bot mit wackeligem Gedächtnis.">
+<meta name="theme-color" content="#16123A">
+<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="icon" href="/assets/icons/icon.svg" type="image/svg+xml">
+<link rel="icon" href="/assets/icons/icon-32.png" type="image/png" sizes="32x32">
+<link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png" sizes="180x180">
+<link rel="manifest" href="/site.webmanifest">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="de_DE">
+<meta property="og:site_name" content="Lunacynas Spielezimmer">
+<meta property="og:title" content="Speed-Memory – Lunacynas Spielezimmer">
+<meta property="og:description" content="Finde alle Paare – solo auf Zeit, im Duell, online oder gegen einen Bot mit wackeligem Gedächtnis.">
+<meta property="og:url" content="/">
+<meta property="og:image" content="/assets/og.jpg?v=2">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Lunacynas gemütliches Stream-Zimmer bei Nacht mit dem Schriftzug „Lunacynas Spielezimmer“">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Speed-Memory – Lunacynas Spielezimmer">
+<meta name="twitter:description" content="Finde alle Paare – solo auf Zeit, im Duell, online oder gegen einen Bot mit wackeligem Gedächtnis.">
+<meta name="twitter:image" content="/assets/og.jpg?v=2">
+<meta name="twitter:image:alt" content="Lunacynas gemütliches Stream-Zimmer bei Nacht mit dem Schriftzug „Lunacynas Spielezimmer“">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Quicksand:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="/assets/arcade/arcade.css?v=1">
+<link rel="stylesheet" href="/assets/arcade/memory.css?v=1">
+<script>window.KB_LOBBY='lobby-ar';
+// Verbindung zum Kugelblitz-Server (Cloudflare Durable Objects) per WebSocket.
+// Stellt dieselbe Schnittstelle bereit, die das Spiel erwartet: window.claude.use("room"|"user").
+(()=>{
+  window.KB_SERVER=true;
+  const rid=()=>Math.random().toString(36).slice(2,12).padEnd(10,'0');
+  const peerId=rid();
+  let uid=null;try{uid=localStorage.getItem('kb_uid')}catch(e){}
+  if(!uid||!/^u_[a-z0-9]{10}$/.test(uid)){uid='u_'+rid();try{localStorage.setItem('kb_uid',uid)}catch(e){}}
+  const ADJ=['Flinke','Schnelle','Wilde','Kluge','Mutige','Lustige','Wache','Freche','Coole','Starke','Fixe','Heitere'];
+  const TIER=['Eule','Katze','Ente','Robbe','Maus','Biene','Kröte','Möwe','Ziege','Qualle','Hummel','Taube'];
+  const pick=a=>a[Math.floor(Math.random()*a.length)];
+  const newName=()=>pick(ADJ)+' '+pick(TIER);
+  let myName=null;try{myName=localStorage.getItem('kb_name')}catch(e){}
+  if(!myName||myName.length>30)myName=newName();
+  const names={};names[uid]=myName;
+  const verified=new Set();
+  const auth={enabled:false,user:null};
+  window.kbAuth=auth;
+  const conns=new Set();
+  const cleanName=s=>typeof s==='string'?s.replace(/[^\p{L}\p{N} ._-]/gu,'').slice(0,30):'';
+
+  // Namen lernen: Twitch-bestätigte Namen (vom Server) haben Vorrang vor selbst gewählten
+  function learn(by,vn,pr){if(!by)return;if(vn){names[by]=cleanName(vn);verified.add(by)}else if(!verified.has(by)&&pr&&pr.nm)names[by]=cleanName(pr.nm)}
+  function conn(roomName){
+    const peers=new Map();const listeners=new Set();const connL=new Set();
+    let readyRes;const ready=new Promise(r=>readyRes=r);setTimeout(()=>readyRes(false),5000);
+    let ws=null,open=false,closed=false,my={nm:myName},snap=null,sendTimer=null,notifyQ=false,retry=0;
+    peers.set(peerId,{by:uid,pr:my,t:Date.now()});
+    const snapshot=()=>{if(!snap)snap=Object.freeze([...peers.entries()].map(([peer,v])=>Object.freeze({peer,by:v.by,isMe:peer===peerId,sameTab:peer===peerId,kind:'viewer',guest:false,presence:Object.freeze(v.pr||{}),updatedAt:v.t})));return snap};
+    const changed=()=>{snap=null;if(notifyQ)return;notifyQ=true;setTimeout(()=>{notifyQ=false;const p=snapshot();listeners.forEach(fn=>{try{fn({peers:p,joined:[],left:[],updated:[]})}catch(e){console.error(e)}})},0)};
+    const flush=()=>{sendTimer=null;if(open&&ws&&ws.readyState===1){try{ws.send(JSON.stringify({t:'p',pr:my}))}catch(e){}}};
+    const queueSend=()=>{if(!sendTimer)sendTimer=setTimeout(flush,30)};
+    const setOpen=v=>{if(open===v)return;open=v;connL.forEach(fn=>{try{fn(v)}catch(e){}})};
+    function connect(){
+      if(closed)return;
+      const proto=location.protocol==='https:'?'wss':'ws';
+      ws=new WebSocket(`${proto}://${location.host}/ws?room=${encodeURIComponent(roomName)}&peer=${peerId}&by=${uid}`);
+      ws.onopen=()=>{retry=0;setOpen(true);readyRes(true);flush()};
+      ws.onmessage=e=>{let m;try{m=JSON.parse(e.data)}catch(_){return}
+        if(m.t==='snap'&&Array.isArray(m.peers)){for(const k of [...peers.keys()])if(k!==peerId)peers.delete(k);
+          for(const p of m.peers){if(p&&p.peer&&p.peer!==peerId){peers.set(p.peer,{by:p.by,pr:p.pr||{},t:Date.now()});learn(p.by,p.vn,p.pr)}}changed()}
+        else if(m.t==='p'&&m.peer&&m.peer!==peerId){if(m.pr===null)peers.delete(m.peer);else{peers.set(m.peer,{by:m.by,pr:m.pr,t:Date.now()});learn(m.by,m.vn,m.pr)}changed()}};
+      ws.onclose=()=>{setOpen(false);readyRes(false);if(closed)return;for(const k of [...peers.keys()])if(k!==peerId)peers.delete(k);changed();retry=Math.min(retry+1,6);setTimeout(connect,400*retry)};
+      ws.onerror=()=>{};
+    }
+    connect();
+    const api={
+      name:roomName.replace(/^g-/,''),
+      presence(patch){if(!patch||typeof patch!=='object')return Promise.resolve();const n={...my};for(const k in patch){if(patch[k]===null)delete n[k];else n[k]=patch[k]}n.nm=myName;my=n;peers.set(peerId,{by:uid,pr:my,t:Date.now()});changed();queueSend();return Promise.resolve()},
+      peers:snapshot,
+      onPeers(fn){listeners.add(fn);setTimeout(()=>{try{fn({peers:snapshot(),joined:snapshot(),left:[],updated:[]})}catch(e){}},0);return()=>listeners.delete(fn)},
+      emit(){return Promise.resolve()},on(){return()=>{}},
+      connected:()=>open,
+      onConnection(fn){connL.add(fn);setTimeout(()=>fn(open),0);return()=>connL.delete(fn)},
+      leave(){closed=true;conns.delete(api);try{ws&&ws.close()}catch(e){}return Promise.resolve()},
+      _ready:ready,
+      _rename(){my={...my,nm:myName};peers.set(peerId,{by:uid,pr:my,t:Date.now()});changed();queueSend()}
+    };
+    conns.add(api);
+    return api;
+  }
+
+
+  const user=Object.freeze({
+    profiles(ids){const o={};(Array.isArray(ids)?ids:[ids]).forEach(id=>{o[id]={id,name:names[id]||'',verified:verified.has(id),avatarUrl:'',color:'#888',email:null,isMe:id===uid,guest:false}});return Promise.resolve(o)},
+    id:()=>Promise.resolve(uid),name:()=>Promise.resolve(myName),
+    me:()=>Promise.resolve({id:uid,name:myName,avatarUrl:'',color:'#888',email:null,isOwner:false,canEdit:false}),
+    isOwner:()=>Promise.resolve(false),canEdit:()=>Promise.resolve(false),can:()=>Promise.resolve(null)
+  });
+  // Name für die Anzeige im Spiel
+  window.kbName={get:()=>myName,verified:()=>!!auth.user,isVerified:by=>verified.has(by),set(v){if(auth.user)return myName;const c=cleanName(String(v||'')).trim();if(!c)return myName;myName=c;names[uid]=myName;try{localStorage.setItem('kb_name',myName)}catch(e){}conns.forEach(x=>x._rename());return myName},reroll(){if(auth.user)return myName;myName=newName();names[uid]=myName;try{localStorage.setItem('kb_name',myName)}catch(e){}conns.forEach(c=>c._rename());return myName}};
+  // Online nur anbieten, wenn der Server antwortet (z. B. nicht bei reinem Static Hosting)
+  // Erst klären, ob jemand per Twitch angemeldet ist – dann verbinden
+  const meP=fetch('/auth/me',{cache:'no-store',credentials:'same-origin'}).then(r=>r.ok?r.json():null).catch(()=>null).then(me=>{
+    auth.enabled=!!(me&&me.enabled);
+    if(me&&me.user&&/^\d+$/.test(me.user.id)){auth.user=me.user;uid='tw_'+me.user.id;myName=cleanName(me.user.name)||me.user.login;names[uid]=myName;verified.add(uid)}
+    try{window.dispatchEvent(new CustomEvent('kbauth',{detail:auth}))}catch(e){}
+    return auth;
+  });
+  window.kbAuthReady=meP;
+  const roomP=meP.then(()=>{
+    const lobby=conn(['lobby-zw','lobby-ne','lobby-ar'].includes(window.KB_LOBBY)?window.KB_LOBBY:'lobby');
+    const room=Object.freeze({...lobby,join:n=>/^(kb|zw|ne|ar)-[a-z0-9]{4}$/.test(n)?Promise.resolve(conn('g-'+n)):Promise.reject({code:'invalid_argument',message:'bad name'})});
+    return lobby._ready.then(ok=>{if(!ok){lobby.leave();return null}return room});
+  });
+  window.claude={use:n=>n==='room'?roomP:Promise.resolve(n==='user'?user:null)};
+})();
+
+</script>
+<!--cozy--><link rel="stylesheet" href="/assets/cozy/cozy.css?v=3"><script src="/assets/cozy/cozy.js?v=3"></script><link rel="stylesheet" href="/assets/cozy/retro.css?v=3"><script src="/assets/cozy/retro.js?v=3"></script><!--/cozy-->
+</head>
+<body>
+<script id="lzsound">
+// LZSound – kleines Sound-System für Lunacynas Spielezimmer
+// - Alle Töne werden live per Web Audio erzeugt (keine Audiodateien nötig).
+// - Der AudioContext entsteht erst nach der ersten Nutzer-Interaktion (Autoplay-Regeln der Browser).
+// - Stummschalten gilt für alle Seiten und bleibt über Reloads erhalten (localStorage "lz_muted").
+// Benutzung:  LZSound.play('correct')   LZSound.mountToggle(buttonElement)   LZSound.setMuted(true)
+// 8-Bit:      LZSound.setVoice('chip') -> alle Töne als Rechteckwelle wie ein alter Soundchip; LZSound.playIfReady('blip') spielt nur, wenn Audio schon freigeschaltet ist
+window.LZSound = window.LZSound || (() => {
+  const KEY = 'lz_muted';
+  let muted = false;
+  try { muted = localStorage.getItem(KEY) === '1'; } catch (e) {}
+  let ac = null, master = null, voice = 'soft';
+  const subs = new Set();
+
+  function unlock() {
+    if (muted) return;
+    try {
+      if (!ac) {
+        const C = window.AudioContext || window.webkitAudioContext; if (!C) return;
+        ac = new C(); master = ac.createGain(); master.gain.value = 0.9; master.connect(ac.destination);
+      }
+      if (ac.state === 'suspended') ac.resume();
+    } catch (e) {}
+  }
+  ['pointerdown', 'keydown', 'touchstart'].forEach(t => window.addEventListener(t, unlock, { capture: true, passive: true }));
+
+  function tone(f, dur, o) {
+    o = o || {}; if (!ac || muted) return;
+    const t = ac.currentTime + (o.delay || 0), osc = ac.createOscillator(), g = ac.createGain();
+    const chip = voice === 'chip' && o.type !== 'noise';
+    osc.type = chip ? (o.type === 'sawtooth' ? 'sawtooth' : 'square') : (o.type || 'sine'); osc.frequency.setValueAtTime(f, t);
+    if (o.slide) osc.frequency.exponentialRampToValueAtTime(f * o.slide, t + dur);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime((o.vol || 0.15) * (chip ? 0.55 : 1), t + (chip ? 0.004 : 0.01));
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    osc.connect(g).connect(master); osc.start(t); osc.stop(t + dur + 0.02);
+  }
+  function noise(dur, o) {
+    o = o || {}; if (!ac || muted) return;
+    const t = ac.currentTime, buf = ac.createBuffer(1, Math.floor(ac.sampleRate * dur), ac.sampleRate), d = buf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) { const k = i / d.length; d[i] = (Math.random() * 2 - 1) * (1 - k) * (0.5 + 0.5 * Math.sin(k * (o.wobble || 60))); }
+    const s = ac.createBufferSource(), f = ac.createBiquadFilter(), g = ac.createGain();
+    f.type = 'bandpass'; f.frequency.value = o.freq || 900; g.gain.value = o.vol || 0.4;
+    s.buffer = buf; s.connect(f).connect(g).connect(master); s.start(t);
+  }
+  const notes = (list, o) => list.forEach((f, i) => tone(f, (o.len && o.len[i]) || o.dur || 0.16, { type: o.type || 'triangle', vol: o.vol || 0.16, delay: i * (o.step || 0.08) }));
+
+  const SOUNDS = {
+    click:   () => tone(520, 0.06, { type: 'triangle', vol: 0.08 }),
+    pop:     () => tone(660, 0.12, { type: 'triangle', vol: 0.2, slide: 1.8 }),
+    buzz:    () => { tone(150, 0.32, { type: 'square', vol: 0.07, slide: 0.8 }); tone(156, 0.32, { type: 'sawtooth', vol: 0.035, slide: 0.8 }); },
+    wrong:   () => { tone(392, 0.14, { vol: 0.13, type: 'triangle' }); tone(311, 0.28, { vol: 0.13, type: 'triangle', delay: 0.13 }); },
+    correct: () => notes([523, 659, 784], { step: 0.08 }),
+    win:     () => notes([523, 659, 784, 1046], { step: 0.09, dur: 0.2 }),
+    fanfare: () => notes([523, 659, 784, 1046, 784, 1046], { step: 0.12, len: [0.16, 0.16, 0.16, 0.25, 0.16, 0.55], vol: 0.17 }),
+    lose:    () => notes([392, 349, 311], { step: 0.14, dur: 0.22, vol: 0.12 }),
+    tick:    () => tone(880, 0.08, { vol: 0.11 }),
+    go:      () => tone(1175, 0.25, { type: 'triangle', vol: 0.17 }),
+    turn:    () => { tone(988, 0.1, { vol: 0.11 }); tone(1319, 0.2, { vol: 0.11, delay: 0.1 }); },
+    magic:   () => notes([1319, 1568, 1760, 2093], { step: 0.06, dur: 0.14, type: 'sine', vol: 0.08 }),
+    shake:   () => noise(0.7, { freq: 900, vol: 0.5, wobble: 90 }),
+    join:    () => tone(784, 0.14, { type: 'sine', vol: 0.09, slide: 1.5 }),
+    // 8-Bit / Retro
+    blip:      () => tone(1760, 0.025, { type: 'square', vol: 0.035 }),
+    select:    () => { tone(988, 0.045, { type: 'square', vol: 0.07 }); tone(1480, 0.07, { type: 'square', vol: 0.07, delay: 0.045 }); },
+    klack:     () => { noise(0.045, { freq: 2600, vol: 0.55, wobble: 0 }); tone(130, 0.05, { type: 'square', vol: 0.09, slide: 0.6 }); },
+    powerup:   () => notes([523, 659, 784, 1046, 1319], { step: 0.05, dur: 0.07, type: 'square', vol: 0.08 }),
+    powerdown: () => notes([1046, 784, 523, 392], { step: 0.05, dur: 0.07, type: 'square', vol: 0.07 }),
+    coin:      () => { tone(988, 0.08, { type: 'square', vol: 0.08 }); tone(1319, 0.38, { type: 'square', vol: 0.08, delay: 0.08 }); },
+  };
+
+  function play(name) { if (muted) return; unlock(); const f = SOUNDS[name]; if (f && ac) { try { f(); } catch (e) {} } }
+  // für Hover-Töne: nie selbst einen AudioContext anlegen (Autoplay-Regeln), nur spielen, wenn er schon läuft
+  function playIfReady(name) { if (muted || !ac || ac.state !== 'running') return; const f = SOUNDS[name]; if (f) { try { f(); } catch (e) {} } }
+  function setVoice(v) { voice = v === 'chip' ? 'chip' : 'soft'; }
+  function emit() { subs.forEach(fn => { try { fn(muted); } catch (e) {} }); }
+  function setMuted(m) {
+    muted = !!m;
+    try { localStorage.setItem(KEY, muted ? '1' : '0'); } catch (e) {}
+    if (master && ac) master.gain.setTargetAtTime(muted ? 0 : 0.9, ac.currentTime, 0.01);
+    emit(); if (!muted) { unlock(); play('click'); }
+  }
+  window.addEventListener('storage', e => { if (e.key === KEY) { muted = e.newValue === '1'; if (master && ac) master.gain.value = muted ? 0 : 0.9; emit(); } });
+
+  const ON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+  const OFF = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16.5 9.5l5 5M21.5 9.5l-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+  (function css() {
+    const st = document.createElement('style');
+    st.textContent = '.lz-mute{width:44px;height:44px;flex:none;border-radius:50%;border:0;cursor:pointer;display:inline-grid;place-items:center;background:transparent;color:var(--c-text,#EFE9FF);box-shadow:inset 0 0 0 2px rgba(var(--rgb-lav,185,166,232),.45);transition:box-shadow .15s}'
+      + '.lz-mute:hover{box-shadow:inset 0 0 0 2px var(--c-neon,#F6E6FF),0 0 16px rgba(var(--rgb-glow,199,125,255),.45)}'
+      + '.lz-mute:focus-visible{outline:3px solid var(--c-neon,#F6E6FF);outline-offset:3px}'
+      + '.lz-mute svg{width:22px;height:22px}'
+      + '.lz-mute[aria-pressed="true"]{color:var(--c-peach,#F2A7A8);box-shadow:inset 0 0 0 2px rgba(var(--rgb-peach,242,167,168),.6)}';
+    (document.head || document.documentElement).appendChild(st);
+  })();
+  function mountToggle(btn) {
+    if (!btn) return;
+    btn.classList.add('lz-mute'); btn.type = 'button';
+    const upd = m => { btn.setAttribute('aria-pressed', String(m)); const t = m ? 'Ton einschalten' : 'Ton ausschalten'; btn.title = t; btn.setAttribute('aria-label', t); btn.innerHTML = m ? OFF : ON; };
+    upd(muted); subs.add(upd);
+    btn.addEventListener('click', () => setMuted(!muted));
+  }
+  return { play, playIfReady, setVoice, voice: () => voice, unlock, setMuted, isMuted: () => muted, mountToggle, onChange: fn => subs.add(fn), sounds: Object.keys(SOUNDS) };
+})();
+</script>
+<div class="wrap">
+  <header class="top">
+    <h1 class="logo">Speed-Memory<small>Lunacynas Spielezimmer · 8 Paare gegen die Uhr oder im Duell</small></h1>
+    <div class="navr"><span class="netpill" id="netpill" hidden>Online bereit</span><button id="muteBtn" type="button"></button><button class="btn ghost" id="btnBack" type="button">← Zurück</button><a class="btn ghost" href="/" data-home>Alle Spiele</a></div>
+  </header>
+  <div class="ar-app">
+    <section id="main" aria-label="Spielfeld"></section>
+    <aside id="side" aria-label="Infos und Punktestand"></aside>
+  </div>
+</div>
+<div class="toast" id="arToast" role="status" aria-live="polite"></div>
+<script src="/assets/arcade/arcade.js?v=1"></script>
+<script src="/assets/arcade/memory.js?v=1"></script>
+</body>
+</html>

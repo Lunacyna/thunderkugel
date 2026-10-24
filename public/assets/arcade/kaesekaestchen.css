@@ -1,0 +1,21 @@
+/* Käsekästchen */
+.db-wrap{max-width:560px;margin:0 auto;display:grid;gap:14px}
+.db-grid{--n:5;--dot:clamp(10px,2.2vw,16px);display:grid;
+  aspect-ratio:1;padding:clamp(12px,3vw,24px);border-radius:22px;background:linear-gradient(180deg,var(--c-panel-a),var(--c-panel-b));box-shadow:0 0 0 5px var(--c-frame),0 18px 40px rgba(0,0,0,.45)}
+.db-dot{width:var(--dot);height:var(--dot);border-radius:50%;background:var(--c-neon);box-shadow:0 0 8px rgba(var(--rgb-neon),.5);z-index:2}
+.db-edge{position:relative;border:0;padding:0;background:transparent;cursor:pointer;touch-action:manipulation}
+.db-edge::before{content:"";position:absolute;border-radius:999px;background:rgba(var(--rgb-lav),.14);transition:background .12s}
+.db-h::before{left:0;right:0;top:50%;height:6px;margin-top:-3px}
+.db-v::before{top:0;bottom:0;left:50%;width:6px;margin-left:-3px}
+.db-h{margin:-10px -4px}.db-v{margin:-4px -10px}         /* größere Trefferfläche, auch am Handy */
+.db-grid.active .db-edge:not([disabled]):hover::before,.db-grid.active .db-edge:not([disabled]):focus-visible::before{background:var(--p1)}
+.db-grid.active[data-turn="1"] .db-edge:not([disabled]):hover::before,.db-grid.active[data-turn="1"] .db-edge:not([disabled]):focus-visible::before{background:var(--p2)}
+.db-edge[disabled]{cursor:default}
+.db-edge.set.p0::before{background:var(--p1)}
+.db-edge.set.p1::before{background:var(--p2)}
+.db-edge.last::before{box-shadow:0 0 10px var(--c-neon)}
+.db-box{display:grid;place-items:center;border-radius:8px;font:700 clamp(14px,3vw,22px) var(--font-body);color:var(--c-ink);transition:background .2s}
+.db-box.own.p0{background:rgba(255,200,87,.85)}
+.db-box.own.p1{background:rgba(111,211,255,.85)}
+:root[data-theme="kamin"] .db-box.own.p1{background:rgba(159,227,199,.85)}
+@media (prefers-reduced-motion:no-preference){.db-box.own{animation:dbPop .3s ease-out}@keyframes dbPop{from{transform:scale(.4)}}}
