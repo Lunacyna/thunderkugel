@@ -225,12 +225,65 @@ function sameKey(a, b) {
   let d = 0; for (let i = 0; i < a.length; i++) d |= a.charCodeAt(i) ^ b.charCodeAt(i);
   return d === 0;
 }
+// ---------------------------------------------------------------------------
+// Feedback-Formular -> privater Discord-Kanal (Webhook)
+// Die Webhook-URL liegt als Geheimnis FEEDBACK_WEBHOOK bei Cloudflare und
+// erscheint nirgends im Quellcode oder im Browser.
+// ---------------------------------------------------------------------------
+const FB_TYPES = { bug: ["🐞 Bug", 0xFF8FA3], idee: ["💡 Idee", 0xFDD5BB], sonstiges: ["💬 Sonstiges", 0xB9A6E8] };
+const cleanText = (v, max) => String(v == null ? "" : v).replace(/\r\n?/g, "\n").replace(/[\u0000-\u0009\u000b-\u001f\u007f]/g, " ")
+  .replace(/\n{3,}/g, "\n\n").trim().slice(0, max);
+async function feedback(request, env, url, store, ip) {
+  // nur von der eigenen Seite (schützt vor Formular-Spam über fremde Seiten)
+  const origin = request.headers.get("origin");
+  if (origin && origin !== url.origin) return json({ error: "Nicht erlaubt." }, 403);
+  if (+(request.headers.get("content-length") || 0) > 12000) return json({ error: "Die Nachricht ist zu lang." }, 413);
+  const hook = env.FEEDBACK_WEBHOOK || "";
+  // erlaubt: Discord-Webhooks; http://localhost nur für lokale Tests mit "wrangler dev"
+  if (!/^https:\/\/(discord\.com|discordapp\.com|canary\.discord\.com|ptb\.discord\.com)\/api\/webhooks\//.test(hook) &&
+      !/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?\//.test(hook))
+    return json({ error: "Das Feedback-Formular ist noch nicht eingerichtet." }, 503);
+  let b; try { b = await request.json(); } catch { b = null; }
+  if (!b || typeof b !== "object") return json({ error: "Ungültige Anfrage." }, 400);
+  // Bots: Honigtopf-Feld ausgefüllt oder in unter 2,5 s abgeschickt -> freundlich so tun, als ob
+  if (b.website || (typeof b.dt === "number" && b.dt < 2500)) return json({ ok: true });
+  const type = FB_TYPES[b.type] ? b.type : "sonstiges";
+  const name = clean(b.name, 40), email = clean(b.email, 120), msg = cleanText(b.msg, 2000);
+  const page = clean(b.page, 120) || "/", theme = clean(b.theme, 12), ua = clean(b.ua, 200);
+  if (!name) return json({ error: "Bitte gib einen Namen oder Nick an." }, 400);
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return json({ error: "Die E-Mail sieht nicht ganz richtig aus." }, 400);
+  if (msg.length < 5) return json({ error: "Schreib bitte ein paar Worte mehr." }, 400);
+  if (await store.limited("fb:" + ip, 5)) return json({ error: "Du hast in der letzten Stunde schon einiges geschickt – danke! Versuch es später noch mal." }, 429);
+  if (await store.limited("fb:all", 60)) return json({ error: "Gerade kommt sehr viel Feedback an. Versuch es bitte später noch mal." }, 429);
+  const user = await readSession(request, env);
+  const [title, color] = FB_TYPES[type];
+  const fields = [
+    { name: "Von", value: name + (user ? "  ·  ✓ twitch.tv/" + user.login : ""), inline: true },
+    { name: "Seite", value: page, inline: true },
+  ];
+  if (email) fields.push({ name: "E-Mail", value: email, inline: false });
+  const payload = {
+    username: "Spielezimmer-Feedback",
+    allowed_mentions: { parse: [] },          // kein @everyone / @here aus Nutzertext
+    embeds: [{ title, description: msg, color, fields, timestamp: new Date().toISOString(),
+               footer: { text: (theme ? "Theme: " + theme + " · " : "") + ua.slice(0, 120) } }],
+  };
+  try {
+    const r = await fetch(hook + (hook.includes("?") ? "&" : "?") + "wait=true", {
+      method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(payload),
+    });
+    if (!r.ok) return json({ error: "Konnte gerade nicht zugestellt werden. Versuch es gleich noch mal." }, 502);
+  } catch { return json({ error: "Konnte gerade nicht zugestellt werden. Versuch es gleich noch mal." }, 502); }
+  return json({ ok: true });
+}
+
 async function api(request, env, url) {
   const store = env.STORE.get(env.STORE.idFromName("main"));
   const ip = request.headers.get("cf-connecting-ip") || "local";
   const path = url.pathname, method = request.method;
   const body = async () => { try { return await request.json(); } catch { return null; } };
 
+  if (path === "/api/feedback" && method === "POST") return feedback(request, env, url, store, ip);
   if (path === "/api/cards" && method === "GET") return json(await store.cards(false));
   if (path === "/api/cards/suggest" && method === "POST") { const r = await store.suggest(await body(), ip, await readSession(request, env)); return json(r, r.error ? 400 : 200); }
   if (path === "/api/scores" && method === "POST") {

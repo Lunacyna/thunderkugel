@@ -1,0 +1,141 @@
+/* ==========================================================================
+   Lunacynas Spielezimmer – gemeinsames Cozy-Modul (CSS)
+   Eingebunden in jeder Seite per <link rel="stylesheet" href="/assets/cozy/cozy.css?v=…">
+   Inhalt:
+     1. Farb-Tokens für beide Themes (Sternennacht = Standard, Kaminabend)
+     2. Focus-Ringe für alle interaktiven Elemente
+     3. Hilfsklassen (Screenreader-Text, Ansage-Regionen)
+     4. Theme-Schalter
+     5. Feedback-Button + Dialog
+   Die Seiten benutzen ihre eigenen Variablen (--night, --text, …). Kaminabend
+   überschreibt sie hier mit höherer Spezifität (:root[data-theme]), daher ist die
+   Reihenfolge der Stylesheets egal. Literale Farben in den Seiten werden beim Bauen
+   (theme.py) auf die --c-* / --rgb-* Variablen umgestellt.
+   ========================================================================== */
+
+/* 1 · Tokens ------------------------------------------------------------- */
+:root{
+  /* Sternennacht – entspricht den bisherigen Farben 1:1 */
+  --c-night:#16123A; --c-night-2:#1D1842; --c-dusk:#3B2E66; --c-horizon:#5E4373;
+  --c-panel-a:#2E2659; --c-panel-b:#221C47; --c-frame:#3A3170; --c-frame-hi:#463C82;
+  --c-text:#EFE9FF; --c-muted:#A99FCB; --c-neon:#F6E6FF; --c-glow:#C77DFF; --c-lavender:#B9A6E8;
+  --c-moon:#FDD5BB; --c-moon-deep:#C9967C; --c-peach:#F2A7A8; --c-ink:#2A1E4F;
+  --rgb-neon:246,230,255; --rgb-glow:199,125,255; --rgb-lav:185,166,232; --rgb-moon:253,213,187;
+  --rgb-peach:242,167,168; --rgb-night:18,15,46; --rgb-deep:10,8,30;
+  --lz-focus:#F6E6FF; --lz-focus-halo:rgba(199,125,255,.45);
+  --lz-theme-color:#16123A;
+}
+
+/* Kaminabend – warmes Anthrazit, Bernstein & Glut statt Lila */
+:root[data-theme="kamin"]{
+  --c-night:#1C1916; --c-night-2:#221E1A; --c-dusk:#342A23; --c-horizon:#5A3826;
+  --c-panel-a:#342D28; --c-panel-b:#29241F; --c-frame:#4A3F37; --c-frame-hi:#5C4F45;
+  --c-text:#F4EADD; --c-muted:#BFAE9C; --c-neon:#FFE9CF; --c-glow:#FFA94D; --c-lavender:#D8BB9E;
+  --c-moon:#FFC99C; --c-moon-deep:#C98B5E; --c-peach:#F59E7A; --c-ink:#2B1D13;
+  --rgb-neon:255,233,207; --rgb-glow:255,169,77; --rgb-lav:216,187,158; --rgb-moon:255,201,156;
+  --rgb-peach:245,158,122; --rgb-night:28,25,22; --rgb-deep:14,12,10;
+  --lz-focus:#FFE9CF; --lz-focus-halo:rgba(255,169,77,.45);
+  --lz-theme-color:#1C1916;
+
+  /* Seiten-Variablen umbiegen (alle Spiele nutzen dieselben Namen) */
+  --night:var(--c-night); --wall:var(--c-panel-b); --wall-2:var(--c-panel-a);
+  --panel-a:var(--c-panel-a); --panel-b:var(--c-panel-b); --frame:var(--c-frame);
+  --text:var(--c-text); --muted:var(--c-muted); --neon:var(--c-neon);
+  --glow:var(--c-glow); --neon-glow:var(--c-glow); --lavender:var(--c-lavender);
+  --moon:var(--c-moon); --moon-deep:var(--c-moon-deep); --peach:var(--c-peach);
+  --btn-ink:var(--c-ink); --paper-ink:var(--c-ink);
+  --line:rgba(216,187,158,.22);
+  /* Kugelblitz */
+  --table:var(--c-night); --table-deep:var(--c-frame); --card:var(--c-panel-a);
+  --ink:var(--c-text); --ink-soft:var(--c-muted); --on-table:var(--c-text);
+  --saffron:var(--c-moon); --saffron-deep:var(--c-moon-deep);
+}
+
+/* Hintergrund der Spielseiten (body::before) im Kaminabend: Glut statt Sterne */
+:root[data-theme="kamin"] body::before{
+  background:
+    radial-gradient(1.4px 1.4px at 14% 22%,rgba(255,201,156,.55),transparent 60%),
+    radial-gradient(1px 1px at 38% 12%,rgba(255,201,156,.4),transparent 60%),
+    radial-gradient(1.2px 1.2px at 64% 26%,rgba(255,201,156,.45),transparent 60%),
+    radial-gradient(1px 1px at 84% 16%,rgba(255,201,156,.35),transparent 60%),
+    radial-gradient(1.3px 1.3px at 24% 58%,rgba(255,169,77,.35),transparent 60%),
+    radial-gradient(1.2px 1.2px at 72% 64%,rgba(255,169,77,.35),transparent 60%),
+    radial-gradient(60vmax 45vmax at 90% -10%,rgba(255,201,156,.10),transparent 60%),
+    radial-gradient(95vmax 55vmax at 50% 125%,rgba(245,120,70,.30),transparent 62%),
+    linear-gradient(180deg,#1A1714 0%,#221E1A 50%,#342A23 85%,#4E3324 100%);
+}
+
+/* Weicher Übergang beim Umschalten (nur wenn Bewegung erwünscht) */
+@media (prefers-reduced-motion:no-preference){
+  html.lz-theme-anim, html.lz-theme-anim *, html.lz-theme-anim *::before{
+    transition:background-color .35s ease,color .35s ease,border-color .35s ease,box-shadow .35s ease!important;
+  }
+}
+
+/* 2 · Focus-Ringe -------------------------------------------------------- */
+/* Niedrige Spezifität (:where), damit seitenspezifische Ringe weiter gewinnen dürfen. */
+:where(a,button,input,select,textarea,summary,[tabindex]:not([tabindex="-1"]),[contenteditable]):focus-visible{
+  outline:2px solid var(--lz-focus);
+  outline-offset:3px;
+  box-shadow:0 0 0 6px var(--lz-focus-halo);
+}
+:where(input,select,textarea):focus-visible{outline-offset:1px}
+/* Maus-Klicks sollen keinen Ring hinterlassen */
+:where(a,button,[tabindex]):focus:not(:focus-visible){outline:none}
+/* Sprungmarke für Tastaturnutzer */
+.lz-skip{position:fixed;left:12px;top:-60px;z-index:1000;padding:10px 16px;border-radius:999px;background:var(--c-neon);color:var(--c-ink);font:700 15px/1 var(--font-body,system-ui);text-decoration:none;transition:top .15s}
+.lz-skip:focus{top:12px}
+
+/* 3 · Hilfsklassen ------------------------------------------------------- */
+.lz-sr{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0}
+kbd.lz-kbd{display:inline-block;min-width:1.6em;padding:1px 6px;border-radius:6px;font:700 12px/1.5 var(--font-body,system-ui);text-align:center;color:var(--c-text);background:rgba(var(--rgb-lav),.14);box-shadow:inset 0 -1px 0 rgba(var(--rgb-lav),.35)}
+
+/* 4 · Theme-Schalter ----------------------------------------------------- */
+.lz-theme{width:44px;height:44px;flex:none;border-radius:50%;border:0;cursor:pointer;display:inline-grid;place-items:center;
+  background:transparent;color:var(--c-text);box-shadow:inset 0 0 0 2px rgba(var(--rgb-lav),.45);transition:box-shadow .15s,color .15s}
+.lz-theme:hover{box-shadow:inset 0 0 0 2px var(--c-neon),0 0 16px rgba(var(--rgb-glow),.45)}
+.lz-theme svg{width:22px;height:22px;transition:transform .35s ease}
+.lz-theme[aria-pressed="true"]{color:var(--c-moon)}
+.lz-theme:active svg{transform:rotate(-20deg) scale(.9)}
+.lz-theme-fixed{position:fixed;right:max(12px,env(safe-area-inset-right,0px));bottom:max(12px,env(safe-area-inset-bottom,0px));z-index:40;background:rgba(var(--rgb-night),.75);backdrop-filter:blur(6px)}
+
+/* 5 · Feedback ----------------------------------------------------------- */
+.lz-foot{position:relative;z-index:1;display:flex;justify-content:center;padding:8px 16px calc(24px + env(safe-area-inset-bottom,0px))}
+.lz-fb-open{display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:8px 16px;border-radius:999px;border:0;cursor:pointer;
+  background:transparent;color:var(--c-muted);font:600 14px/1.2 var(--font-body,system-ui);box-shadow:inset 0 0 0 1.5px rgba(var(--rgb-lav),.35);transition:color .15s,box-shadow .15s}
+.lz-fb-open:hover{color:var(--c-neon);box-shadow:inset 0 0 0 1.5px var(--c-neon),0 0 14px rgba(var(--rgb-glow),.35)}
+.lz-fb-open svg{width:18px;height:18px;flex:none}
+
+dialog.lz-fb{width:min(480px,calc(100vw - 32px));max-height:calc(100dvh - 32px);margin:auto;padding:0;border:0;border-radius:22px;color:var(--c-text);
+  background:linear-gradient(180deg,var(--c-panel-a),var(--c-panel-b));box-shadow:0 0 0 2px var(--c-frame),0 20px 60px rgba(0,0,0,.55),0 0 40px rgba(var(--rgb-glow),.18);overflow:auto}
+dialog.lz-fb::backdrop{background:rgba(var(--rgb-deep),.66);backdrop-filter:blur(3px)}
+@media (prefers-reduced-motion:no-preference){dialog.lz-fb[open]{animation:lzPop .22s ease-out}@keyframes lzPop{from{opacity:0;transform:translateY(10px) scale(.98)}}}
+.lz-fb form{display:grid;gap:14px;padding:22px 22px 20px}
+.lz-fb h2{margin:0;font-family:var(--font-script,var(--font-display,cursive));font-weight:700;font-size:36px;line-height:1.05;color:var(--c-neon);text-shadow:0 0 12px rgba(var(--rgb-glow),.5)}
+.lz-fb .lz-fb-sub{margin:-6px 0 0;color:var(--c-muted);font-size:14px}
+.lz-fb label,.lz-fb legend{display:block;font-size:13px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--c-muted);margin-bottom:6px}
+.lz-fb .lz-opt{text-transform:none;letter-spacing:0;font-weight:600;opacity:.8}
+.lz-fb input[type=text],.lz-fb input[type=email],.lz-fb textarea{width:100%;box-sizing:border-box;min-height:44px;padding:10px 14px;border-radius:12px;border:0;
+  background:rgba(var(--rgb-deep),.45);color:var(--c-text);font:600 16px/1.4 var(--font-body,system-ui);box-shadow:inset 0 0 0 1.5px rgba(var(--rgb-lav),.3)}
+.lz-fb textarea{min-height:120px;resize:vertical}
+.lz-fb input::placeholder,.lz-fb textarea::placeholder{color:var(--c-muted);opacity:.7}
+.lz-fb fieldset{border:0;margin:0;padding:0}
+.lz-fb .lz-seg{display:flex;gap:8px;flex-wrap:wrap}
+.lz-fb .lz-seg label{margin:0;text-transform:none;letter-spacing:0;font-size:15px;color:var(--c-text);cursor:pointer;position:relative}
+.lz-fb .lz-seg input{position:absolute;opacity:0;width:1px;height:1px}
+.lz-fb .lz-seg span{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:8px 16px;border-radius:999px;box-shadow:inset 0 0 0 1.5px rgba(var(--rgb-lav),.35)}
+.lz-fb .lz-seg input:checked+span{background:var(--c-moon);color:var(--c-ink);box-shadow:none}
+.lz-fb .lz-seg input:focus-visible+span{outline:2px solid var(--lz-focus);outline-offset:3px;box-shadow:0 0 0 6px var(--lz-focus-halo)}
+.lz-fb .lz-count{justify-self:end;margin-top:-8px;font-size:12px;color:var(--c-muted)}
+.lz-fb .lz-hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+.lz-fb .lz-row{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
+.lz-fb .lz-btn{min-height:44px;padding:10px 20px;border-radius:999px;border:0;cursor:pointer;font:700 15px/1 var(--font-body,system-ui)}
+.lz-fb .lz-btn.primary{background:var(--c-neon);color:var(--c-ink);box-shadow:0 0 18px rgba(var(--rgb-glow),.45)}
+.lz-fb .lz-btn.primary[disabled]{opacity:.6;cursor:progress}
+.lz-fb .lz-btn.ghost{background:transparent;color:var(--c-text);box-shadow:inset 0 0 0 1.5px rgba(var(--rgb-lav),.45)}
+.lz-fb .lz-msg{margin:0;min-height:1.4em;font-size:14px;font-weight:600}
+.lz-fb .lz-msg.err{color:#FF8FA3}
+.lz-fb .lz-msg.ok{color:#7BE0A6}
+.lz-fb .lz-x{position:absolute;top:12px;right:12px;width:40px;height:40px;border-radius:50%;border:0;background:transparent;color:var(--c-muted);cursor:pointer;font-size:22px;line-height:1}
+.lz-fb .lz-x:hover{color:var(--c-neon)}
+.lz-fb .lz-note{margin:0;font-size:12px;color:var(--c-muted)}
