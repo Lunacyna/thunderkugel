@@ -205,3 +205,13 @@ html.lz-flash .lz-crt{display:block;background:rgba(255,255,255,.18);transition:
 :root.retro-mode .funstats{margin-bottom:26px}
 :root.retro-mode :is(.chips,.toggles,.seg){gap:10px}
 :root.retro-mode :is(.lz-theme,.lz-mute,.lz-retro){background:var(--c-panel-b)!important}
+
+/* Bestenliste (Tabs, Podest, Banner) */
+:root.retro-mode :is(.lb-tabs [role=tab],.lb-sub button,.lb-month button,.lb-more){
+  border-color:transparent!important;box-shadow:0 0 0 calc(.5*var(--px)) var(--px-c)!important}
+:root.retro-mode :is(.lb-tabs [role=tab][aria-selected="true"],.lb-sub button[aria-pressed="true"],.lb-month button[aria-pressed="true"]){
+  background:var(--c-moon)!important;color:var(--c-ink)!important;box-shadow:0 0 0 calc(.5*var(--px)) var(--c-ink),calc(.75*var(--px)) calc(.75*var(--px)) 0 0 var(--px-dark)!important}
+:root.retro-mode :is(.lb-tabs [role=tablist],.lb-month){gap:10px!important;padding:6px!important;background:transparent!important}
+:root.retro-mode .podium li{box-shadow:0 calc(-1*var(--px)) 0 0 var(--m),0 0 0 calc(.5*var(--px)) var(--px-c),calc(2*var(--px)) calc(2*var(--px)) 0 0 var(--px-dark)!important}
+:root.retro-mode .fsb-grid{box-shadow:0 0 0 calc(.5*var(--px)) var(--px-c),calc(2*var(--px)) calc(2*var(--px)) 0 0 var(--px-dark)!important}
+:root.retro-mode .lb-me{box-shadow:0 0 0 calc(.5*var(--px)) var(--c-moon),calc(2*var(--px)) calc(2*var(--px)) 0 0 var(--px-dark)!important}

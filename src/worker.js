@@ -268,7 +268,7 @@ export class Store extends DurableObject {
   }
   async records(month, game) {
     const R = RECORDS[game], b = (await this.ctx.storage.get("rec:" + game + ":" + month)) || {};
-    return Object.values(b).sort((x, y) => R.lower ? x.s - y.s || x.at - y.at : y.s - x.s || x.at - y.at).slice(0, 30).map(e => ({ name: e.name, v: e.v, s: e.s }));
+    return Object.values(b).sort((x, y) => R.lower ? x.s - y.s || x.at - y.at : y.s - x.s || x.at - y.at).slice(0, 30).map(e => ({ name: e.name, v: e.v, s: e.s, at: e.at }));
   }
   async scores(month, game) {
     const games = game === "all" ? GAMES : [game];
@@ -276,8 +276,8 @@ export class Store extends DurableObject {
     for (const g of games) {
       const b = (await this.ctx.storage.get("sc:" + g + ":" + month)) || {};
       for (const [k, e] of Object.entries(b)) {
-        const m = merged[k] || { name: e.name, v: !!e.v, w: 0, g: 0, p: 0 };
-        m.w += e.w; m.g += e.g; m.p += e.p; merged[k] = m;
+        const m = merged[k] || { name: e.name, v: !!e.v, w: 0, g: 0, p: 0, gm: {} };
+        m.w += e.w; m.g += e.g; m.p += e.p; m.gm[g] = (m.gm[g] || 0) + e.g; merged[k] = m;   // gm: Partien je Spiel ("meistgespielt")
       }
     }
     return Object.values(merged).sort((a, b) => b.w - a.w || b.p - a.p || a.g - b.g).slice(0, 50);
