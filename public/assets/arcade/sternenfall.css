@@ -121,3 +121,47 @@
 :root.retro-mode .sf-card{box-shadow:inset 0 0 0 3px var(--sf-ink),4px 4px 0 rgba(0,0,0,.5)}
 :root.retro-mode .sf-card.c4 .mid{border-radius:0}
 #sfOver .ar-over .hint{font-size:13.5px;margin:0 0 4px}
+
+/* ---- Tisch: Spieler rund ums Spielfeld (du unten, die anderen links / oben / rechts) ---- */
+.sf-felt{display:grid;grid-template-columns:auto minmax(0,1fr) auto;grid-template-areas:"top top top" "l c r" "b b b";gap:14px 12px;padding:16px 14px 12px;border-radius:30px;
+  background:radial-gradient(90% 70% at 50% 45%,rgba(var(--rgb-glow),.20),transparent 70%),radial-gradient(120% 100% at 50% 50%,var(--c-panel-a),var(--c-panel-b));
+  box-shadow:0 0 0 5px var(--c-frame),inset 0 0 60px rgba(0,0,0,.35),0 16px 36px rgba(0,0,0,.4)}
+.sf-top,.sf-side{list-style:none;margin:0;padding:0}
+.sf-top{grid-area:top;display:flex;justify-content:space-evenly;gap:12px;min-width:0}
+.sf-side{display:flex;flex-direction:column;justify-content:center;gap:12px}
+.sf-side.l{grid-area:l}.sf-side.r{grid-area:r}
+.sf-felt .sf-center{grid-area:c;position:relative;min-width:0;background:radial-gradient(closest-side,rgba(var(--rgb-deep),.45),transparent);box-shadow:none;flex-wrap:wrap;padding:18px 8px}
+.sf-felt .sf-dir{position:absolute;top:2px;left:50%;transform:translateX(-50%);font-size:24px;opacity:.85}
+.sf-bottom{grid-area:b;display:flex;flex-direction:column;align-items:center;gap:10px;min-width:0}
+.sf-bottom .sf-hand{padding-top:12px;width:100%}
+
+.sf-seat{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0;padding:6px 8px;border-radius:16px;transition:background .2s}
+.sf-seat.turn{background:rgba(var(--rgb-moon),.12);box-shadow:inset 0 0 0 2px var(--c-moon),0 0 18px rgba(var(--rgb-moon),.3)}
+.sf-seat.off{opacity:.55}
+.sf-seat.catchme{box-shadow:inset 0 0 0 2px var(--bad),0 0 18px rgba(255,143,163,.5)}
+.sf-backs{display:flex;align-items:center;justify-content:center}
+.sf-backs i{flex:none;border-radius:5px;background:linear-gradient(145deg,var(--c-panel-a),var(--c-ink,#2A1E4F));box-shadow:inset 0 0 0 1.5px rgba(var(--rgb-moon),.6),0 2px 4px rgba(0,0,0,.35)}
+.sf-seat.top .sf-backs i{width:30px;height:44px}
+.sf-seat.top .sf-backs i+i{margin-left:-19px}
+.sf-seat.left .sf-backs,.sf-seat.right .sf-backs{flex-direction:column}
+.sf-seat.left .sf-backs i,.sf-seat.right .sf-backs i{width:44px;height:30px}
+.sf-seat.left .sf-backs i+i,.sf-seat.right .sf-backs i+i{margin-top:-20px}
+.sf-tag{display:flex;align-items:center;gap:6px;max-width:150px;min-width:0}
+.sf-tag .nm{font-weight:700;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.sf-tag .cnt{flex:none;min-width:22px;height:22px;padding:0 6px;border-radius:999px;background:var(--c-moon);color:var(--c-ink);font-weight:700;font-size:13px;display:grid;place-items:center}
+.sf-seat .st{font-size:11.5px;color:var(--c-muted);font-weight:600;min-height:1em;text-align:center}
+.sf-seat.one .st,.sf-me .st{color:var(--c-moon);font-weight:700}
+.sf-me{display:flex;gap:8px;align-items:center;padding:4px 14px;border-radius:999px;font-weight:700}
+.sf-me.turn{background:rgba(var(--rgb-moon),.16);box-shadow:inset 0 0 0 2px var(--c-moon)}
+.sf-rule{font-size:12px;font-weight:700;letter-spacing:.04em;padding:5px 10px;border-radius:999px;background:rgba(var(--rgb-lav),.16);color:var(--c-text)}
+@media (max-width:600px){
+  .sf-felt{padding:12px 8px 10px;gap:10px 4px;border-radius:22px}
+  .sf-seat{padding:4px}
+  .sf-seat.top .sf-backs i{width:20px;height:30px}.sf-seat.top .sf-backs i+i{margin-left:-14px}
+  .sf-seat.left .sf-backs i,.sf-seat.right .sf-backs i{width:30px;height:20px}.sf-seat.left .sf-backs i+i,.sf-seat.right .sf-backs i+i{margin-top:-14px}
+  .sf-tag{flex-direction:column;gap:2px;max-width:72px}.sf-tag .nm{font-size:12px;max-width:72px}
+  .sf-seat .st{font-size:10.5px;max-width:72px}
+  .sf-felt .sf-center{gap:10px;padding:22px 2px 8px}
+  .sf-felt .sf-now{flex-direction:row;flex-wrap:wrap;justify-content:center;width:100%}
+}
+:root.retro-mode .sf-felt,:root.retro-mode .sf-seat,:root.retro-mode .sf-backs i{border-radius:0}

@@ -10,7 +10,8 @@
      deck, disc (Ablage, letzte = oben), hands[seat][], turn, dir, color (aktuelle Farbe),
      pend/pendV (aufgestaute Ziehkarten durch +2/+4), drawn (gerade gezogene, noch
      spielbare Karte), catchWin ({seat, until}: "Letzte Karte!" vergessen),
-     called[seat], winner, last (letzte Aktion fürs Anzeigen), moves, opts {stack}
+     called[seat], winner, last (letzte Aktion fürs Anzeigen), moves, opts {stack, until}
+     (until = Hausregel "Ziehen bis es passt")
    Die Ansicht viewFor(g, seat) enthält NUR die eigene Hand – fremde Hände
    und der Stapel verlassen den Server nie.
    ========================================================================== */
@@ -42,7 +43,7 @@
     for (let s = 0; s < n; s++) hands.push(deck.splice(0, HAND));
     let first; while (true) { first = deck.shift(); if (first.v <= 9) break; deck.splice(Math.floor(rnd() * deck.length), 0, first); }
     return { n, deck, disc: [first], hands, turn: Math.floor(rnd() * n), dir: 1, color: first.c, pend: 0, pendV: 0, drawn: null,
-      catchWin: null, called: new Array(n).fill(false), winner: -1, last: { k: 'start', card: first }, moves: 0, opts: { stack: opts && opts.stack !== false }, seed: (rnd() * 2 ** 31) | 0 };
+      catchWin: null, called: new Array(n).fill(false), winner: -1, last: { k: 'start', card: first }, moves: 0, opts: { stack: !(opts && opts.stack === false), until: !!(opts && opts.until) }, seed: (rnd() * 2 ** 31) | 0 };
   }
   function drawCards(g, seat, k) {                       // zieht k Karten (mischt die Ablage bei Bedarf neu)
     const got = [];
@@ -112,9 +113,12 @@
       if (g.drawn != null) return null;
       g.moves++;
       if (g.pend > 0) { const k = g.pend; drawCards(g, seat, k); g.pend = 0; g.pendV = 0; g.last = { k: 'penalty', seat, n: k }; g.called[seat] = false; g.turn = next(g, seat); return g; }
-      const got = drawCards(g, seat, 1); g.called[seat] = false;
-      if (got[0] && canPlay(g, got[0])) { g.drawn = got[0].id; g.last = { k: 'draw', seat, n: 1, playable: true }; return g; }
-      g.last = { k: 'draw', seat, n: got.length }; g.turn = next(g, seat); return g;
+      // Hausregel "Ziehen bis es passt" (opts.until): so lange ziehen, bis eine Karte passt oder nichts mehr da ist
+      let got = drawCards(g, seat, 1), n = got.length;
+      while (g.opts.until && got[0] && !canPlay(g, got[0]) && n < 60) { got = drawCards(g, seat, 1); n += got.length; }
+      g.called[seat] = false;
+      if (got[0] && canPlay(g, got[0])) { g.drawn = got[0].id; g.last = { k: 'draw', seat, n, playable: true }; return g; }
+      g.last = { k: 'draw', seat, n }; g.turn = next(g, seat); return g;
     }
     if (type === 'pass') { if (g.drawn == null) return null; g.drawn = null; g.moves++; g.last = { k: 'pass', seat }; g.turn = next(g, seat); return g; }
     return null;

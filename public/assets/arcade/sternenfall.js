@@ -40,13 +40,13 @@
   const colorChip = c => `<span class="sf-col c${c}">${icon(c, 'ic sm')}${esc(COLORS[c])}</span>`;
 
   // ---- Zustand --------------------------------------------------------------------------
-  const V = { view: 'menu', mode: null, level: 2, opp: 2, stack: true };
+  const V = { view: 'menu', mode: null, level: 2, opp: 2, stack: true, until: false };
   let M = null;                                   // aktuelles Modell für render()
   const L = { g: null, seats: [], wins: [], timers: [], gid: '', start: 0 };   // lokales Spiel gegen Bots
   const NET = { ws: null, code: '', retry: 0, leaving: false, offset: 0, room: null, lobbyUnsub: null, ping: null, lost: false };
   let lastKey = '', picked = null, timerRAF = 0, lastTurnMine = false;
-  try { const p = JSON.parse(localStorage.getItem('lz_sf') || '{}'); if (p.level) V.level = p.level; if (p.opp) V.opp = p.opp; if (p.stack != null) V.stack = p.stack; } catch (e) {}
-  const savePref = () => { try { localStorage.setItem('lz_sf', JSON.stringify({ level: V.level, opp: V.opp, stack: V.stack })); } catch (e) {} };
+  try { const p = JSON.parse(localStorage.getItem('lz_sf') || '{}'); if (p.level) V.level = p.level; if (p.opp) V.opp = p.opp; if (p.stack != null) V.stack = p.stack; if (p.until != null) V.until = p.until; } catch (e) {}
+  const savePref = () => { try { localStorage.setItem('lz_sf', JSON.stringify({ level: V.level, opp: V.opp, stack: V.stack, until: V.until })); } catch (e) {} };
   const myName = () => (window.kbName && kbName.get()) || 'Du';
 
   // ---- Eingaben ----------------------------------------------------------------------------
@@ -66,7 +66,7 @@
     L.seats = [{ name: myName(), bot: 0, v: false, on: true, host: true }];
     for (let i = 0; i < V.opp; i++) L.seats.push({ name: BOT_NAMES[i], bot: V.level, v: false, on: true, host: false });
     if (L.wins.length !== n || V.mode !== 'bot') L.wins = new Array(n).fill(0);
-    L.g = SF.newGame(n, { stack: V.stack });
+    L.g = SF.newGame(n, { stack: V.stack, until: V.until });
     L.gid = window.LZCozy && LZCozy.stats ? LZCozy.stats.newId() : Math.random().toString(36).slice(2, 14);
     L.start = Date.now(); L.res = null;
     V.mode = 'bot'; V.view = 'table'; lastKey = '';
@@ -99,7 +99,7 @@
       }
     }
     M = { mode: 'bot', phase: g.winner >= 0 ? 'end' : 'play', me: 0, isHost: true, seats: L.seats.map((x, i) => ({ ...x, wins: L.wins[i] })),
-          opts: { stack: V.stack }, view: SF.viewFor(g, 0), res: L.res, deadline: 0 };
+          opts: { stack: V.stack, until: V.until }, view: SF.viewFor(g, 0), res: L.res, deadline: 0 };
     render();
   }
 
@@ -116,11 +116,12 @@
     return NET.room.peers().filter(p => !p.isMe && p.presence && p.presence.host && p.presence.host.game === 'sf' && /^sf-[a-z0-9]{4}$/.test(p.presence.host.code || ''));
   }
   function connect(code) {
+    if (NET.code !== code) { NET.opened = false; NET.fails = 0; }
     NET.code = code; NET.leaving = false; NET.lost = false;
     const proto = location.protocol === 'https:' ? 'wss' : 'ws';
     const ws = new WebSocket(`${proto}://${location.host}/sf?t=${code}&peer=${peerId}&by=${uid()}&n=${encodeURIComponent(myName())}`);
     NET.ws = ws;
-    ws.onopen = () => { NET.retry = 0; if (NET.lost) { NET.lost = false; toast('Wieder verbunden'); } };
+    ws.onopen = () => { NET.retry = 0; NET.opened = true; NET.fails = 0; if (NET.lost) { NET.lost = false; toast('Wieder verbunden'); } };
     ws.onmessage = e => {
       let m; try { m = JSON.parse(e.data); } catch (_) { return; }
       if (m.t === 'st') { NET.offset = m.now - Date.now(); M = { ...m, mode: 'online' }; V.view = 'table'; render(); hostPresence(); }
@@ -128,10 +129,22 @@
     };
     ws.onclose = () => {
       if (NET.ws !== ws || NET.leaving) return;
+      if (!NET.opened && ++NET.fails >= 3 && V.view === 'connecting') return diagnose(code);
       if (!NET.lost) { NET.lost = true; toast('Verbindung weg – verbinde neu …'); }
       NET.retry = Math.min(NET.retry + 1, 6); setTimeout(() => { if (!NET.leaving && NET.code === code) connect(code); }, 500 * NET.retry);
     };
     clearInterval(NET.ping); NET.ping = setInterval(() => { if (NET.ws && NET.ws.readyState === 1) NET.ws.send('{"t":"ping"}'); }, 25000);
+  }
+  // Kommt gar keine Verbindung zustande: nachsehen, woran es liegt, statt ewig "Verbinde …" zu zeigen
+  async function diagnose(code) {
+    let st = null; try { const r = await fetch('/api/sf/status', { cache: 'no-store' }); st = r.ok ? await r.json() : { old: true }; } catch (e) {}
+    NET.leaving = true; clearInterval(NET.ping);
+    const m = $('main'); if (!m || V.view !== 'connecting') return;
+    const why = !st ? 'Der Server antwortet gerade nicht. Prüf deine Internetverbindung.'
+      : st.old || st.tables === false ? 'Die Online-Tische sind auf dem Server noch nicht eingerichtet. (Für die Seitenbetreiberin: <code>wrangler.jsonc</code> aus der Zip mit hochladen – darin steht der Spieltisch-Server „TABLES“.)'
+      : 'Der Spieltisch antwortet gerade nicht. Versuch es gleich noch einmal.';
+    m.innerHTML = `<div class="panel sheet"><h2>Keine Verbindung</h2><p>${why}</p><p class="hint">Gegen Bots kannst du trotzdem spielen.</p><div class="row"><button class="btn" type="button" data-sf="retry" data-code="${esc(code)}">Nochmal versuchen</button><button class="btn ghost" type="button" data-sf="menu">Zurück</button></div></div>`;
+    say(window.LZCozy ? LZCozy.text(why) : why, true);
   }
   function leaveOnline() {
     NET.leaving = true; clearInterval(NET.ping);
@@ -156,7 +169,7 @@
     switch (l.k) {
       case 'start': return `Los geht's! Erste Karte: ${cardName(l.card)}.`;
       case 'play': return `${n} ${mine ? 'spielst' : 'spielt'} ${cardName(l.card)}${l.card.c === 4 ? ` und ${mine ? 'wählst' : 'wählt'} ${COLORS[l.color]}` : ''}.`;
-      case 'draw': return mine && l.playable && v.drawn != null ? `Du hast ${cardName(v.hand.find(c => c.id === v.drawn) || { c: 4, v: 13 })} gezogen – ausspielen oder behalten?` : `${n} ${mine ? 'ziehst' : 'zieht'} eine Karte${l.timeout ? ' (Zeit abgelaufen)' : ''}.`;
+      case 'draw': return mine && l.playable && v.drawn != null ? `Du hast ${l.n > 1 ? l.n + ' Karten gezogen, zuletzt ' : ''}${cardName(v.hand.find(c => c.id === v.drawn) || { c: 4, v: 13 })}${l.n > 1 ? '' : ' gezogen'} – ausspielen oder behalten?` : `${n} ${mine ? 'ziehst' : 'zieht'} ${l.n > 1 ? l.n + ' Karten' : 'eine Karte'}${l.timeout ? ' (Zeit abgelaufen)' : ''}.`;
       case 'penalty': return `${n} ${mine ? 'ziehst' : 'zieht'} ${l.n} Karten${l.timeout ? ' (Zeit abgelaufen)' : ''}.`;
       case 'pass': return `${n} ${mine ? 'behältst' : 'behält'} die Karte${l.timeout ? ' (Zeit abgelaufen)' : ''}.`;
       case 'call': return `${n}: „Letzte Karte!“`;
@@ -195,7 +208,8 @@
         <div class="row" style="margin-top:10px"><button class="btn" type="button" data-sf="bot">Austeilen</button></div></div>
       <button class="choice" type="button" data-sf="online" ${net ? '' : 'disabled'}><b>Online · 2 bis 6</b><span>${net ? 'Eröffne einen Tisch oder setz dich dazu. Freie Plätze füllt die Spielleitung mit Bots. Die Karten verteilt der Server – keiner kann in fremde Hände schauen.' : 'Kein Spielserver gefunden. Online geht nur, wenn die Seite als Cloudflare Worker läuft.'}</span></button>
     </div>
-    <div class="field"><span class="label">+2 und +4 stapeln · gegen Bots</span>${seg('stack', V.stack ? 1 : 0, [[1, 'Erlaubt'], [0, 'Aus']])}</div></div>`;
+    <div class="field"><span class="label">+2 und +4 stapeln · gegen Bots</span>${seg('stack', V.stack ? 1 : 0, [[1, 'Erlaubt'], [0, 'Aus']])}</div>
+    <div class="field"><span class="label">Ziehen, bis eine Karte passt · gegen Bots</span>${seg('until', V.until ? 1 : 0, [[1, 'An'], [0, 'Aus (eine Karte)']])}</div></div>`;
   }
   function renderLobby(m) {
     const list = openTables();
@@ -226,7 +240,8 @@
         ${host && !x.bot && !x.on && !x.host ? `<button class="btn small ghost" type="button" data-sf="rm" data-i="${i}">Platz freigeben</button>` : ''}</li>`).join('')}
         ${new Array(Math.max(0, 6 - n)).fill('<li class="free">freier Platz</li>').join('')}</ul>
       ${host ? `<div class="row"><button class="btn ghost" type="button" data-sf="addbot" ${n >= 6 ? 'disabled' : ''}>+ Bot hinzufügen</button>${seg('botlvl', V.level, LEVELS)}</div>
-        <div class="field"><span class="label">+2 und +4 stapeln</span>${seg('tstack', M.opts.stack ? 1 : 0, [[1, 'Erlaubt'], [0, 'Aus']])}</div>` : `<p class="hint">+2/+4 stapeln: ${M.opts.stack ? 'erlaubt' : 'aus'}</p>`}
+        <div class="field"><span class="label">+2 und +4 stapeln</span>${seg('tstack', M.opts.stack ? 1 : 0, [[1, 'Erlaubt'], [0, 'Aus']])}</div>
+        <div class="field"><span class="label">Ziehen, bis eine Karte passt</span>${seg('tuntil', M.opts.until ? 1 : 0, [[1, 'An'], [0, 'Aus (eine Karte)']])}</div>` : `<p class="hint">+2/+4 stapeln: ${M.opts.stack ? 'erlaubt' : 'aus'} · Ziehen bis es passt: ${M.opts.until ? 'an' : 'aus'}</p>`}
       <div class="field"><span class="label">Freunde einladen</span><div class="row" style="flex-wrap:nowrap"><input class="txt sf-link" id="sfLink" value="${esc(link)}" readonly aria-label="Einladungslink"><button class="btn small ghost" type="button" data-sf="copy">Kopieren</button></div></div>
       <div class="row">${host ? `<button class="btn big" type="button" data-sf="start" ${n < 2 ? 'disabled' : ''}>Austeilen</button>` : '<p class="hint"><span class="dots">Warte auf die Spielleitung</span></p>'}<button class="btn ghost" type="button" data-sf="menu">Verlassen</button></div>
       ${host && n < 2 ? '<p class="hint">Es braucht mindestens zwei Plätze – lade jemanden ein oder setz einen Bot dazu.</p>' : ''}</div>`;
@@ -250,33 +265,49 @@
     }
     lastTurnMine = myTurn;
 
-    const opp = M.seats.map((x, i) => i).filter(i => i !== me);
+    // Sitzordnung wie an einem echten Tisch: du unten, die anderen im Uhrzeigersinn links → oben → rechts
+    const n = M.seats.length, base = me >= 0 ? me : 0;
+    const opp = []; for (let k = 1; k < n; k++) opp.push((base + k) % n);
+    const POS = { 1: ['top'], 2: ['left', 'right'], 3: ['left', 'top', 'right'], 4: ['left', 'top', 'top', 'right'], 5: ['left', 'top', 'top', 'top', 'right'] }[opp.length] || [];
+    const at = pos => opp.filter((_, k) => POS[k] === pos);
     const hand = v.hand.slice().sort((a, b) => a.c - b.c || a.v - b.v);
     const legal = new Set(v.legal);
     const canCatch = v.catchWin && v.catchWin.seat !== me && me >= 0;
     const canCall = me >= 0 && !over && ((v.catchWin && v.catchWin.seat === me) || (myTurn && v.hand.length === 2 && !v.called[me]));
-    const drawLabel = v.pend > 0 ? `${v.pend} ziehen` : 'Ziehen';
+    const drawLabel = v.pend > 0 ? `${v.pend} ziehen` : M.opts && M.opts.until ? 'Ziehen bis es passt' : 'Ziehen';
     const status = over ? 'Runde vorbei' : myTurn ? (v.pend > 0 ? `<em>Du bist dran</em> – leg ${v.pendV === SF.WILD4 ? '+4' : '+2 oder +4'} drauf oder zieh ${v.pend}` : v.drawn != null ? '<em>Gezogen</em> – ausspielen oder behalten?' : '<em>Du bist dran</em>') : `${esc(nameOf(v.turn))} ist dran`;
     const dirTxt = v.dir === 1 ? 'im Uhrzeigersinn' : 'gegen den Uhrzeigersinn';
+    const seat = (i, pos) => { const x = M.seats[i], c = v.counts[i], shown = Math.min(c, pos === 'top' ? 9 : 8);
+      return `<li class="sf-seat ${pos}${v.turn === i && !over ? ' turn' : ''}${x.on ? '' : ' off'}${c === 1 ? ' one' : ''}${v.catchWin && v.catchWin.seat === i ? ' catchme' : ''}" aria-label="${esc(x.name)}: ${c} ${c === 1 ? 'Karte' : 'Karten'}${v.turn === i ? ', ist dran' : ''}${x.bot ? ', Bot' : ''}${x.on ? '' : ', nicht verbunden'}">
+        <span class="sf-backs" aria-hidden="true" style="--n:${shown}">${new Array(shown).fill('<i></i>').join('')}</span>
+        <span class="sf-tag" aria-hidden="true"><span class="nm">${esc(x.name)}${x.v ? ' <span class="vb">✓</span>' : ''}</span><span class="cnt">${c}</span></span>
+        <span class="st" aria-hidden="true">${v.called[i] && c > 0 && c <= 2 ? 'Letzte Karte!' : x.bot ? 'Bot · ' + LVL[x.bot] : x.on ? '' : 'weg'}</span></li>`; };
+    const bx = M.seats[base];
     m.innerHTML = `<div class="ar-stage sf-stage">
-      <div class="ar-bar"><div class="ar-status" id="sfStatus">${status}</div><div class="row"><span class="sf-dir" title="Richtung: ${dirTxt}" aria-label="Richtung: ${dirTxt}">${v.dir === 1 ? '↻' : '↺'}</span></div></div>
+      <div class="ar-bar"><div class="ar-status" id="sfStatus">${status}</div><div class="row">${M.opts && M.opts.until ? '<span class="sf-rule" title="Hausregel: Ziehen, bis eine Karte passt">Ziehen bis es passt</span>' : ''}</div></div>
       ${M.deadline && !over ? `<div class="ar-timer" id="sfTimer" aria-hidden="true"><i></i></div>` : ''}
-      <ul class="sf-opps" aria-label="Mitspielende">${opp.map(i => { const x = M.seats[i], c = v.counts[i]; return `<li class="${v.turn === i && !over ? 'turn' : ''}${x.on ? '' : ' off'}${c === 1 ? ' one' : ''}${v.catchWin && v.catchWin.seat === i ? ' catchme' : ''}" aria-label="${esc(x.name)}: ${c} ${c === 1 ? 'Karte' : 'Karten'}${v.turn === i ? ', ist dran' : ''}${x.bot ? ', Bot' : ''}${x.on ? '' : ', nicht verbunden'}">
-          <span class="fan" aria-hidden="true">${new Array(Math.min(c, 7)).fill('<i></i>').join('')}</span><span class="cnt" aria-hidden="true">${c}</span>
-          <span class="nm" aria-hidden="true">${esc(x.name)}${x.v ? ' <span class="vb">✓</span>' : ''}</span><span class="st" aria-hidden="true">${v.called[i] && c > 0 && c <= 2 ? 'Letzte Karte!' : x.bot ? 'Bot · ' + LVL[x.bot] : x.on ? '' : 'weg'}</span></li>`; }).join('')}</ul>
-      <div class="sf-center">
-        <button class="sf-pile" type="button" data-sf="draw" ${myTurn && v.drawn == null ? '' : 'disabled'} aria-label="${drawLabel}, ${v.deckN} Karten im Stapel">${backHtml()}<span class="pn">${v.deckN}</span></button>
-        <div class="sf-disc" aria-label="Oben liegt ${esc(cardName(v.top))}${v.top.c === 4 ? ', gewählte Farbe ' + COLORS[v.color] : ''}" role="img">${cardHtml(v.top, ' top ring' + v.color)}</div>
-        <div class="sf-now">${colorChip(v.color)}${v.pend > 0 ? `<span class="sf-pend">+${v.pend} aufgestaut</span>` : ''}</div>
+      <div class="sf-felt o${opp.length}">
+        <ul class="sf-top" aria-label="Mitspielende gegenüber">${at('top').map(i => seat(i, 'top')).join('')}</ul>
+        <ul class="sf-side l" aria-label="Links">${at('left').map(i => seat(i, 'left')).join('')}</ul>
+        <div class="sf-center">
+          <span class="sf-dir d${v.dir === 1 ? 'cw' : 'ccw'}" title="Richtung: ${dirTxt}" aria-label="Richtung: ${dirTxt}">${v.dir === 1 ? '↻' : '↺'}</span>
+          <button class="sf-pile" type="button" data-sf="draw" ${myTurn && v.drawn == null ? '' : 'disabled'} aria-label="${drawLabel}, ${v.deckN} Karten im Stapel">${backHtml()}<span class="pn">${v.deckN}</span></button>
+          <div class="sf-disc" aria-label="Oben liegt ${esc(cardName(v.top))}${v.top.c === 4 ? ', gewählte Farbe ' + COLORS[v.color] : ''}" role="img">${cardHtml(v.top, ' top ring' + v.color)}</div>
+          <div class="sf-now">${colorChip(v.color)}${v.pend > 0 ? `<span class="sf-pend">+${v.pend} aufgestaut</span>` : ''}</div>
+        </div>
+        <ul class="sf-side r" aria-label="Rechts">${at('right').map(i => seat(i, 'right')).join('')}</ul>
+        <div class="sf-bottom">
+          <div class="sf-me${v.turn === base && !over ? ' turn' : ''}"><span class="nm">${esc(me >= 0 ? 'Du' : bx.name)}${me < 0 ? ` · ${v.counts[base]} Karten` : ''}</span>${me >= 0 && v.called[me] && v.hand.length <= 2 ? '<span class="st">Letzte Karte!</span>' : ''}</div>
+          <div class="sf-actions">
+            <button class="btn" type="button" data-sf="draw" ${myTurn && v.drawn == null ? '' : 'disabled'}>${drawLabel} <kbd>Z</kbd></button>
+            ${v.drawn != null && myTurn ? `<button class="btn ghost" type="button" data-sf="pass">Behalten <kbd>B</kbd></button>` : ''}
+            <button class="btn sf-call${canCall ? ' hot' : ''}" type="button" data-sf="call" ${canCall ? '' : 'disabled'}>Letzte Karte! <kbd>L</kbd></button>
+            ${canCatch ? `<button class="btn sf-catch" type="button" data-sf="catch">Erwischt! <kbd>E</kbd></button>` : ''}
+          </div>
+          ${me >= 0 ? `<div class="sf-hand" data-lz-arrows role="group" aria-label="Deine Hand: ${hand.length} Karten">${hand.map(c => { const ok = legal.has(c.id) && !over; return `<button type="button" class="sf-hc${ok ? ' ok' : myTurn ? ' dim' : ''}${v.drawn === c.id ? ' new' : ''}" data-card="${c.id}" ${ok ? '' : 'aria-disabled="true"'} aria-label="${esc(cardName(c))}${ok ? ', spielbar' : ''}">${cardHtml(c)}</button>`; }).join('')}</div>`
+            : '<p class="hint sf-watch">Du schaust zu. Nach der Runde kann dich die Spielleitung an den Tisch holen.</p>'}
+        </div>
       </div>
-      <div class="sf-actions">
-        <button class="btn" type="button" data-sf="draw" ${myTurn && v.drawn == null ? '' : 'disabled'}>${drawLabel} <kbd>Z</kbd></button>
-        ${v.drawn != null && myTurn ? `<button class="btn ghost" type="button" data-sf="pass">Behalten <kbd>B</kbd></button>` : ''}
-        <button class="btn sf-call${canCall ? ' hot' : ''}" type="button" data-sf="call" ${canCall ? '' : 'disabled'}>Letzte Karte! <kbd>L</kbd></button>
-        ${canCatch ? `<button class="btn sf-catch" type="button" data-sf="catch">Erwischt! <kbd>E</kbd></button>` : ''}
-      </div>
-      ${me >= 0 ? `<div class="sf-hand" data-lz-arrows role="group" aria-label="Deine Hand: ${hand.length} Karten">${hand.map(c => { const ok = legal.has(c.id) && !over; return `<button type="button" class="sf-hc${ok ? ' ok' : myTurn ? ' dim' : ''}${v.drawn === c.id ? ' new' : ''}" data-card="${c.id}" ${ok ? '' : 'aria-disabled="true"'} aria-label="${esc(cardName(c))}${ok ? ', spielbar' : ''}">${cardHtml(c)}</button>`; }).join('')}</div>`
-        : '<p class="hint sf-watch">Du schaust zu. Nach der Runde kann dich die Spielleitung an den Tisch holen.</p>'}
       <div id="sfOver" ${over ? '' : 'hidden'}>${over ? overHtml(v) : ''}</div>
     </div>`;
     if (over && !renderTable.overShown) {
@@ -322,7 +353,7 @@
     }
     html += `<div class="panel"><h3>So geht's</h3><ol class="rules">
       <li><span>Leg eine Karte mit <b>gleicher Farbe</b> (Mond, Stern, Herz, Pfote) oder <b>gleichem Wert</b> ab. Wer zuerst keine Karten mehr hat, gewinnt.</span></li>
-      <li><span>Kannst oder willst du nicht, ziehst du eine Karte. Passt sie, darfst du sie sofort spielen – oder behalten.</span></li>
+      <li><span>Kannst oder willst du nicht, ziehst du eine Karte. Passt sie, darfst du sie sofort spielen – oder behalten. Mit der Regel <b>„Ziehen, bis eine Karte passt“</b> ziehst du so lange weiter, bis eine passt.</span></li>
       <li><span><b>⊘</b> setzt den Nächsten aus, <b>⇄</b> dreht die Richtung, <b>+2</b> lässt ihn zwei ziehen.</span></li>
       <li><span><b>Sternschnuppe</b> geht immer und du wählst die Farbe; mit <b>+4</b> zieht der Nächste vier. +2 und +4 dürfen gestapelt werden (abschaltbar).</span></li>
       <li><span>Bei der vorletzten Karte <b>„Letzte Karte!“</b> drücken. Wer es vergisst und erwischt wird, zieht 2.</span></li>
@@ -376,7 +407,8 @@
     if (sg) {
       const k = sg.parentElement.dataset.seg, val = +sg.dataset.v;
       sg.parentElement.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b === sg)));
-      if (k === 'level' || k === 'botlvl') V.level = val; else if (k === 'opp') V.opp = val; else if (k === 'stack') V.stack = !!val;
+      if (k === 'level' || k === 'botlvl') V.level = val; else if (k === 'opp') V.opp = val; else if (k === 'stack') V.stack = !!val; else if (k === 'until') V.until = !!val;
+      else if (k === 'tuntil') hostCmd('opts', { until: !!val });
       else if (k === 'tstack') hostCmd('opts', { stack: !!val });
       else if (k.startsWith('lvl:')) hostCmd('lvl', { i: +k.slice(4), lvl: val });
       savePref(); return;
@@ -387,7 +419,7 @@
     if (a === 'bot' || a === 'again') { V.mode = 'bot'; startLocal(); const f = document.querySelector('.sf-hc.ok,.sf-hc'); if (f) f.focus({ preventScroll: true }); }
     else if (a === 'online') goOnline();
     else if (a === 'create') join(newCode());
-    else if (a === 'join') join(b.dataset.code);
+    else if (a === 'join' || a === 'retry') { NET.fails = 0; join(b.dataset.code); }
     else if (a === 'savename') { const i = $('sfName'); if (i && window.kbName) { kbName.set(i.value); toast('Name gespeichert'); } }
     else if (a === 'menu') confirmLeave(toMenu);
     else if (a === 'draw') send('draw');

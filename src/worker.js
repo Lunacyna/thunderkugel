@@ -147,7 +147,7 @@ export class SFTable extends DurableObject {
     if (name.length < 2) name = "Gast";
     for (const w of this.socks()) { const a = this.att(w); if (a && a.peer === peer) { try { w.close(1000, "replaced"); } catch {} } }
 
-    if (!this.st) this.st = { code, host: by, seats: [], phase: "wait", opts: { stack: true }, g: null, gid: "", started: 0, wins: {}, res: null, tm: {}, round: 0 };
+    if (!this.st) this.st = { code, host: by, seats: [], phase: "wait", opts: { stack: true, until: false }, g: null, gid: "", started: 0, wins: {}, res: null, tm: {}, round: 0 };
     const st = this.st;
     let seat = this.seatOf(by);
     if (seat < 0 && st.phase === "wait" && st.seats.length < SF_MAX) { st.seats.push({ by, name, v: !!vn, bot: 0 }); seat = st.seats.length - 1; }
@@ -192,7 +192,8 @@ export class SFTable extends DurableObject {
     } else if (m.a === "lvl" && st.phase !== "play") {
       const x = st.seats[m.i | 0]; if (x && x.bot && [1, 2, 3].includes(m.lvl)) x.bot = m.lvl;
     } else if (m.a === "opts" && st.phase !== "play") {
-      st.opts.stack = !!m.stack;
+      if ("stack" in m) st.opts.stack = !!m.stack;
+      if ("until" in m) st.opts.until = !!m.until;
     } else if (m.a === "start" && st.phase !== "play" && st.seats.length >= 2) {
       st.g = SFCore.newGame(st.seats.length, st.opts);
       st.phase = "play"; st.res = null; st.round++; st.started = Date.now();
@@ -729,6 +730,7 @@ async function api(request, env, url, ctx) {
   const body = async () => { try { return await request.json(); } catch { return null; } };
 
   if (path === "/api/lobbys" && method === "GET") return new Response(await lobbies(env, ctx), { headers: { "content-type": "application/json; charset=utf-8", "cache-control": "public, max-age=5" } });
+  if (path === "/api/sf/status") return json({ tables: !!env.TABLES });
   if (path === "/api/wort" || path === "/api/wort/board") return mondwort(request, env, url, store, ip);
   if (path === "/api/feedback" && method === "POST") return feedback(request, env, url, store, ip);
   if (path === "/api/cards" && method === "GET") return json(await store.cards(false));
@@ -898,6 +900,7 @@ export default {
       if (user) { u2.searchParams.set("by", "tw_" + user.id); headers.set("x-verified-name", encodeURIComponent(user.name)); }
       else if ((u2.searchParams.get("by") || "").startsWith("tw_")) u2.searchParams.set("by", "u_" + (u2.searchParams.get("by") || "").slice(3, 13));
       const ns = sf ? env.TABLES : env.ROOMS;
+      if (!ns) return new Response("Spieltisch-Server fehlt: Binding TABLES (wrangler.jsonc) ist nicht eingerichtet.", { status: 503 });
       return ns.get(ns.idFromName(room)).fetch(new Request(u2.toString(), { headers }));
     }
     if (url.pathname.startsWith("/auth/")) {
