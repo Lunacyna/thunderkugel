@@ -255,7 +255,7 @@ button.clue:hover{box-shadow:0 0 0 3px var(--glow),0 10px 20px rgba(0,0,0,.35)}
 <body>
 <div class="wrap">
   <header class="top">
-    <h1 class="logo">Nur Einer!<small>Lunacynas Spielezimmer · kooperatives Wort-Spiel</small></h1>
+    <h1 class="logo">Nur Einer!<small>Lunacynas Spielezimmer · kooperatives Wort-Spiel · ab 3 Personen</small></h1>
     <div class="navr"><span class="netpill" id="netpill" hidden>Online bereit</span><button id="muteBtn" type="button"></button><button class="btn ghost" id="btnMenu" type="button">← Zurück</button><a class="btn ghost" href="/" data-home>Alle Spiele</a></div>
   </header>
   <div class="app">
@@ -617,8 +617,8 @@ function viewWaiting(G,me){
   const n=(G.pl||[]).length;
   const rows=(G.pl||[]).map((p,i)=>`<tr><td>${esc(nameOf(G,i))}${verifiedBy(p.b)?' <span class="vb">✓</span>':''}${i===me?' (du)':''}${p.p===G.hp?' · Spielleitung':''}</td></tr>`).join('');
   if(ON.host)return `<div class="panel sheet"><div class="label">Warteraum · ${n}/8 Spieler</div><h2>Dein Online-Spiel</h2><table class="res">${rows}</table>${totalHtml(G.total,false)}
-    <p>${n<3?'Am meisten Spaß macht es ab drei Personen. Mitspieler öffnen diese Seite, wählen „Online“ und klicken bei deinem Spiel auf „Mitspielen“.':'Alle da? Dann los.'}</p>
-    <div class="row"><button class="btn" type="button" data-do="hostStart" ${n<2?'disabled':''}>Spiel starten</button><button class="btn ghost" type="button" data-do="leave">Verlassen</button></div></div>`;
+    <p>${n<3?`Nur Einer! braucht mindestens drei Personen – noch ${3-n} ${3-n===1?'fehlt':'fehlen'}. Mitspieler öffnen diese Seite, wählen „Online“ und klicken bei deinem Spiel auf „Mitspielen“.`:'Alle da? Dann los.'}</p>
+    <div class="row"><button class="btn" type="button" data-do="hostStart" ${n<3?'disabled':''}>Spiel starten</button><button class="btn ghost" type="button" data-do="leave">Verlassen</button></div></div>`;
   return `<div class="panel sheet"><div class="label">Warteraum · ${n}/8 Spieler</div><h2>${me>=0?'Du bist dabei':'Du schaust zu'}</h2><table class="res">${rows}</table>${totalHtml(G.total,true)}
     <p>Die Spielleitung startet das Spiel.</p><div class="row"><button class="btn ghost" type="button" data-do="leave">Verlassen</button></div></div>`;
 }
@@ -696,7 +696,7 @@ function viewSide(G,me){
       <li>Jede*r schreibt verdeckt genau <b>ein</b> Wort als Hinweis.</li>
       <li>Doppelte Hinweise fliegen raus – auch „Kalt“ und „kälter“. Hinweise, die das Wort verraten, ebenfalls.</li>
       <li>Die ratende Person sieht nur, was übrig bleibt, und hat einen Versuch. Falsch kostet zwei Karten, Passen eine.</li>
-      <li>Ihr spielt zusammen: Wie viele der Karten schafft ihr?</li></ol></div>`;
+      <li>Ihr spielt zusammen: Wie viele der Karten schafft ihr? Mindestens 3 Personen, bis zu 8.</li></ol></div>`;
   }
   const peers=ON.gr&&me!==null?new Set(ON.gr.peers().map(p=>p.peer)):null;
   const subs=new Set(G.sub||Object.keys(G.clues||{}).map(Number));
@@ -796,7 +796,7 @@ document.addEventListener('click',e=>{
     case 'create':{const el=$('myName');if(el&&window.kbName&&el.value.trim())window.kbName.set(el.value);onlineCreate();break}
     case 'join':{const el=$('myName');if(el&&window.kbName&&el.value.trim())window.kbName.set(el.value);onlineJoin(b.dataset.code);break}
     case 'leave':if(inOnlineGame())askConfirm('Spiel wirklich verlassen?',leaveText(),'Verlassen',onlineLeave);else onlineLeave();break;
-    case 'hostStart':if(ON.host&&ON.H&&ON.H.pl.length>=2){ON.H=newGame({total:ON.H.total,hp:ON.H.hp},ON.H.pl.map(p=>({p:p.p,b:p.b})));ON.dirty=true;hostTick();render(true)}break;
+    case 'hostStart':if(ON.host&&ON.H&&ON.H.pl.length>=3){ON.H=newGame({total:ON.H.total,hp:ON.H.hp},ON.H.pl.map(p=>({p:p.p,b:p.b})));ON.dirty=true;hostTick();render(true)}break;
   }
 });
 document.addEventListener('keydown',e=>{

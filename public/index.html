@@ -87,7 +87,7 @@ body{
 .lead{margin:0;max-width:56ch;text-align:center;color:var(--muted);font-weight:600;font-size:17px}
 
 /* Spiele-Wand */
-.wall{margin-top:40px;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:34px 28px;align-items:start}
+.wall{margin-top:40px;display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:34px 28px;align-items:start}
 .wall h2{grid-column:1/-1;margin:0 0 -6px;font-size:13px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--lavender);display:flex;align-items:center;gap:12px}
 .wall h2::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,rgba(185,166,232,.4),transparent)}
 
@@ -130,6 +130,22 @@ a.game:focus-visible{outline:none}
 .topbar{position:absolute;top:calc(10px + env(safe-area-inset-top,0px));right:max(16px,env(safe-area-inset-right,0px));z-index:3;display:flex;gap:8px;align-items:center}
 .topbar .lz-mute{background:rgba(18,15,46,.6)}
 @media (max-width:600px){.topbar{position:relative;top:auto;right:auto;justify-content:flex-end;padding:10px max(16px,env(safe-area-inset-right,0px)) 0}}
+/* Filter & Kategorie-Abzeichen */
+.filters{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:14px 28px;margin:6px 0 2px}
+.fgroup{display:flex;flex-direction:column;gap:8px;min-width:0}
+.flabel{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips button{font:700 14px var(--font-body);padding:8px 14px;border-radius:999px;border:2px solid rgba(185,166,232,.25);background:rgba(255,255,255,.05);color:var(--text);cursor:pointer}
+.chips button[aria-pressed="true"]{background:var(--moon);color:#2A1E4F;border-color:var(--moon);box-shadow:0 0 14px rgba(253,213,187,.4)}
+.chips button:focus-visible{outline:3px solid var(--neon);outline-offset:2px}
+.nomatch{grid-column:1/-1;margin:0;padding:18px;border:2px dashed rgba(185,166,232,.3);border-radius:16px;text-align:center;color:var(--muted);font-weight:600}
+.game[hidden]{display:none!important}
+.badge-cat{position:absolute;top:10px;left:10px;z-index:1;font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:5px 10px;border-radius:999px;background:rgba(18,15,46,.72);color:var(--neon);backdrop-filter:blur(2px)}
+.badge-cat.cat-skill{box-shadow:inset 0 0 0 2px #FF8A1F}
+.badge-cat.cat-quiz{box-shadow:inset 0 0 0 2px #2F7DF6}
+.badge-cat.cat-coop{box-shadow:inset 0 0 0 2px #7BE0A6}
+.badge-players{position:absolute;top:8px;right:8px;z-index:1;display:inline-flex;align-items:center;gap:5px;font-size:20px;font-weight:700;line-height:1;padding:7px 12px 7px 9px;border-radius:999px;background:var(--moon);color:#2A1E4F;box-shadow:0 4px 12px rgba(0,0,0,.35);font-variant-numeric:tabular-nums}
+.thumb .badge-players svg{position:static;inset:auto;width:18px;height:18px;flex:none}
 /* Bestenliste */
 .board{margin-top:52px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,320px);gap:28px;align-items:start}
 @media (max-width:820px){.board{grid-template-columns:minmax(0,1fr)}}
@@ -284,9 +300,18 @@ window.LZSound = window.LZSound || (() => {
 
   <section class="wall" aria-label="Spiele">
     <h2>Spiele</h2>
+    <div class="filters" id="filters">
+      <div class="fgroup" role="group" aria-labelledby="fPlayersL"><span class="flabel" id="fPlayersL">Wie viele seid ihr?</span>
+        <div class="chips" data-filter="n"><button type="button" data-v="all" aria-pressed="true">Egal</button><button type="button" data-v="1" aria-pressed="false">Nur ich</button><button type="button" data-v="2" aria-pressed="false">2</button><button type="button" data-v="3" aria-pressed="false">3</button><button type="button" data-v="4" aria-pressed="false">4–5</button><button type="button" data-v="6" aria-pressed="false">6+</button></div></div>
+      <div class="fgroup" role="group" aria-labelledby="fCatL"><span class="flabel" id="fCatL">Worauf habt ihr Lust?</span>
+        <div class="chips" data-filter="cat"><button type="button" data-v="all" aria-pressed="true">Alles</button><button type="button" data-v="skill" aria-pressed="false">Geschicklichkeit</button><button type="button" data-v="quiz" aria-pressed="false">Raten &amp; Wissen</button><button type="button" data-v="coop" aria-pressed="false">Miteinander</button></div></div>
+    </div>
+    <p class="nomatch" id="noMatch" hidden>Für diese Auswahl gibt es noch kein Spiel. Wünsch dir eins im Chat!</p>
 
-    <a class="game" href="/kugelblitz/">
+    <a class="game" href="/kugelblitz/" data-min="1" data-max="4" data-cat="skill">
       <div class="thumb">
+        <span class="badge-cat cat-skill">Geschicklichkeit</span>
+        <span class="badge-players" aria-label="1 bis 4 Personen, allein gegen Bots"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" fill="currentColor"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7" fill="currentColor"/></svg>1–4</span>
         <svg viewBox="0 0 400 300" aria-hidden="true">
           <defs>
             <radialGradient id="bowl" cx="50%" cy="45%" r="60%"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".7" stop-color="#EEF0FB"/><stop offset="1" stop-color="#B9B6E6"/></radialGradient>
@@ -300,22 +325,26 @@ window.LZSound = window.LZSound || (() => {
       </div>
       <h3>Kugelblitz</h3>
       <p>Sammle die Kugeln von deiner Aufgabenkarte schneller als alle anderen. Wackel an der Schale, wenn's eng wird.</p>
-      <div class="tags"><span class="tag">2–4 Spieler</span><span class="tag">Online &amp; am selben PC</span><span class="tag">3 Joker</span></div>
+      <div class="tags"><span class="tag">Gegeneinander</span><span class="tag">Solo gegen Bots</span><span class="tag">Online &amp; am selben PC</span></div>
       <span class="play"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M3 1.5 L12 7 L3 12.5 Z" fill="currentColor"/></svg>Spielen</span>
     </a>
 
-    <a class="game" href="/zwanzig/">
+    <a class="game" href="/zwanzig/" data-min="2" data-max="6" data-cat="quiz">
       <div class="thumb">
+        <span class="badge-cat cat-quiz">Raten &amp; Wissen</span>
+        <span class="badge-players" aria-label="2 bis 6 Personen"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" fill="currentColor"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7" fill="currentColor"/></svg>2–6</span>
         <svg viewBox="0 0 400 300" aria-hidden="true" id="zwThumb"></svg>
       </div>
       <h3>20 Questions</h3>
       <p>Wer oder was steht auf der Karte? 20 Hinweise, ein Versuch pro Feld – je früher du's errätst, desto mehr Punkte.</p>
-      <div class="tags"><span class="tag">2–6 Spieler</span><span class="tag">Online &amp; am selben PC</span><span class="tag">Leicht bis schwer</span></div>
+      <div class="tags"><span class="tag">Gegeneinander</span><span class="tag">Leicht bis schwer</span><span class="tag">Online &amp; am selben PC</span></div>
       <span class="play"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M3 1.5 L12 7 L3 12.5 Z" fill="currentColor"/></svg>Spielen</span>
     </a>
 
-    <a class="game" href="/nureiner/">
+    <a class="game" href="/nureiner/" data-min="3" data-max="8" data-cat="coop">
       <div class="thumb">
+        <span class="badge-cat cat-coop">Wortspiel · Team</span>
+        <span class="badge-players" aria-label="3 bis 8 Personen, alle zusammen"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" fill="currentColor"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7" fill="currentColor"/></svg>3–8</span>
         <svg viewBox="0 0 400 300" aria-hidden="true">
           <rect x="120" y="40" width="160" height="84" rx="12" fill="#463C82" stroke="#3A3170" stroke-width="4"/>
           <text x="200" y="94" text-anchor="middle" font-family="Dancing Script, cursive" font-weight="700" font-size="34" fill="#F6E6FF">Mond</text>
@@ -330,7 +359,7 @@ window.LZSound = window.LZSound || (() => {
       </div>
       <h3>Nur Einer!</h3>
       <p>Alle helfen einer Person beim Raten – mit je einem Wort. Aber Vorsicht: Doppelte Hinweise fliegen raus.</p>
-      <div class="tags"><span class="tag">Kooperativ</span><span class="tag">2–8 Spieler</span><span class="tag">Online &amp; am selben PC</span></div>
+      <div class="tags"><span class="tag">Miteinander</span><span class="tag">Ab 3 Personen</span><span class="tag">Online &amp; am selben PC</span></div>
       <span class="play"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M3 1.5 L12 7 L3 12.5 Z" fill="currentColor"/></svg>Spielen</span>
     </a>
   </section>
@@ -408,6 +437,26 @@ if(zw){let h='';const open={3:1,7:1,12:1},act={16:1};
 })();
 
 if(window.LZSound)LZSound.mountToggle(document.getElementById('muteBtn'));
+// ---- Spiele filtern (Auswahl merkt sich der Browser) ----
+(()=>{
+  const box=document.getElementById('filters');if(!box)return;
+  const st={n:'all',cat:'all'};
+  try{Object.assign(st,JSON.parse(localStorage.getItem('lz_filter')||'{}'))}catch(e){}
+  function apply(){
+    let shown=0;
+    document.querySelectorAll('.wall .game').forEach(g=>{
+      const min=+g.dataset.min||1,max=+g.dataset.max||99,cat=g.dataset.cat||'';
+      let ok=true;
+      if(st.n!=='all'){const n=+st.n;ok=n===6?max>=6:n===4?(min<=5&&max>=4):(min<=n&&max>=n)}
+      if(ok&&st.cat!=='all')ok=cat===st.cat;
+      g.hidden=!ok;if(ok)shown++;
+    });
+    document.getElementById('noMatch').hidden=shown>0;
+    box.querySelectorAll('[data-filter]').forEach(grp=>grp.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===String(st[grp.dataset.filter])))));
+  }
+  box.addEventListener('click',e=>{const b=e.target.closest('[data-filter] button');if(!b)return;st[b.parentElement.dataset.filter]=b.dataset.v;try{localStorage.setItem('lz_filter',JSON.stringify(st))}catch(er){}apply()});
+  apply();
+})();
 // ---- Bestenliste ----
 (()=>{
   const box=document.getElementById('lb');if(!box)return;
