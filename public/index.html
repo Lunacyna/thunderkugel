@@ -260,20 +260,26 @@ footer a:hover{border-bottom-color:var(--neon)}
 .daily{margin-top:3.5rem;display:grid;gap:14px}
 .daily h2{margin:0;font-size:13px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--lavender);display:flex;align-items:center;gap:12px}
 .daily h2::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,rgba(var(--rgb-lav,185,166,232),.4),transparent)}
-.mwcard{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:18px;align-items:center;padding:16px 20px;border-radius:20px;text-decoration:none;color:var(--text);
+.dailygrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+@media (max-width:760px){.dailygrid{grid-template-columns:minmax(0,1fr)}}
+.mwcard{display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-areas:"ic tx" "ic st";gap:8px 16px;align-items:center;padding:16px 18px;border-radius:20px;text-decoration:none;color:var(--text);
   background:linear-gradient(120deg,rgba(var(--rgb-glow,199,125,255),.16),rgba(var(--rgb-moon,253,213,187),.10));box-shadow:inset 0 0 0 2px rgba(var(--rgb-lav,185,166,232),.35),0 12px 30px rgba(0,0,0,.25);transition:transform .15s,box-shadow .15s}
 .mwcard:hover{transform:translateY(-2px);box-shadow:inset 0 0 0 2px var(--neon),0 0 26px rgba(var(--rgb-glow,199,125,255),.35)}
 .mwcard:focus-visible{outline:3px solid var(--neon);outline-offset:3px}
-.mwtiles{display:flex;gap:5px}
-.mwtiles i{width:34px;height:34px;display:grid;place-items:center;border-radius:8px;font-style:normal;font-weight:700;font-size:18px;color:var(--text);background:rgba(var(--rgb-night,18,15,46),.6);box-shadow:inset 0 0 0 1.5px rgba(var(--rgb-lav,185,166,232),.4)}
+.mwtiles,.kticon{grid-area:ic}.mwtext{grid-area:tx}.mwstate{grid-area:st;justify-self:start}
+.mwtiles{display:flex;gap:4px}
+.kticon{display:grid;grid-template-columns:repeat(3,22px);grid-template-rows:repeat(3,22px);border-radius:8px;overflow:hidden;box-shadow:0 0 0 3px #1B1640}
+.kticon i{position:relative;box-shadow:inset 0 0 0 .5px rgba(27,22,64,.4)}
+.kticon i.c::after{content:"";position:absolute;inset:4px;background:var(--c-ink,#2A1E4F);clip-path:polygon(0 0,32% 28%,68% 28%,100% 0,100% 62%,50% 100%,0 62%)}
+.mwtiles i{width:26px;height:26px;display:grid;place-items:center;border-radius:8px;font-style:normal;font-weight:700;font-size:14px;color:var(--text);background:rgba(var(--rgb-night,18,15,46),.6);box-shadow:inset 0 0 0 1.5px rgba(var(--rgb-lav,185,166,232),.4)}
 .mwtiles i.g{background:#5FCB8E;color:var(--c-night,#16123A);box-shadow:none}.mwtiles i.y{background:#E9C25A;color:var(--c-night,#16123A);box-shadow:none}
 .mwtext{display:flex;flex-direction:column;gap:2px;min-width:0}
-.mwtext b{font-family:var(--font-script);font-size:32px;line-height:1.05;color:var(--neon);text-shadow:0 0 10px rgba(var(--rgb-glow,199,125,255),.45)}
+.mwtext b{font-family:var(--font-script);font-size:30px;line-height:1.05;color:var(--neon);text-shadow:0 0 10px rgba(var(--rgb-glow,199,125,255),.45)}
 .mwtext b span{font-family:var(--font-body);font-size:15px;color:var(--muted);text-shadow:none}
 .mwsub{font-size:14px;color:var(--muted);font-weight:600}
 .mwstate{font-weight:700;font-size:14.5px;padding:9px 16px;border-radius:999px;background:var(--moon);color:var(--c-ink,#2A1E4F);white-space:nowrap}
 .mwstate.done{background:rgba(95,203,142,.2);color:#C9F7DA;box-shadow:inset 0 0 0 1.5px rgba(95,203,142,.55)}
-@media (max-width:700px){.mwcard{grid-template-columns:minmax(0,1fr);gap:10px}.mwstate{justify-self:start}.mwtiles i{width:30px;height:30px;font-size:16px}}
+
 .daily+.wall{margin-top:3rem}
 
 /* ---- Spiele: kompakte Karten, Filter-Leiste, offene Spielersuche ---- */
@@ -459,11 +465,18 @@ window.LZSound = window.LZSound || (() => {
 
   <section class="daily" aria-labelledby="dailyHead">
     <h2 id="dailyHead">Tagesrätsel</h2>
+    <div class="dailygrid">
     <a class="mwcard" href="/mondwort/" id="mwCard">
       <span class="mwtiles" aria-hidden="true"><i class="g">M</i><i class="y">O</i><i>N</i><i class="g">D</i><i class="y">?</i></span>
-      <span class="mwtext"><b>Mondwort <span id="mwNr"></span></b><span class="mwsub">Das deutsche Wort des Tages: fünf Buchstaben, sechs Versuche, eigene Bestenliste. Neues Wort um 0:00 Uhr.</span></span>
+      <span class="mwtext"><b>Mondwort <span id="mwNr"></span></b><span class="mwsub">Das deutsche Wort des Tages: fünf Buchstaben, sechs Versuche.</span></span>
       <span class="mwstate" id="mwState">Jetzt raten →</span>
     </a>
+    <a class="mwcard" href="/katzenthron/" id="ktCard">
+      <span class="kticon" aria-hidden="true"><i style="background:#C9B6FF"></i><i style="background:#C9B6FF" class="c"></i><i style="background:#FFB3C7"></i><i style="background:#A8E6CF"></i><i style="background:#FFB3C7"></i><i style="background:#FFB3C7" class="c"></i><i style="background:#A8E6CF" class="c"></i><i style="background:#A8E6CF"></i><i style="background:#FFD59E"></i></span>
+      <span class="mwtext"><b>Katzenthron <span id="ktNr"></span></b><span class="mwsub">Logikrätsel des Tages: eine Katze pro Zeile, Spalte und Farbe – keine berührt die andere.</span></span>
+      <span class="mwstate" id="ktState">Jetzt knobeln →</span>
+    </a>
+    </div>
   </section>
 
   <section class="wall" aria-labelledby="gamesHead">
@@ -949,6 +962,9 @@ if(window.LZSound)LZSound.mountToggle(document.getElementById('muteBtn'));
     const m=JSON.parse(localStorage.getItem('lz_mw')||'null'),el=document.getElementById('mwState');
     if(m&&m.date===date&&m.done){el.textContent=m.won?'Gelöst in '+m.n+'/6 ✓'+(m.streak>1?' · Serie '+m.streak:'')+' · Bestenliste →':'Heute nicht geschafft · Bestenliste →';el.classList.add('done')}
     else if(m&&m.date===date&&m.n>0)el.textContent='Weiterraten ('+m.n+'/6) →';
+    if(nr>0)document.getElementById('ktNr').textContent='#'+nr;
+    const k=JSON.parse(localStorage.getItem('lz_kt')||'null'),ek=document.getElementById('ktState');
+    if(k&&k.date===date&&k.done){const s=Math.round(k.ms/1000);ek.textContent='Gelöst in '+Math.floor(s/60)+':'+String(s%60).padStart(2,'0')+' ✓'+(k.streak>1?' · Serie '+k.streak:'')+' · Bestenliste →';ek.classList.add('done')}
   }catch(e){}
 })();
 </script>

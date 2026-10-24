@@ -1,0 +1,21 @@
+/* Katzenthron – Spielfeld. Zonenfarben sind feste Pastelltöne; dicke Linien trennen
+   die Zonen, damit es auch ohne Farbsehen lösbar ist. */
+.kt{display:flex;flex-direction:column;align-items:center;gap:14px}
+.kt .ar-bar{width:100%;margin:0}
+.kt-time{font:700 20px var(--font-body);font-variant-numeric:tabular-nums;padding:4px 14px;border-radius:999px;background:rgba(var(--rgb-lav),.16);color:var(--c-text)}
+.kt-board{--cell:min(64px,calc((100vw - 48px) / var(--n)));display:grid;border-radius:14px;overflow:hidden;box-shadow:0 0 0 4px var(--c-frame),0 16px 36px rgba(0,0,0,.4);background:#1B1640;touch-action:none;user-select:none;-webkit-user-select:none}
+@media (min-width:901px){.kt-board{--cell:min(64px,calc((100vw - 400px) / var(--n)))}}
+.kt-row{display:flex}
+.kt-c{position:relative;width:var(--cell);height:var(--cell);border:0;padding:0;margin:0;cursor:pointer;display:grid;place-items:center;background:var(--z);color:#2A1E4F;
+  box-shadow:inset 0 0 0 .5px rgba(27,22,64,.35)}
+.kt-c.bt{border-top:3px solid #1B1640}.kt-c.bb{border-bottom:3px solid #1B1640}.kt-c.bl2{border-left:3px solid #1B1640}.kt-c.br{border-right:3px solid #1B1640}
+.kt-c svg{width:66%;height:66%;filter:drop-shadow(0 2px 0 rgba(0,0,0,.18))}
+.kt-c .kx{font-style:normal;font-weight:700;font-size:calc(var(--cell) * .34);color:rgba(42,30,79,.55);line-height:1}
+.kt-c.bl:not(.x) .kx{color:rgba(42,30,79,.25)}
+.kt-c.bad{color:#C2183D;background:repeating-linear-gradient(45deg,var(--z) 0 6px,rgba(255,80,110,.45) 6px 12px)}
+.kt-c:hover:not([aria-disabled]){filter:brightness(1.06)}
+.kt-c:focus-visible{outline:3px solid #fff;outline-offset:-5px;z-index:1}
+.kt-c[aria-disabled="true"]{cursor:default}
+@media (prefers-reduced-motion:no-preference){.kt-c.cat svg{animation:ktPop .18s ease-out}@keyframes ktPop{from{transform:scale(.4)}}}
+.kt-tools{justify-content:center}
+:root.retro-mode .kt-board{border-radius:0}

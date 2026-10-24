@@ -7,7 +7,8 @@
 
 import { DurableObject } from "cloudflare:workers";
 import { SOLUTIONS, ALLOWED } from "./mondwort-words.js";
-import "./sternenfall-core.js";   // stellt globalThis.SFCore bereit (Regeln + Bots von „Letzte Karte!“)
+import "./sternenfall-core.js";
+import "./katzenthron-core.js";   // globalThis.KTCore: Rätsel erzeugen und prüfen   // stellt globalThis.SFCore bereit (Regeln + Bots von „Letzte Karte!“)
 
 const ROOM_RE = /^(lobby|lobby-zw|lobby-ne|lobby-ar|g-(kb|zw|ne|ar)-[a-z0-9]{4})$/;
 const ID_RE = /^[a-z0-9_]{4,24}$/;
@@ -538,6 +539,55 @@ export class Store extends DurableObject {
     return rows.sort((x, y) => (y.p - x.p) || (y.won - x.won) || ((x.tries / (x.won || 1)) - (y.tries / (y.won || 1)))).slice(0, 50)
       .map(e => ({ name: e.name, v: e.v, p: e.p, won: e.won, played: e.played, avg: e.won ? Math.round(e.tries / e.won * 10) / 10 : null, cur: e.last >= nr - 1 ? e.cur : 0, best: e.best }));
   }
+  // ---- Katzenthron (Logikrätsel des Tages) ----------------------------------------------
+  // "ktp:<datum>" Rätsel des Tages, "ktd:<datum>:<spieler>" {t0, t1, done}, "kts:<spieler>" Statistik
+  // "ktb:<datum>" Tages-Bestenliste (Zeit), "ktm:<JJJJ-MM>" Monats-Bestenliste
+  async ktPuzzle(date, make) {
+    let p = await this.ctx.storage.get("ktp:" + date);
+    if (!p && make) { p = make; await this.ctx.storage.put("ktp:" + date, p); }
+    return p || null;
+  }
+  async ktPlay(q) {
+    const k = "ktd:" + q.date + ":" + q.key;
+    const got = await this.ctx.storage.get([k, "kts:" + q.key]);
+    const s = got.get(k) || { t0: 0, t1: 0, done: false };
+    const st = got.get("kts:" + q.key) || { solved: 0, cur: 0, best: 0, last: 0, bestMs: 0, sumMs: 0 };
+    let counted = null, changed = false;
+    if (q.start && !s.t0) { s.t0 = Date.now(); changed = true; }
+    if (q.solved && !s.done) {
+      if (await this.limited("kt:" + q.ip, 60)) return { error: "Zu viele Meldungen." };
+      if (!s.t0) s.t0 = Date.now() - 1000;
+      s.t1 = Date.now(); s.done = true; changed = true;
+      const ms = s.t1 - s.t0;
+      st.solved++; st.cur = st.last === q.nr - 1 ? st.cur + 1 : 1; st.best = Math.max(st.best, st.cur); st.last = q.nr;
+      st.bestMs = st.bestMs ? Math.min(st.bestMs, ms) : ms; st.sumMs += ms;
+      counted = await this.ktBoards(q, ms, st);
+    }
+    if (changed) await this.ctx.storage.put({ [k]: s, ["kts:" + q.key]: st });
+    return { s, st: { ...st, cur: st.last >= q.nr - 1 ? st.cur : 0 }, counted };
+  }
+  async ktBoards(q, ms, st) {
+    let name = q.name;
+    if (!q.v && (name.length < 2 || GENERIC_NAME.test(name))) return false;
+    const dk = "ktb:" + q.date, mk = "ktm:" + q.date.slice(0, 7);
+    const got = await this.ctx.storage.get([dk, mk]);
+    const day = got.get(dk) || {}, mon = got.get(mk) || {};
+    if (!q.v && Object.values(day).concat(Object.values(mon)).some(e => e.v && e.name.toLowerCase() === name.toLowerCase())) name = name.slice(0, 22) + " (Gast)";
+    const bk = q.v ? "tw:" + q.key.slice(3) : name.toLowerCase();
+    if (day[bk]) return false;
+    day[bk] = { name, v: q.v, ms, at: Date.now() };
+    const m = mon[bk] || { name, v: q.v, solved: 0, sumMs: 0, bestMs: 0, cur: 0 };
+    m.name = name; m.solved++; m.sumMs += ms; m.bestMs = m.bestMs ? Math.min(m.bestMs, ms) : ms; m.cur = st.cur; m.last = q.nr;
+    mon[bk] = m;
+    await this.ctx.storage.put({ [dk]: day, [mk]: mon });
+    return true;
+  }
+  async ktBoard(kind, key, nr) {
+    const rows = Object.values((await this.ctx.storage.get(kind + key)) || {});
+    if (kind === "ktb:") return rows.sort((a, b) => a.ms - b.ms || a.at - b.at).slice(0, 50).map(e => ({ name: e.name, v: e.v, ms: e.ms }));
+    return rows.sort((a, b) => b.solved - a.solved || a.sumMs / a.solved - b.sumMs / b.solved).slice(0, 50)
+      .map(e => ({ name: e.name, v: e.v, solved: e.solved, avg: Math.round(e.sumMs / e.solved), best: e.bestMs, cur: e.last >= nr - 1 ? e.cur : 0 }));
+  }
   async scores(month, game) {
     const games = game === "all" ? GAMES : [game];
     const merged = {};
@@ -723,6 +773,55 @@ async function mondwort(request, env, url, store, ip) {
     answer: s.done ? answer : undefined, ms: s.done ? s.t1 - s.t0 : undefined, stats: r.st, counted: r.counted });
 }
 
+// ---------------------------------------------------------------------------
+// Katzenthron – Logikrätsel des Tages (gleicher Tageswechsel wie Mondwort)
+// n Katzen auf n×n: eine pro Zeile, Spalte und Farbzone, keine berührt eine andere.
+// Größe: Mo–Do 7×7, Fr–So 8×8. Das Rätsel wird einmal pro Tag erzeugt und gespeichert.
+// Die Zeit misst der Server (erster Klick bis gelöst), gelöst prüft der Server selbst.
+// ---------------------------------------------------------------------------
+const ktMemo = {};
+async function ktToday(env, store, T) {
+  if (ktMemo.date === T.date) return ktMemo.p;
+  let p = await store.ktPuzzle(T.date, null);
+  if (!p) {
+    const wd = new Date(T.date + "T12:00:00Z").getUTCDay();          // 0 = Sonntag
+    const n = wd >= 1 && wd <= 4 ? 7 : 8;
+    const g = KTCore.generate(n, (env.MONDWORT_SECRET || "lunacynas-spielezimmer") + ":kt:" + T.date);
+    p = await store.ktPuzzle(T.date, { n: g.n, r: g.r });
+  }
+  ktMemo.date = T.date; ktMemo.p = p;
+  return p;
+}
+async function katzenthron(request, env, url, store, ip) {
+  const now = Date.now(), T = mwToday(now);
+  if (url.pathname === "/api/thron/board") {
+    const m = url.searchParams.get("m");
+    if (/^\d{4}-\d{2}$/.test(m || "")) return json({ kind: "month", month: m, rows: await store.ktBoard("ktm:", m, T.nr) });
+    const d = url.searchParams.get("d"), date = /^\d{4}-\d{2}-\d{2}$/.test(d || "") ? d : T.date;
+    return json({ kind: "day", date, rows: await store.ktBoard("ktb:", date, T.nr) });
+  }
+  let b = {};
+  if (request.method === "POST") {
+    const origin = request.headers.get("origin");
+    if (origin && origin !== url.origin) return json({ error: "Nicht erlaubt." }, 403);
+    try { b = (await request.json()) || {}; } catch { b = {}; }
+  } else b = { u: url.searchParams.get("u") || "" };
+  const user = await readSession(request, env);
+  let key, name, v = false;
+  if (user) { key = "tw_" + user.id; name = clean(user.name, 30); v = true; }
+  else if (/^u_[a-z0-9]{10}$/.test(b.u || "")) { key = b.u; name = clean(b.name, 24); }
+  else return json({ error: "Spieler-ID fehlt." }, 400);
+  const p = await ktToday(env, store, T);
+  if (b.nr && b.nr !== T.nr) return json({ error: "Inzwischen gibt es ein neues Rätsel – die Seite lädt neu.", reload: true }, 409);
+  let solved = false;
+  if (b.cats != null) { if (!KTCore.check(p, b.cats)) return json({ error: "Das ist noch nicht die Lösung." }, 400); solved = true; }
+  const r = await store.ktPlay({ key, name, v, date: T.date, nr: T.nr, start: !!b.start, solved, ip });
+  if (r.error) return json(r, 429);
+  const s = r.s;
+  return json({ nr: T.nr, date: T.date, next: T.next, n: p.n, r: p.r, name, v, started: !!s.t0, done: s.done,
+    ms: s.done ? s.t1 - s.t0 : undefined, elapsed: s.t0 && !s.done ? now - s.t0 : 0, stats: r.st, counted: r.counted });
+}
+
 async function api(request, env, url, ctx) {
   const store = env.STORE.get(env.STORE.idFromName("main"));
   const ip = request.headers.get("cf-connecting-ip") || "local";
@@ -731,6 +830,7 @@ async function api(request, env, url, ctx) {
 
   if (path === "/api/lobbys" && method === "GET") return new Response(await lobbies(env, ctx), { headers: { "content-type": "application/json; charset=utf-8", "cache-control": "public, max-age=5" } });
   if (path === "/api/sf/status") return json({ tables: !!env.TABLES });
+  if (path === "/api/thron" || path === "/api/thron/board") return katzenthron(request, env, url, store, ip);
   if (path === "/api/wort" || path === "/api/wort/board") return mondwort(request, env, url, store, ip);
   if (path === "/api/feedback" && method === "POST") return feedback(request, env, url, store, ip);
   if (path === "/api/cards" && method === "GET") return json(await store.cards(false));

@@ -75,7 +75,7 @@
       <p>${st.won ? esc(head[1]) + (time ? ' · ' + time : '') : 'Das Wort war'} ${st.won ? '' : `<b class="mw-ans">${esc((st.answer || '').toUpperCase())}</b>`}</p>
       ${st.won ? `<p class="hint">Das Wort: <b class="mw-ans small">${esc((st.answer || '').toUpperCase())}</b></p>` : ''}
       ${st.counted === false && !st.v ? '<p class="hint">Zählt nicht für die Bestenliste: Unter diesem Namen steht heute schon ein Ergebnis, oder der Name ist zu allgemein („Spieler 2“ & Co.). Trag rechts einen eigenen Namen ein – ab morgen zählt er.</p>' : ''}
-      <div class="row"><button class="btn" type="button" data-mw="share">Ergebnis teilen</button><a class="btn ghost" href="#mwBoard">Bestenliste</a></div>
+      <div class="row"><button class="btn" type="button" data-mw="share">Ergebnis teilen</button><a class="btn ghost" href="#mwBoard">Bestenliste</a><a class="btn ghost" href="/katzenthron/">Zum Katzenthron</a></div>
       <p class="mw-next">Neues Mondwort in <b id="mwCount">–</b></p></div>`;
   }
   const fmtMs = ms => { const s = Math.round(ms / 1000); return s < 3600 ? Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0') + ' Min.' : Math.floor(s / 3600) + ' Std. ' + Math.floor(s % 3600 / 60) + ' Min.'; };
