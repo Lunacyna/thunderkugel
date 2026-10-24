@@ -11,11 +11,13 @@
   "durable_objects": {
     "bindings": [
       { "name": "ROOMS", "class_name": "Room" },
-      { "name": "STORE", "class_name": "Store" }
+      { "name": "STORE", "class_name": "Store" },
+      { "name": "TABLES", "class_name": "SFTable" }
     ]
   },
   "migrations": [
     { "tag": "v1", "new_sqlite_classes": ["Room"] },
-    { "tag": "v2", "new_sqlite_classes": ["Store"] }
+    { "tag": "v2", "new_sqlite_classes": ["Store"] },
+    { "tag": "v3", "new_sqlite_classes": ["SFTable"] }
   ]
 }
