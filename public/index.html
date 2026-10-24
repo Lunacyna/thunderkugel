@@ -87,31 +87,25 @@ body{
 .lead{margin:0;max-width:56ch;text-align:center;color:var(--muted);font-weight:600;font-size:17px}
 
 /* Spiele-Wand */
-.wall{margin-top:40px;display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:34px 28px;align-items:start}
-.wall h2{grid-column:1/-1;margin:0 0 -6px;font-size:13px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--lavender);display:flex;align-items:center;gap:12px}
-.wall h2::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,rgba(var(--rgb-lav,185,166,232),.4),transparent)}
 
-.game{position:relative;display:flex;flex-direction:column;text-decoration:none;color:inherit;
-  background:linear-gradient(180deg,var(--wall-2),var(--wall));border-radius:18px;padding:14px 14px 18px;
-  box-shadow:0 0 0 5px var(--frame),0 18px 40px rgba(0,0,0,.45);
-  transform:rotate(var(--tilt,0deg));transition:transform .25s ease,box-shadow .25s ease}
-.game:nth-child(3n+2){--tilt:-1.2deg}
-.game:nth-child(3n+3){--tilt:1deg}
-.game:nth-child(3n+4){--tilt:-.6deg}
-.game::before{content:"";position:absolute;top:-14px;left:50%;width:76px;height:22px;transform:translateX(-50%) rotate(-3deg);
-  background:rgba(var(--rgb-peach,242,167,168),.55);border-radius:3px;box-shadow:0 2px 6px rgba(0,0,0,.25)}
-a.game:hover,a.game:focus-visible{transform:rotate(0deg) translateY(-6px);
-  box-shadow:0 0 0 5px var(--frame),0 0 0 7px var(--lavender),0 24px 50px rgba(0,0,0,.5),0 0 50px rgba(var(--rgb-glow,199,125,255),.45)}
-a.game:focus-visible{outline:2px solid var(--lz-focus,var(--c-neon,#F6E6FF));outline-offset:9px}
-.thumb{position:relative;border-radius:12px;overflow:hidden;aspect-ratio:4/3;background:radial-gradient(120% 90% at 50% 110%,#F4B6A9 0%,#B47B8C 22%,var(--c-frame-hi,#5D5390) 52%,var(--c-panel-b,#1E1945) 100%)}
-.thumb svg{position:absolute;inset:0;width:100%;height:100%}
-.game h3{margin:16px 4px 4px;font-family:var(--font-script);font-weight:700;font-size:34px;line-height:1.05;color:var(--neon);text-shadow:0 0 12px rgba(var(--rgb-glow,199,125,255),.55)}
-.game p{margin:0 4px;color:var(--muted);font-size:15px;font-weight:600}
-.tags{display:flex;flex-wrap:wrap;gap:6px;margin:12px 4px 0}
-.tag{font-size:12px;font-weight:700;padding:4px 10px;border-radius:999px;background:rgba(var(--rgb-lav,185,166,232),.14);color:var(--lavender);border:1px solid rgba(var(--rgb-lav,185,166,232),.25)}
-.play{margin:16px 4px 0;align-self:flex-start;display:inline-flex;align-items:center;gap:8px;font-weight:700;font-size:15px;padding:10px 20px;border-radius:999px;
-  background:var(--moon);color:var(--c-ink,#2A1E4F);box-shadow:0 0 18px rgba(var(--rgb-moon,253,213,187),.5)}
-.play svg{width:14px;height:14px}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 .game.soon{opacity:.72}
 .game.soon .thumb{background:radial-gradient(100% 80% at 50% 100%,var(--c-frame-hi,#3B3270) 0%,var(--c-panel-b,#1E1945) 100%)}
@@ -131,28 +125,28 @@ a.game:focus-visible{outline:2px solid var(--lz-focus,var(--c-neon,#F6E6FF));out
 .topbar .lz-mute{background:rgba(var(--rgb-night,18,15,46),.6)}
 @media (max-width:600px){.topbar{position:relative;top:auto;right:auto;justify-content:flex-end;padding:10px max(16px,env(safe-area-inset-right,0px)) 0}}
 /* Filter & Kategorie-Abzeichen */
-.filters{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:14px 28px;margin:6px 0 2px}
-.fgroup{display:flex;flex-direction:column;gap:8px;min-width:0}
-.flabel{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
-.chips{display:flex;flex-wrap:wrap;gap:6px}
-.chips button{font:700 14px var(--font-body);padding:8px 14px;border-radius:999px;border:2px solid rgba(var(--rgb-lav,185,166,232),.25);background:rgba(255,255,255,.05);color:var(--text);cursor:pointer}
-.chips button[aria-pressed="true"]{background:var(--moon);color:var(--c-ink,#2A1E4F);border-color:var(--moon);box-shadow:0 0 14px rgba(var(--rgb-moon,253,213,187),.4)}
-.chips button:focus-visible{outline:3px solid var(--neon);outline-offset:2px}
-.nomatch{grid-column:1/-1;margin:0;padding:18px;border:2px dashed rgba(var(--rgb-lav,185,166,232),.3);border-radius:16px;text-align:center;color:var(--muted);font-weight:600}
+
+
+
+
+
+
+
+
 .game[hidden]{display:none!important}
-.badge-cat{position:absolute;top:10px;left:10px;z-index:1;font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:5px 10px;border-radius:999px;background:rgba(var(--rgb-night,18,15,46),.72);color:var(--neon);backdrop-filter:blur(2px)}
-.badge-cat.cat-skill{box-shadow:inset 0 0 0 2px #FF8A1F}
-.badge-cat.cat-quiz{box-shadow:inset 0 0 0 2px #2F7DF6}
-.badge-cat.cat-coop{box-shadow:inset 0 0 0 2px #7BE0A6}
-.badge-cat.cat-taktik{box-shadow:inset 0 0 0 2px var(--c-glow,#C77DFF)}
-.badge-players{position:absolute;top:8px;right:8px;z-index:1;display:inline-flex;align-items:center;gap:5px;font-size:20px;font-weight:700;line-height:1;padding:7px 12px 7px 9px;border-radius:999px;background:var(--moon);color:var(--c-ink,#2A1E4F);box-shadow:0 4px 12px rgba(0,0,0,.35);font-variant-numeric:tabular-nums}
-.thumb .badge-players svg{position:static;inset:auto;width:18px;height:18px;flex:none}
+
+
+
+
+
+
+
 /* Bestenliste */
 /* ---- Bestenliste ---- */
 .board [hidden]{display:none!important}
 .board>*,.lb-panel,.lb-head>*{min-width:0}
 @media (max-width:520px){.frame.lb-frame{padding:14px 12px}.podium{gap:6px}.podium li{padding-left:4px;padding-right:4px}.podium .pl-name{font-size:13.5px}.podium li:nth-child(1) .pl-name{font-size:15px}.podium .pl-score{font-size:12.5px}.podium li:nth-child(1) .pl-score{font-size:14px}.fsb-item dt{font-size:9.5px;letter-spacing:.04em}}
-.board{margin-top:52px;display:grid;gap:16px}
+.board{margin-top:5rem;display:grid;gap:16px}
 .board h2.sec{margin:0;font-size:13px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--lavender);display:flex;align-items:center;gap:12px}
 .board h2.sec::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,rgba(var(--rgb-lav,185,166,232),.4),transparent)}
 .frame{background:linear-gradient(180deg,var(--wall-2),var(--wall));border-radius:18px;padding:18px 20px;box-shadow:0 0 0 5px var(--frame),0 18px 40px rgba(0,0,0,.45)}
@@ -261,12 +255,67 @@ footer a:hover{border-bottom-color:var(--neon)}
 :root[data-theme="kamin"] .thumb [fill="#B9A6E8"]{fill:#D8BB9E}
 :root[data-theme="kamin"] .thumb [stroke="#3A3170"]{stroke:#4A3F37}
 :root[data-theme="kamin"] .garland [stroke="#5B4E8A"]{stroke:#7A5A44}
+
+/* ---- Spiele: kompakte Karten, Filter-Leiste, offene Spielersuche ---- */
+.wall{margin-top:4.5rem;display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,250px),1fr));gap:30px 22px}
+.wall h2{grid-column:1/-1;margin:0;font-size:13px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--lavender);display:flex;align-items:center;gap:12px}
+.wall h2::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,rgba(var(--rgb-lav,185,166,232),.4),transparent)}
+.filters{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;min-width:0}
+.pillrow{display:flex;gap:6px;min-width:0;max-width:100%;overflow-x:auto;scrollbar-width:none;padding:3px}
+.pillrow::-webkit-scrollbar{display:none}
+.pillrow.cats{padding-left:18px;box-shadow:inset 1px 0 0 rgba(var(--rgb-lav,185,166,232),.25)}
+@media (max-width:760px){.filters{flex-direction:column;align-items:stretch;gap:8px}.pillrow.cats{padding-left:3px;box-shadow:none}}
+.pillrow button{flex:none;white-space:nowrap;font:700 14px var(--font-body);padding:8px 15px;border-radius:999px;border:2px solid rgba(var(--rgb-lav,185,166,232),.25);background:rgba(255,255,255,.05);color:var(--text);cursor:pointer}
+.pillrow button:hover{border-color:rgba(var(--rgb-lav,185,166,232),.6)}
+.pillrow button[aria-pressed="true"]{background:var(--moon);color:var(--c-ink,#2A1E4F);border-color:var(--moon);box-shadow:0 0 14px rgba(var(--rgb-moon,253,213,187),.4)}
+.pillrow.cats button{font-size:13px;padding:6px 12px}
+.pillrow.cats button[aria-pressed="true"]{background:rgba(var(--rgb-moon,253,213,187),.14);color:var(--moon)}
+.pillrow .cnt{font-variant-numeric:tabular-nums;opacity:.7}
+.pillrow .cnt:empty{display:none}
+.nomatch{grid-column:1/-1;margin:0;padding:18px;border:2px dashed rgba(var(--rgb-lav,185,166,232),.3);border-radius:16px;text-align:center;color:var(--muted);font-weight:600}
+/* Karte */
+.game{position:relative;display:flex;flex-direction:column;text-decoration:none;color:inherit;border-radius:18px;overflow:visible;
+  background:linear-gradient(180deg,var(--wall-2),var(--wall));box-shadow:0 0 0 4px var(--frame),0 14px 30px rgba(0,0,0,.4);transition:transform .2s ease,box-shadow .2s ease}
+.game[hidden]{display:none!important}
+.game::before{content:"";position:absolute;top:-11px;left:50%;z-index:2;width:58px;height:18px;transform:translateX(-50%) rotate(-3deg);background:rgba(var(--rgb-peach,242,167,168),.5);border-radius:3px;box-shadow:0 2px 6px rgba(0,0,0,.25)}
+a.game:hover,a.game:focus-visible{transform:translateY(-3px);box-shadow:0 0 0 4px var(--frame),0 0 0 6px var(--lavender),0 20px 40px rgba(0,0,0,.45),0 0 36px rgba(var(--rgb-glow,199,125,255),.35)}
+a.game:focus-visible{outline:2px solid var(--lz-focus,var(--c-neon,#F6E6FF));outline-offset:8px}
+.thumb{position:relative;margin:10px 10px 0;border-radius:12px;overflow:hidden;aspect-ratio:16/9;background:radial-gradient(120% 90% at 50% 110%,#F4B6A9 0%,#B47B8C 22%,var(--c-frame-hi,#5D5390) 52%,var(--c-panel-b,#1E1945) 100%)}
+.thumb svg{position:absolute;inset:0;width:100%;height:100%}
+.badge-players{position:absolute;top:8px;right:8px;z-index:1;display:inline-flex;align-items:center;gap:4px;font-size:14px;font-weight:700;line-height:1;padding:5px 9px 5px 7px;border-radius:999px;background:var(--moon);color:var(--c-ink,#2A1E4F);box-shadow:0 3px 10px rgba(0,0,0,.35);font-variant-numeric:tabular-nums}
+.thumb .badge-players svg{position:static;width:14px;height:14px;flex:none}
+.gbody{display:flex;flex-direction:column;flex:1;padding:12px 16px 14px}
+.gcat{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);display:inline-flex;align-items:center;gap:6px}
+.gcat::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor}
+.gcat.cat-skill::before{background:#FF8A1F}.gcat.cat-quiz::before{background:#2F7DF6}.gcat.cat-coop::before{background:#7BE0A6}.gcat.cat-taktik::before{background:var(--c-glow,#C77DFF)}
+.game h3{margin:4px 0 4px;font-family:var(--font-script);font-weight:700;font-size:28px;line-height:1.05;color:var(--neon);text-shadow:0 0 10px rgba(var(--rgb-glow,199,125,255),.45)}
+.game p{margin:0;color:var(--muted);font-size:14.5px;font-weight:600;line-height:1.4}
+.gfoot{margin-top:auto;padding-top:12px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.gbadge{font-size:12px;font-weight:700;padding:4px 10px;border-radius:999px;background:rgba(var(--rgb-lav,185,166,232),.14);color:var(--text)}
+.garrow{font-size:20px;font-weight:700;color:var(--moon);transition:transform .2s ease}
+a.game:hover .garrow,a.game:focus-visible .garrow{transform:translateX(4px)}
+/* Live: offener Raum */
+.live{position:absolute;left:8px;bottom:8px;z-index:1;display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;padding:4px 9px;border-radius:999px;background:rgba(var(--rgb-night,18,15,46),.85);color:#C9F7DA;box-shadow:0 0 0 1.5px rgba(91,227,139,.6)}
+.live::before,.lfg-dot{content:"";width:8px;height:8px;border-radius:50%;background:#5BE38B;flex:none;box-shadow:0 0 0 0 rgba(91,227,139,.6)}
+.game.has-live{box-shadow:0 0 0 4px var(--frame),0 0 0 6px rgba(91,227,139,.45),0 14px 30px rgba(0,0,0,.4)}
+@media (prefers-reduced-motion:no-preference){.live::before,.lfg-dot{animation:livePulse 1.8s ease-out infinite}@keyframes livePulse{70%{box-shadow:0 0 0 7px rgba(91,227,139,0)}100%{box-shadow:0 0 0 0 rgba(91,227,139,0)}}}
+.lfg{grid-column:1/-1;display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 14px;border-radius:16px;background:rgba(91,227,139,.08);box-shadow:inset 0 0 0 1.5px rgba(91,227,139,.35)}
+.lfg[hidden]{display:none}
+.lfg-title{font-weight:700;font-size:14px;color:#C9F7DA}
+.lfg-list{list-style:none;margin:0;padding:0;display:flex;gap:8px;flex-wrap:wrap;min-width:0}
+.lfg-list a{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;background:rgba(var(--rgb-night,18,15,46),.6);color:var(--text);text-decoration:none;font-size:13.5px;font-weight:700;box-shadow:inset 0 0 0 1.5px rgba(91,227,139,.45)}
+.lfg-list a:hover{box-shadow:inset 0 0 0 1.5px #5BE38B;color:#fff}
+.lfg-list .who{color:var(--muted);font-weight:600}
+.lfg-list .go{color:#5BE38B}
+.live[hidden]{display:none}
+.lfg-list b,.lfg-list .who,.lfg-list .go{white-space:nowrap}
+@media (max-width:600px){.lfg-list{width:100%;flex-direction:column}.lfg-list a{display:flex;flex-wrap:wrap;gap:2px 6px;border-radius:14px}}
 </style>
 <!--cozy--><link rel="stylesheet" href="/assets/cozy/cozy.css?v=5"><script src="/assets/cozy/cozy.js?v=5"></script><link rel="stylesheet" href="/assets/cozy/retro.css?v=5"><script src="/assets/cozy/retro.js?v=5"></script><!--/cozy-->
 </head>
 <body>
 <canvas id="sky" aria-hidden="true"></canvas>
-<script src="/assets/cozy/sky.js?v=2" defer></script>
+<script src="/assets/cozy/sky.js?v=3" defer></script>
 <script id="lzsound">
 // LZSound – kleines Sound-System für Lunacynas Spielezimmer
 // - Alle Töne werden live per Web Audio erzeugt (keine Audiodateien nötig).
@@ -388,20 +437,25 @@ window.LZSound = window.LZSound || (() => {
     <p class="lead">Such dir ein Spiel aus und klick drauf. Alles läuft direkt im Browser – am selben Bildschirm oder online mit Freunden und Chat.</p>
   </section>
 
-  <section class="wall" aria-label="Spiele">
-    <h2>Spiele</h2>
-    <div class="filters" id="filters">
-      <div class="fgroup" role="group" aria-labelledby="fPlayersL"><span class="flabel" id="fPlayersL">Wie viele seid ihr?</span>
-        <div class="chips" data-filter="n"><button type="button" data-v="all" aria-pressed="true">Egal</button><button type="button" data-v="1" aria-pressed="false">Nur ich</button><button type="button" data-v="2" aria-pressed="false">2</button><button type="button" data-v="3" aria-pressed="false">3</button><button type="button" data-v="4" aria-pressed="false">4–5</button><button type="button" data-v="6" aria-pressed="false">6+</button></div></div>
-      <div class="fgroup" role="group" aria-labelledby="fCatL"><span class="flabel" id="fCatL">Worauf habt ihr Lust?</span>
-        <div class="chips" data-filter="cat"><button type="button" data-v="all" aria-pressed="true">Alles</button><button type="button" data-v="skill" aria-pressed="false">Geschicklichkeit</button><button type="button" data-v="quiz" aria-pressed="false">Raten &amp; Wissen</button><button type="button" data-v="coop" aria-pressed="false">Miteinander</button><button type="button" data-v="taktik" aria-pressed="false">Taktik</button></div></div>
+  <section class="wall" aria-labelledby="gamesHead">
+    <h2 id="gamesHead">Spiele</h2>
+    <nav class="filters" id="filters" aria-label="Spiele filtern">
+      <div class="pillrow" role="group" aria-label="Wie viele seid ihr?" data-filter="p" data-lz-arrows>
+        <button type="button" data-v="all" aria-pressed="true">Alle <span class="cnt"></span></button><button type="button" data-v="solo" aria-pressed="false">Alleine / Bots <span class="cnt"></span></button><button type="button" data-v="duo" aria-pressed="false">Zu zweit <span class="cnt"></span></button><button type="button" data-v="group" aria-pressed="false">Gruppe / Party <span class="cnt"></span></button>
+      </div>
+      <div class="pillrow cats" role="group" aria-label="Worauf habt ihr Lust?" data-filter="cat" data-lz-arrows>
+        <button type="button" data-v="all" aria-pressed="true">Alle Arten</button><button type="button" data-v="skill" aria-pressed="false">Geschicklichkeit</button><button type="button" data-v="quiz" aria-pressed="false">Raten &amp; Wissen</button><button type="button" data-v="coop" aria-pressed="false">Miteinander</button><button type="button" data-v="taktik" aria-pressed="false">Taktik</button>
+      </div>
+    </nav>
+    <div class="lfg" id="lfg" hidden>
+      <span class="lfg-dot" aria-hidden="true"></span>
+      <span class="lfg-title">Gerade suchen Leute Mitspieler:</span>
+      <ul class="lfg-list" id="lfgList" aria-label="Offene Spiele"></ul>
     </div>
     <p class="nomatch" id="noMatch" hidden>Für diese Auswahl gibt es noch kein Spiel. Wünsch dir eins im Chat!</p>
 
-    <a class="game" href="/kugelblitz/" data-min="1" data-max="4" data-cat="skill">
+    <a class="game" href="/kugelblitz/" data-p="solo duo group" data-cat="skill" data-game="kugelblitz">
       <div class="thumb">
-        <span class="badge-cat cat-skill">Geschicklichkeit</span>
-        <span class="badge-players" aria-label="1 bis 4 Personen, allein gegen Bots"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" fill="currentColor"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7" fill="currentColor"/></svg>1–4</span>
         <svg viewBox="0 0 400 300" aria-hidden="true">
           <defs>
             <radialGradient id="bowl" cx="50%" cy="45%" r="60%"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".7" stop-color="#EEF0FB"/><stop offset="1" stop-color="#B9B6E6"/></radialGradient>
@@ -412,29 +466,33 @@ window.LZSound = window.LZSound || (() => {
           <circle cx="200" cy="155" r="108" fill="url(#bowl)"/>
           <g id="balls"></g>
         </svg>
+        <span class="badge-players" aria-label="1 bis 4 Personen"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" fill="currentColor"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7" fill="currentColor"/></svg>1–4</span>
+        <span class="live" hidden></span>
       </div>
-      <h3>Kugelblitz</h3>
-      <p>Sammle die Kugeln von deiner Aufgabenkarte schneller als alle anderen. Wackel an der Schale, wenn's eng wird.</p>
-      <div class="tags"><span class="tag">Gegeneinander</span><span class="tag">Solo gegen Bots</span><span class="tag">Online &amp; am selben PC</span></div>
-      <span class="play"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M3 1.5 L12 7 L3 12.5 Z" fill="currentColor"/></svg>Spielen</span>
+      <div class="gbody">
+        <span class="gcat cat-skill">Geschicklichkeit</span>
+        <h3>Kugelblitz</h3>
+        <p>Sammle die Kugeln deiner Aufgabenkarte schneller als alle anderen.</p>
+        <div class="gfoot"><span class="gbadge">Online &amp; Bots</span><span class="garrow" aria-hidden="true">→</span></div>
+      </div>
     </a>
 
-    <a class="game" href="/zwanzig/" data-min="2" data-max="6" data-cat="quiz">
+    <a class="game" href="/zwanzig/" data-p="duo group" data-cat="quiz" data-game="zwanzig">
       <div class="thumb">
-        <span class="badge-cat cat-quiz">Raten &amp; Wissen</span>
-        <span class="badge-players" aria-label="2 bis 6 Personen"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" fill="currentColor"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7" fill="currentColor"/></svg>2–6</span>
         <svg viewBox="0 0 400 300" aria-hidden="true" id="zwThumb"></svg>
+        <span class="badge-players" aria-label="2 bis 6 Personen"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" fill="currentColor"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7" fill="currentColor"/></svg>2–6</span>
+        <span class="live" hidden></span>
       </div>
-      <h3>20 Questions</h3>
-      <p>Wer oder was steht auf der Karte? 20 Hinweise, ein Versuch pro Feld – je früher du's errätst, desto mehr Punkte.</p>
-      <div class="tags"><span class="tag">Gegeneinander</span><span class="tag">Leicht bis schwer</span><span class="tag">Online &amp; am selben PC</span></div>
-      <span class="play"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M3 1.5 L12 7 L3 12.5 Z" fill="currentColor"/></svg>Spielen</span>
+      <div class="gbody">
+        <span class="gcat cat-quiz">Raten &amp; Wissen</span>
+        <h3>20 Questions</h3>
+        <p>Wer oder was ist gesucht? 20 Hinweise, ein Versuch pro Feld.</p>
+        <div class="gfoot"><span class="gbadge">Gegeneinander</span><span class="garrow" aria-hidden="true">→</span></div>
+      </div>
     </a>
 
-    <a class="game" href="/nureiner/" data-min="3" data-max="8" data-cat="coop">
+    <a class="game" href="/nureiner/" data-p="group" data-cat="coop" data-game="nureiner">
       <div class="thumb">
-        <span class="badge-cat cat-coop">Wortspiel · Team</span>
-        <span class="badge-players" aria-label="3 bis 8 Personen, alle zusammen"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" fill="currentColor"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7" fill="currentColor"/></svg>3–8</span>
         <svg viewBox="0 0 400 300" aria-hidden="true">
           <rect x="120" y="40" width="160" height="84" rx="12" fill="#463C82" stroke="#3A3170" stroke-width="4"/>
           <text x="200" y="94" text-anchor="middle" font-family="Dancing Script, cursive" font-weight="700" font-size="34" fill="#F6E6FF">Mond</text>
@@ -446,83 +504,99 @@ window.LZSound = window.LZSound || (() => {
             <g transform="translate(262 262) rotate(-3)"><rect x="-46" y="-22" width="92" height="40" rx="5" fill="#FFF4E6"/><text y="5" fill="#2A1E4F">Krater</text></g>
           </g>
         </svg>
+        <span class="badge-players" aria-label="3 bis 8 Personen"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" fill="currentColor"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7" fill="currentColor"/></svg>3–8</span>
+        <span class="live" hidden></span>
       </div>
-      <h3>Nur Einer!</h3>
-      <p>Alle helfen einer Person beim Raten – mit je einem Wort. Aber Vorsicht: Doppelte Hinweise fliegen raus.</p>
-      <div class="tags"><span class="tag">Miteinander</span><span class="tag">Ab 3 Personen</span><span class="tag">Online &amp; am selben PC</span></div>
-      <span class="play"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M3 1.5 L12 7 L3 12.5 Z" fill="currentColor"/></svg>Spielen</span>
+      <div class="gbody">
+        <span class="gcat cat-coop">Miteinander</span>
+        <h3>Nur Einer!</h3>
+        <p>Alle helfen einer Person beim Raten – doppelte Hinweise fliegen raus.</p>
+        <div class="gfoot"><span class="gbadge">Team</span><span class="garrow" aria-hidden="true">→</span></div>
+      </div>
     </a>
-    <a class="game" href="/stacker/" data-min="1" data-max="1" data-cat="skill">
+    <a class="game" href="/stacker/" data-p="solo" data-cat="skill" data-game="stacker">
       <div class="thumb">
-        <span class="badge-cat cat-skill">Geschicklichkeit</span>
-        <span class="badge-players" aria-label="Für eine Person"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" fill="currentColor"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7" fill="currentColor"/></svg>1</span>
         <svg viewBox="0 0 400 300" aria-hidden="true"><rect x="120" y="250" width="160" height="22" rx="3" fill="#463C82"/><rect x="124" y="224" width="152" height="22" rx="3" fill="#FDD5BB"/><rect x="130" y="198" width="140" height="22" rx="3" fill="#F2A7A8"/><rect x="136" y="172" width="128" height="22" rx="3" fill="#B9A6E8"/><rect x="140" y="146" width="118" height="22" rx="3" fill="#C77DFF"/><rect x="146" y="120" width="106" height="22" rx="3" fill="#F6E6FF"/><rect x="150" y="94" width="96" height="22" rx="3" fill="#FDD5BB"/><rect x="196" y="62" width="96" height="22" rx="3" fill="#F2A7A8"/><path d="M300 73h30M306 63h18M306 83h18" stroke="#F6E6FF" stroke-width="4" stroke-linecap="round" opacity=".6"/><path d="M196 92v130" stroke="#F6E6FF" stroke-dasharray="4 6" stroke-width="2" opacity=".5"/></svg>
+        <span class="badge-players" aria-label="1 Person"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" fill="currentColor"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7" fill="currentColor"/></svg>1</span>
+        <span class="live" hidden></span>
       </div>
-      <h3>Turmbau zu Babel</h3>
-      <p>Leg die gleitenden Blöcke genau übereinander – was übersteht, fällt ab. Wie hoch kommst du?</p>
-      <div class="tags"><span class="tag">Solo-Rekord</span><span class="tag">Bestenliste</span></div>
-      <span class="play"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M3 1.5 L12 7 L3 12.5 Z" fill="currentColor"/></svg>Spielen</span>
+      <div class="gbody">
+        <span class="gcat cat-skill">Geschicklichkeit</span>
+        <h3>Turmbau zu Babel</h3>
+        <p>Stapel die Blöcke so genau wie möglich – wie hoch kommst du?</p>
+        <div class="gfoot"><span class="gbadge">Rekordjagd</span><span class="garrow" aria-hidden="true">→</span></div>
+      </div>
     </a>
 
-    <a class="game" href="/pong/" data-min="1" data-max="1" data-cat="skill">
+    <a class="game" href="/pong/" data-p="solo" data-cat="skill" data-game="pong">
       <div class="thumb">
-        <span class="badge-cat cat-skill">Geschicklichkeit</span>
-        <span class="badge-players" aria-label="Für eine Person, gegen Bots"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" fill="currentColor"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7" fill="currentColor"/></svg>1</span>
         <svg viewBox="0 0 400 300" aria-hidden="true"><rect x="40" y="40" width="320" height="220" rx="10" fill="#1E1945" stroke="#463C82" stroke-width="4"/><path d="M200 50v200" stroke="#F6E6FF" stroke-width="4" stroke-dasharray="10 12" opacity=".25"/><rect x="58" y="110" width="10" height="56" fill="#FFC857"/><rect x="332" y="150" width="10" height="56" fill="#6FD3FF"/><path d="M76 140 Q190 50 300 170" fill="none" stroke="#C77DFF" stroke-width="4" stroke-dasharray="2 9" stroke-linecap="round"/><rect x="292" y="162" width="14" height="14" fill="#F6E6FF"/><text x="160" y="92" font-family="Quicksand,sans-serif" font-weight="700" font-size="34" fill="#F6E6FF" opacity=".25">3</text><text x="226" y="92" font-family="Quicksand,sans-serif" font-weight="700" font-size="34" fill="#F6E6FF" opacity=".25">2</text></svg>
+        <span class="badge-players" aria-label="1 Person"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" fill="currentColor"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7" fill="currentColor"/></svg>1</span>
+        <span class="live" hidden></span>
       </div>
-      <h3>Curve-Ball</h3>
-      <p>Pixel-Pong mit Schnitt: Squash an der Wand oder Duell gegen den Bot.</p>
-      <div class="tags"><span class="tag">Solo-Squash</span><span class="tag">Gegen Bots</span><span class="tag">Bestenliste</span></div>
-      <span class="play"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M3 1.5 L12 7 L3 12.5 Z" fill="currentColor"/></svg>Spielen</span>
+      <div class="gbody">
+        <span class="gcat cat-skill">Geschicklichkeit</span>
+        <h3>Curve-Ball</h3>
+        <p>Pixel-Pong mit Schnitt: Squash an der Wand oder gegen den Bot.</p>
+        <div class="gfoot"><span class="gbadge">Solo &amp; Bots</span><span class="garrow" aria-hidden="true">→</span></div>
+      </div>
     </a>
 
-    <a class="game" href="/viergewinnt/" data-min="1" data-max="2" data-cat="taktik">
+    <a class="game" href="/viergewinnt/" data-p="solo duo" data-cat="taktik" data-game="viergewinnt">
       <div class="thumb">
-        <span class="badge-cat cat-taktik">Taktik</span>
-        <span class="badge-players" aria-label="1 Person gegen Bots, 2 Personen online"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" fill="currentColor"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7" fill="currentColor"/></svg>1–2</span>
         <svg viewBox="0 0 400 300" aria-hidden="true"><rect x="64" y="46" width="272" height="226" rx="16" fill="#463C82"/><circle cx="88" cy="248" r="14" fill="#FFC857"/><circle cx="88" cy="211" r="14" fill="#6FD3FF"/><circle cx="88" cy="174" r="14" fill="#16123A"/><circle cx="88" cy="137" r="14" fill="#16123A"/><circle cx="88" cy="100" r="14" fill="#16123A"/><circle cx="88" cy="63" r="14" fill="#16123A"/><circle cx="125" cy="248" r="14" fill="#6FD3FF"/><circle cx="125" cy="211" r="14" fill="#FFC857"/><circle cx="125" cy="174" r="14" fill="#FFC857"/><circle cx="125" cy="137" r="14" fill="#16123A"/><circle cx="125" cy="100" r="14" fill="#16123A"/><circle cx="125" cy="63" r="14" fill="#16123A"/><circle cx="162" cy="248" r="14" fill="#FFC857"/><circle cx="162" cy="211" r="14" fill="#6FD3FF"/><circle cx="162" cy="174" r="14" fill="#FFC857"/><circle cx="162" cy="137" r="14" fill="#6FD3FF"/><circle cx="162" cy="100" r="14" fill="#16123A"/><circle cx="162" cy="63" r="14" fill="#16123A"/><circle cx="199" cy="248" r="14" fill="#6FD3FF"/><circle cx="199" cy="211" r="14" fill="#16123A"/><circle cx="199" cy="174" r="14" fill="#16123A"/><circle cx="199" cy="137" r="14" fill="#16123A"/><circle cx="199" cy="100" r="14" fill="#16123A"/><circle cx="199" cy="63" r="14" fill="#16123A"/><circle cx="236" cy="248" r="14" fill="#FFC857"/><circle cx="236" cy="211" r="14" fill="#6FD3FF"/><circle cx="236" cy="174" r="14" fill="#FFC857"/><circle cx="236" cy="137" r="14" fill="#16123A"/><circle cx="236" cy="100" r="14" fill="#16123A"/><circle cx="236" cy="63" r="14" fill="#16123A"/><circle cx="273" cy="248" r="14" fill="#6FD3FF"/><circle cx="273" cy="211" r="14" fill="#FFC857"/><circle cx="273" cy="174" r="14" fill="#16123A"/><circle cx="273" cy="137" r="14" fill="#16123A"/><circle cx="273" cy="100" r="14" fill="#16123A"/><circle cx="273" cy="63" r="14" fill="#16123A"/><circle cx="310" cy="248" r="14" fill="#16123A"/><circle cx="310" cy="211" r="14" fill="#16123A"/><circle cx="310" cy="174" r="14" fill="#16123A"/><circle cx="310" cy="137" r="14" fill="#16123A"/><circle cx="310" cy="100" r="14" fill="#16123A"/><circle cx="310" cy="63" r="14" fill="#16123A"/><circle cx="199" cy="26" r="14" fill="#FFC857"/><path d="M199 46v12" stroke="#FFC857" stroke-width="4"/></svg>
+        <span class="badge-players" aria-label="1 bis 2 Personen"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" fill="currentColor"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7" fill="currentColor"/></svg>1–2</span>
+        <span class="live" hidden></span>
       </div>
-      <h3>Vier gewinnt</h3>
-      <p>Vier in einer Reihe – mit Puzzles für dich allein und einem Bot, der bis zu 7 Züge vorausrechnet.</p>
-      <div class="tags"><span class="tag">Puzzles</span><span class="tag">Online zu zweit</span><span class="tag">Gegen Bots</span></div>
-      <span class="play"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M3 1.5 L12 7 L3 12.5 Z" fill="currentColor"/></svg>Spielen</span>
+      <div class="gbody">
+        <span class="gcat cat-taktik">Taktik</span>
+        <h3>Vier gewinnt</h3>
+        <p>Vier in einer Reihe – mit Puzzles und einem Bot, der 7 Züge vorausdenkt.</p>
+        <div class="gfoot"><span class="gbadge">Puzzles &amp; Duell</span><span class="garrow" aria-hidden="true">→</span></div>
+      </div>
     </a>
 
-    <a class="game" href="/kaesekaestchen/" data-min="1" data-max="2" data-cat="taktik">
+    <a class="game" href="/kaesekaestchen/" data-p="solo duo" data-cat="taktik" data-game="kaesekaestchen">
       <div class="thumb">
-        <span class="badge-cat cat-taktik">Taktik</span>
-        <span class="badge-players" aria-label="1 Person gegen Bots, 2 Personen online"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" fill="currentColor"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7" fill="currentColor"/></svg>1–2</span>
         <svg viewBox="0 0 400 300" aria-hidden="true"><rect x="114" y="64" width="52" height="52" rx="6" fill="#FFC857" opacity=".85"/><rect x="174" y="124" width="52" height="52" rx="6" fill="#6FD3FF" opacity=".85"/><rect x="234" y="124" width="52" height="52" rx="6" fill="#6FD3FF" opacity=".85"/><g stroke-linecap="round" stroke-width="7"><path d="M110 60h60M110 120h60M110 60v60M170 60v60" stroke="#FFC857"/><path d="M170 120h120M170 180h120M170 120v60M230 120v60M290 120v60" stroke="#6FD3FF"/><path d="M230 60h60M290 60v60M110 180v60" stroke="#B9A6E8" opacity=".6"/></g><circle cx="110" cy="60" r="7" fill="#F6E6FF"/><circle cx="170" cy="60" r="7" fill="#F6E6FF"/><circle cx="230" cy="60" r="7" fill="#F6E6FF"/><circle cx="290" cy="60" r="7" fill="#F6E6FF"/><circle cx="110" cy="120" r="7" fill="#F6E6FF"/><circle cx="170" cy="120" r="7" fill="#F6E6FF"/><circle cx="230" cy="120" r="7" fill="#F6E6FF"/><circle cx="290" cy="120" r="7" fill="#F6E6FF"/><circle cx="110" cy="180" r="7" fill="#F6E6FF"/><circle cx="170" cy="180" r="7" fill="#F6E6FF"/><circle cx="230" cy="180" r="7" fill="#F6E6FF"/><circle cx="290" cy="180" r="7" fill="#F6E6FF"/><circle cx="110" cy="240" r="7" fill="#F6E6FF"/><circle cx="170" cy="240" r="7" fill="#F6E6FF"/><circle cx="230" cy="240" r="7" fill="#F6E6FF"/><circle cx="290" cy="240" r="7" fill="#F6E6FF"/></svg>
+        <span class="badge-players" aria-label="1 bis 2 Personen"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" fill="currentColor"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7" fill="currentColor"/></svg>1–2</span>
+        <span class="live" hidden></span>
       </div>
-      <h3>Käsekästchen</h3>
-      <p>Kanten ziehen, Kästchen schließen – und bloß keine dritte Seite verschenken.</p>
-      <div class="tags"><span class="tag">Gegen Bots</span><span class="tag">Online zu zweit</span></div>
-      <span class="play"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M3 1.5 L12 7 L3 12.5 Z" fill="currentColor"/></svg>Spielen</span>
+      <div class="gbody">
+        <span class="gcat cat-taktik">Taktik</span>
+        <h3>Käsekästchen</h3>
+        <p>Kanten ziehen, Kästchen schließen – bloß keine dritte Seite verschenken.</p>
+        <div class="gfoot"><span class="gbadge">Bot &amp; Online</span><span class="garrow" aria-hidden="true">→</span></div>
+      </div>
     </a>
 
 
-    <a class="game" href="/memory/" data-min="1" data-max="2" data-cat="taktik">
+    <a class="game" href="/memory/" data-p="solo duo" data-cat="taktik" data-game="memory">
       <div class="thumb">
-        <span class="badge-cat cat-taktik">Taktik</span>
-        <span class="badge-players" aria-label="1 bis 2 Personen, auch gegen Bots"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" fill="currentColor"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7" fill="currentColor"/></svg>1–2</span>
         <svg viewBox="0 0 400 300" aria-hidden="true"><rect x="58" y="48" width="62" height="92" rx="10" fill="#463C82"/><text x="89" y="104" text-anchor="middle" font-size="22" fill="#F6E6FF" opacity=".5">✦</text><rect x="132" y="48" width="62" height="92" rx="10" fill="#2E2659" stroke="#FFC857" stroke-width="3"/><path transform="translate(143 74) scale(.85)" d="M30 9a16 16 0 1 0 9 26A13 13 0 0 1 30 9z" fill="#FFD98A"/><rect x="206" y="48" width="62" height="92" rx="10" fill="#463C82"/><text x="237" y="104" text-anchor="middle" font-size="22" fill="#F6E6FF" opacity=".5">✦</text><rect x="280" y="48" width="62" height="92" rx="10" fill="#2E2659" stroke="#F2A7A8" stroke-width="3"/><path transform="translate(291 72) scale(.85)" d="M24 6l5 11 12 1-9 8 3 12-11-6-11 6 3-12-9-8 12-1z" fill="#FFE66D"/><rect x="58" y="152" width="62" height="92" rx="10" fill="#463C82"/><text x="89" y="208" text-anchor="middle" font-size="22" fill="#F6E6FF" opacity=".5">✦</text><rect x="132" y="152" width="62" height="92" rx="10" fill="#463C82"/><text x="163" y="208" text-anchor="middle" font-size="22" fill="#F6E6FF" opacity=".5">✦</text><rect x="206" y="152" width="62" height="92" rx="10" fill="#2E2659" stroke="#FFC857" stroke-width="3"/><path transform="translate(217 178) scale(.85)" d="M30 9a16 16 0 1 0 9 26A13 13 0 0 1 30 9z" fill="#FFD98A"/><rect x="280" y="152" width="62" height="92" rx="10" fill="#463C82"/><text x="311" y="208" text-anchor="middle" font-size="22" fill="#F6E6FF" opacity=".5">✦</text></svg>
+        <span class="badge-players" aria-label="1 bis 2 Personen"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" fill="currentColor"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7" fill="currentColor"/></svg>1–2</span>
+        <span class="live" hidden></span>
       </div>
-      <h3>Speed-Memory</h3>
-      <p>Acht Paare gegen die Uhr – oder gegen einen Bot, der manchmal vergisst.</p>
-      <div class="tags"><span class="tag">Auf Zeit</span><span class="tag">Zu zweit &amp; online</span><span class="tag">Gegen Bots</span></div>
-      <span class="play"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M3 1.5 L12 7 L3 12.5 Z" fill="currentColor"/></svg>Spielen</span>
+      <div class="gbody">
+        <span class="gcat cat-taktik">Taktik</span>
+        <h3>Speed-Memory</h3>
+        <p>Acht Paare gegen die Uhr, gegen den Bot oder im Duell.</p>
+        <div class="gfoot"><span class="gbadge">Auf Zeit &amp; Duell</span><span class="garrow" aria-hidden="true">→</span></div>
+      </div>
     </a>
 
-    <a class="game" href="/dungeon/" data-min="1" data-max="2" data-cat="taktik">
+    <a class="game" href="/dungeon/" data-p="solo duo" data-cat="taktik" data-game="dungeon">
       <div class="thumb">
-        <span class="badge-cat cat-taktik">Taktik</span>
-        <span class="badge-players" aria-label="1 Person solo oder gegen Bots, 2 Personen online"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" fill="currentColor"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7" fill="currentColor"/></svg>1–2</span>
         <svg viewBox="0 0 400 300" aria-hidden="true"><g transform="rotate(-6 102 150)"><rect x="62" y="70" width="84" height="116" rx="10" fill="#FF8FA3"/><text x="72" y="96" font-family="Quicksand,sans-serif" font-weight="700" font-size="22" fill="#2A1E4F">7</text><text x="104" y="172" text-anchor="middle" font-family="Quicksand,sans-serif" font-weight="700" font-size="12" fill="#2A1E4F">MONSTER</text></g><g transform="rotate(0 198 150)"><rect x="158" y="70" width="84" height="116" rx="10" fill="#BFD3FF"/><text x="168" y="96" font-family="Quicksand,sans-serif" font-weight="700" font-size="22" fill="#2A1E4F">5</text><text x="200" y="172" text-anchor="middle" font-family="Quicksand,sans-serif" font-weight="700" font-size="12" fill="#2A1E4F">WAFFE</text></g><g transform="rotate(6 294 150)"><rect x="254" y="70" width="84" height="116" rx="10" fill="#E5B8FF"/><text x="264" y="96" font-family="Quicksand,sans-serif" font-weight="700" font-size="22" fill="#2A1E4F">4</text><text x="296" y="172" text-anchor="middle" font-family="Quicksand,sans-serif" font-weight="700" font-size="12" fill="#2A1E4F">TRANK</text></g><path d="M120 116c-8 0-14 6-14 14v12l4-2 4 4 6-4 6 4 4-4 4 2v-12c0-8-6-14-14-14z" fill="#2A1E4F"/><rect x="62" y="214" width="276" height="20" rx="10" fill="#16123A"/><rect x="62" y="214" width="190" height="20" rx="10" fill="#7BE0A6"/><text x="200" y="229" text-anchor="middle" font-family="Quicksand,sans-serif" font-weight="700" font-size="13" fill="#2A1E4F">9/13 HP</text></svg>
+        <span class="badge-players" aria-label="1 bis 2 Personen"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" fill="currentColor"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7" fill="currentColor"/></svg>1–2</span>
+        <span class="live" hidden></span>
       </div>
-      <h3>Karten-Dungeon</h3>
-      <p>Monster, Waffen, Tränke: Überlebe den Kartenstapel – oder schick deinem Gegner die Monster.</p>
-      <div class="tags"><span class="tag">Roguelite solo</span><span class="tag">Online zu zweit</span><span class="tag">Gegen Bots</span></div>
-      <span class="play"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M3 1.5 L12 7 L3 12.5 Z" fill="currentColor"/></svg>Spielen</span>
+      <div class="gbody">
+        <span class="gcat cat-taktik">Taktik</span>
+        <h3>Karten-Dungeon</h3>
+        <p>Überlebe den Kartenstapel – oder schick deinem Gegner die Monster.</p>
+        <div class="gfoot"><span class="gbadge">Roguelite &amp; Duell</span><span class="garrow" aria-hidden="true">→</span></div>
+      </div>
     </a>
 
   </section>
@@ -633,26 +707,61 @@ if(zw){let h='';const open={3:1,7:1,12:1},act={16:1};
 })();
 
 if(window.LZSound)LZSound.mountToggle(document.getElementById('muteBtn'));
-// ---- Spiele filtern (Auswahl merkt sich der Browser) ----
+// ---- Spiele filtern: Spielerzahl + Kategorie (Auswahl merkt sich der Browser) ----
 (()=>{
   const box=document.getElementById('filters');if(!box)return;
-  const st={n:'all',cat:'all'};
-  try{Object.assign(st,JSON.parse(localStorage.getItem('lz_filter')||'{}'))}catch(e){}
+  const cards=[...document.querySelectorAll('.wall .game')];
+  const st={p:'all',cat:'all'};
+  try{const o=JSON.parse(localStorage.getItem('lz_filter2')||'{}');if(o.p)st.p=o.p;if(o.cat)st.cat=o.cat}catch(e){}
+  const fits=(g,p,cat)=>(p==='all'||(g.dataset.p||'').split(' ').includes(p))&&(cat==='all'||g.dataset.cat===cat);
   function apply(){
     let shown=0;
-    document.querySelectorAll('.wall .game').forEach(g=>{
-      const min=+g.dataset.min||1,max=+g.dataset.max||99,cat=g.dataset.cat||'';
-      let ok=true;
-      if(st.n!=='all'){const n=+st.n;ok=n===6?max>=6:n===4?(min<=5&&max>=4):(min<=n&&max>=n)}
-      if(ok&&st.cat!=='all')ok=cat===st.cat;
-      g.hidden=!ok;if(ok)shown++;
-    });
+    cards.forEach(g=>{const ok=fits(g,st.p,st.cat);g.hidden=!ok;if(ok)shown++});
     document.getElementById('noMatch').hidden=shown>0;
-    box.querySelectorAll('[data-filter]').forEach(grp=>grp.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===String(st[grp.dataset.filter])))));
+    // Zähler an den Spielerzahl-Knöpfen (bezogen auf die gewählte Kategorie)
+    box.querySelectorAll('[data-filter="p"] button').forEach(b=>{const n=cards.filter(g=>fits(g,b.dataset.v,st.cat)).length;b.querySelector('.cnt').textContent='('+n+')'});
+    box.querySelectorAll('[data-filter]').forEach(grp=>grp.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===st[grp.dataset.filter]))));
     return shown;
   }
-  box.addEventListener('click',e=>{const b=e.target.closest('[data-filter] button');if(!b)return;st[b.parentElement.dataset.filter]=b.dataset.v;try{localStorage.setItem('lz_filter',JSON.stringify(st))}catch(er){}const n=apply();if(window.LZCozy)LZCozy.announce(n===0?'Kein Spiel passt zu diesem Filter.':n===1?'1 Spiel passt.':n+' Spiele passen.')});
+  box.addEventListener('click',e=>{const b=e.target.closest('[data-filter] button');if(!b)return;st[b.parentElement.dataset.filter]=b.dataset.v;
+    try{localStorage.setItem('lz_filter2',JSON.stringify(st))}catch(er){}
+    const n=apply();if(window.LZCozy)LZCozy.announce(n===0?'Kein Spiel passt zu dieser Auswahl.':n===1?'1 Spiel passt.':n+' Spiele passen.')});
   apply();
+})();
+// ---- Offene Spielersuche: wer wartet gerade auf Mitspieler? ----
+// Holt alle 15 s /api/lobbys (der Server speichert die Liste 10 s zwischen) – nur solange der Tab sichtbar ist.
+(()=>{
+  const strip=document.getElementById('lfg'),list=document.getElementById('lfgList');if(!strip)return;
+  const esc=t=>String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const cardOf=id=>document.querySelector('.wall .game[data-game="'+id+'"]');
+  const title=id=>{const c=cardOf(id);return c?c.querySelector('h3').textContent:id};
+  let timer=0,lastKey='';
+  function show(open){
+    const key=JSON.stringify(open);if(key===lastKey)return;lastKey=key;
+    // Karten-Indikatoren
+    const by={};open.forEach(o=>(by[o.gameId]=by[o.gameId]||[]).push(o));
+    document.querySelectorAll('.wall .game').forEach(c=>{
+      const rooms=by[c.dataset.game]||[],live=c.querySelector('.live');
+      c.classList.toggle('has-live',rooms.length>0);
+      if(!rooms.length){live.hidden=true;return}
+      const r=rooms[0];
+      live.textContent=rooms.length===1?'1 offener Raum: '+r.currentPlayers+'/'+r.maxPlayers:rooms.length+' offene Räume';
+      live.hidden=false;
+    });
+    // Info-Streifen mit Direkt-Links
+    if(!open.length){strip.hidden=true;list.innerHTML='';return}
+    list.innerHTML=open.slice(0,6).map(o=>'<li><a href="/'+o.gameId+'/?join='+encodeURIComponent(o.roomCode)+'"><b>'+esc(title(o.gameId))+'</b> <span class="who">· '+(o.host?'Spiel von '+esc(o.host)+(o.verified?' <span class="vb" aria-label="mit Twitch bestätigt">✓</span>':''):'offenes Spiel')+' · '+o.currentPlayers+'/'+o.maxPlayers+'</span> <span class="go">Direkt beitreten →</span></a></li>').join('');
+    if(strip.hidden&&window.LZCozy)LZCozy.announce(open.length===1?'Ein offenes Spiel wartet auf Mitspieler.':open.length+' offene Spiele warten auf Mitspieler.');
+    strip.hidden=false;
+  }
+  async function poll(){
+    clearTimeout(timer);
+    if(document.hidden)return;
+    try{const r=await fetch('/api/lobbys',{cache:'no-store'});if(r.ok){const j=await r.json();show(Array.isArray(j.open)?j.open:[])}}catch(e){}
+    timer=setTimeout(poll,15000);
+  }
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)poll();else clearTimeout(timer)});
+  poll();
 })();
 // ---- Bestenliste: Tabs "Solo-Rekorde" / "Duelle & Siege", Podest, Tabelle, eigener Rang ----
 (()=>{

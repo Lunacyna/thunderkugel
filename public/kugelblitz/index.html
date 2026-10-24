@@ -1144,6 +1144,8 @@ function setPill(){const p=$('netpill');if(NET.room){p.hidden=false;p.className=
   }catch(e){}
   NET.state=NET.room?'on':'off';setPill();
   window.addEventListener('kbauth',()=>{ON.okey=''});
+  // Direkt-Link von der Startseite (?join=CODE): sofort beitreten
+  { const jn=new URLSearchParams(location.search).get('join'); if(jn&&NET.room&&/^kb-[a-z0-9]{4}$/.test(jn)){history.replaceState(null,'',location.pathname);ON.lobby();ON.join(jn);return} }
   if(APP==='menu')showMenu();
 })();
 

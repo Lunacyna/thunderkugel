@@ -192,7 +192,7 @@
   /* ---- Klicks auf freie Flächen -------------------------------------------- */
   // Alles, was Inhalt oder bedienbar ist, zählt nicht als "frei"
   var BLOCK = 'a,button,input,select,textarea,label,summary,dialog,[role=button],[tabindex]:not([tabindex="-1"]),[contenteditable],' +
-              '.game,.wall .chips,.filters,.lb,.lbwrap,table,h1,h2,h3,p,li,.sign,.topbar,.lz-fb-open,footer a';
+              '.game,.wall .chips,.filters,.lfg,.lb,.lbwrap,table,h1,h2,h3,p,li,.sign,.topbar,.lz-fb-open,footer a';
   document.addEventListener('pointerdown', function (e) {
     if (e.button > 0 || !e.isPrimary) return;
     var el = e.target;

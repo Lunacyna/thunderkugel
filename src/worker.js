@@ -20,6 +20,18 @@ export class Room extends DurableObject {
   }
 
   // Für die Bestenliste: wer war mit Twitch-Login in diesem Raum?
+  // Offene Spiele in einem Lobby-Raum (für "Gerade suchen Spieler" auf der Startseite)
+  async openGames() {
+    const out = [], seen = new Set();
+    for (const ws of this.ctx.getWebSockets()) {
+      const a = this.att(ws); if (!a || seen.has(a.peer)) continue; seen.add(a.peer);
+      const pr = this.presence.get(a.peer) || a.pr || {}, h = pr.host;
+      if (!h || typeof h.code !== "string" || !/^(kb|zw|ne|ar)-[a-z0-9]{4}$/.test(h.code)) continue;
+      out.push({ code: h.code, game: typeof h.game === "string" ? h.game.slice(0, 8) : "", ph: String(h.ph || "").slice(0, 8), n: Math.max(0, Math.min(99, h.n | 0)),
+                 host: String(a.vn || pr.nm || "").slice(0, 30), v: !!a.vn });
+    }
+    return out;
+  }
   async verifiedUsers() {
     if (!this.vu) this.vu = (await this.ctx.storage.get("vu")) || {};
     return this.vu;
@@ -293,6 +305,41 @@ function sameKey(a, b) {
   return d === 0;
 }
 // ---------------------------------------------------------------------------
+// Offene Spielersuche: alle wartenden Räume als schlanke Liste
+// Die Startseite fragt alle 15 s nach. Damit das auf dem Gratis-Plan nicht mit jedem
+// Besucher teurer wird, wird die Liste 10 s zwischengespeichert (im Worker-Speicher und
+// im Cloudflare-Cache) – egal wie viele zuschauen, kostet das höchstens 4 Abfragen / 10 s.
+// ---------------------------------------------------------------------------
+const LOBBIES = [
+  { room: "lobby", game: "kugelblitz", max: 4, wait: ["lobby"] },
+  { room: "lobby-zw", game: "zwanzig", max: 6, wait: ["lobby"] },
+  { room: "lobby-ne", game: "nureiner", max: 8, wait: ["lobby"] },
+  { room: "lobby-ar", game: null, max: 2, wait: ["wait"] },
+];
+const AR_PAGES = { c4: "viergewinnt", dots: "kaesekaestchen", memo: "memory", dung: "dungeon" };
+let lobbyMemo = { t: 0, body: null };
+async function lobbies(env, ctx) {
+  const now = Date.now();
+  if (lobbyMemo.body && now - lobbyMemo.t < 10000) return lobbyMemo.body;
+  const key = new Request("https://lobby-cache.internal/api/lobbys");
+  try { const hit = await caches.default.match(key); if (hit) { const body = await hit.text(); lobbyMemo = { t: now, body }; return body; } } catch {}
+  const lists = await Promise.all(LOBBIES.map(async L => {
+    try { return { L, games: await env.ROOMS.get(env.ROOMS.idFromName(L.room)).openGames() }; } catch { return { L, games: [] }; }
+  }));
+  const open = [];
+  for (const { L, games } of lists) for (const g of games) {
+    if (!L.wait.includes(g.ph)) continue;                 // nur Räume, die noch auf Leute warten
+    const gameId = L.game || AR_PAGES[g.game]; if (!gameId) continue;
+    if (g.n >= L.max) continue;
+    open.push({ gameId, roomCode: g.code, currentPlayers: Math.max(1, g.n), maxPlayers: L.max, host: g.host, verified: g.v });
+  }
+  const body = JSON.stringify({ t: now, open });
+  lobbyMemo = { t: now, body };
+  try { ctx && ctx.waitUntil && ctx.waitUntil(caches.default.put(key, new Response(body, { headers: { "content-type": "application/json", "cache-control": "max-age=10" } }))); } catch {}
+  return body;
+}
+
+// ---------------------------------------------------------------------------
 // Feedback-Formular -> privater Discord-Kanal (Webhook)
 // Die Webhook-URL liegt als Geheimnis FEEDBACK_WEBHOOK bei Cloudflare und
 // erscheint nirgends im Quellcode oder im Browser.
@@ -344,12 +391,13 @@ async function feedback(request, env, url, store, ip) {
   return json({ ok: true });
 }
 
-async function api(request, env, url) {
+async function api(request, env, url, ctx) {
   const store = env.STORE.get(env.STORE.idFromName("main"));
   const ip = request.headers.get("cf-connecting-ip") || "local";
   const path = url.pathname, method = request.method;
   const body = async () => { try { return await request.json(); } catch { return null; } };
 
+  if (path === "/api/lobbys" && method === "GET") return new Response(await lobbies(env, ctx), { headers: { "content-type": "application/json; charset=utf-8", "cache-control": "public, max-age=5" } });
   if (path === "/api/feedback" && method === "POST") return feedback(request, env, url, store, ip);
   if (path === "/api/cards" && method === "GET") return json(await store.cards(false));
   if (path === "/api/cards/suggest" && method === "POST") { const r = await store.suggest(await body(), ip, await readSession(request, env)); return json(r, r.error ? 400 : 200); }
@@ -496,7 +544,7 @@ class AbsUrl {
 }
 
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     const url = new URL(request.url);
     // Entfernte Spiele: alte Links landen auf der Startseite statt auf einer toten Seite
     if (/^\/stadtlandfluss(\/|$)|^\/assets\/arcade\/stadtlandfluss\./.test(url.pathname)) return Response.redirect(url.origin + "/", 301);
@@ -521,7 +569,7 @@ export default {
       catch (e) { return page("Login fehlgeschlagen", "Es ist ein unerwarteter Fehler aufgetreten."); }
     }
     if (url.pathname.startsWith("/api/")) {
-      try { return await api(request, env, url); }
+      try { return await api(request, env, url, ctx); }
       catch (e) { return json({ error: "Serverfehler." }, 500); }
     }
     const res = await env.ASSETS.fetch(request);

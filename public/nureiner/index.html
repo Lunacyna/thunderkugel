@@ -891,6 +891,8 @@ setInterval(()=>{if(V.view==='online'){hostTick();render()}else if(V.view==='lob
   try{NET.user=await c.use('user')}catch(e){}
   try{const room=await c.use('room');if(room){NET.room=room;room.onPeers(()=>{},()=>{NET.room=null;$('netpill').hidden=true;if(V.view==='online'||V.view==='lobby'){ON.gr=null;V.view='menu'}render(true)})}}catch(e){}
   NET.state=NET.room?'on':'off';$('netpill').hidden=!NET.room;render(true);
+  // Direkt-Link von der Startseite (?join=CODE): sofort beitreten
+  { const jn=new URLSearchParams(location.search).get('join'); if(jn&&NET.room&&/^ne-[a-z0-9]{4}$/.test(jn)){history.replaceState(null,'',location.pathname);V.view='lobby';onlineJoin(jn)} }
 })();
 if(window.LZSound)LZSound.mountToggle($('muteBtn'));
 window.addEventListener('kbauth',()=>render(true));

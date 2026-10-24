@@ -456,6 +456,9 @@
     if (window.LZSound) LZSound.mountToggle($('muteBtn'));
     renderMenu();
     await onlineInit();
+    // Direkt-Link von der Startseite (?join=ar-xxxx): sofort beitreten
+    const jn = new URLSearchParams(location.search).get('join');
+    if (jn && ON.room && /^ar-[a-z0-9]{4}$/.test(jn) && V.view === 'menu') { history.replaceState(null, '', location.pathname); onlineJoin(jn); return; }
     if (V.view === 'menu') renderMenu();
   }
   function define(def) {
