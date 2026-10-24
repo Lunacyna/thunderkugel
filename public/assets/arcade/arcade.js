@@ -265,7 +265,7 @@
   async function onlineCreate() {
     const code = 'ar-' + Math.random().toString(36).slice(2, 6).padEnd(4, '0');
     ON.code = code; ON.host = true; ON.gid = Math.random().toString(36).slice(2, 10);
-    ON.gr = await ON.room.join(code);
+    ON.gr = await ON.room.join(code); ON.hostSeen = ON.guestSeen = Date.now();
     ON.gr.presence({ j: 1 });
     ON.room.presence({ host: { code, game: DEF.id, ph: 'wait', n: 1 } });
     V.view = 'wait'; V.mode = 'online'; renderMenu();
@@ -273,7 +273,7 @@
   }
   async function onlineJoin(code) {
     ON.code = code; ON.host = false;
-    ON.gr = await ON.room.join(code);
+    ON.gr = await ON.room.join(code); ON.hostSeen = ON.guestSeen = Date.now();
     ON.gr.presence({ j: 1 });
     V.view = 'joining'; V.mode = 'online'; renderMenu();
     watchRoom();
@@ -292,11 +292,27 @@
     });
     // Abwesenheit prüfen
     clearInterval(ON.watch);
+    // Wichtig: "Gesehen" heißt "steht noch in der Raumliste" – NICHT "hat zuletzt etwas geschickt".
+    // Wer lange über einen Zug nachdenkt, schickt nichts; das ist kein Verbindungsabbruch.
+    // Der Server trägt eine Person erst aus, wenn ihre Verbindung wirklich zu ist.
     ON.watch = setInterval(() => {
       if (!ON.gr || V.mode !== 'online') { clearInterval(ON.watch); return; }
-      const t = Date.now();
-      if (!ON.host && V.view === 'game' && t - ON.hostSeen > 6000 && !ON.lost) { ON.lost = true; lostOverlay('Die Verbindung zur Spielleitung ist weg.'); }
-      if (ON.host && V.view === 'game' && ON.seats[1] && t - ON.guestSeen > 15000 && !ON.lost) { ON.lost = true; lostOverlay(esc(ON.seats[1].nm || 'Dein Gegner') + ' hat das Spiel verlassen.'); }
+      const t = Date.now(), peers = ON.gr.peers(), me = peers.find(p => p.isMe) || {};
+      if (!ON.gr.connected()) { ON.selfDown = ON.selfDown || t; } else ON.selfDown = 0;
+      if (V.view !== 'game') return;
+      if (!ON.host) {
+        const h = peers.some(p => !p.isMe && p.presence && p.presence.g && p.presence.g.id === DEF.id);
+        if (h && ON.gr.connected()) ON.hostSeen = t;
+      } else if (ON.seats[1]) {
+        const s1 = ON.seats[1];
+        if (peers.some(p => !p.isMe && (p.peer === s1.p || (p.by && p.by === s1.by)) && p.by !== me.by)) ON.guestSeen = t;
+      }
+      // eigene Verbindung kurz weg (Handy-Netz, WLAN-Wechsel): erst nach 15 s melden, die Seite verbindet sich selbst neu
+      const limit = ON.selfDown ? 15000 : 8000;
+      if (!ON.host && t - ON.hostSeen > limit && !ON.lost) { ON.lost = true; lostOverlay(ON.selfDown ? 'Deine Internetverbindung ist weg.' : 'Die Verbindung zur Spielleitung ist weg.'); }
+      if (ON.host && ON.seats[1] && t - ON.guestSeen > limit + 4000 && !ON.lost) { ON.lost = true; lostOverlay(ON.selfDown ? 'Deine Internetverbindung ist weg.' : esc(ON.seats[1].nm || 'Dein Gegner') + ' hat das Spiel verlassen.'); }
+      // wieder da -> Hinweis von selbst schließen
+      if (ON.lost && ((!ON.host && t - ON.hostSeen < 1500) || (ON.host && t - ON.guestSeen < 1500))) { ON.lost = false; if (!overShown) { $('arOver').hidden = true; $('arOver').innerHTML = ''; } }
     }, 1000);
   }
   function hostPeers(peers, me) {
@@ -313,6 +329,10 @@
       return;
     }
     if (V.view !== 'game') return;
+    // Neue oder neu verbundene Teilnehmer bekommen den Spielstand sofort (nicht erst beim nächsten Zug).
+    // Nötig, weil der Server große Spielstände nach einer Ruhepause nicht mehr im Speicher hat.
+    const sig = peers.map(p => p.peer).sort().join(',');
+    if (sig !== ON.peerSig) { ON.peerSig = sig; publish(); }
     // Sitz 1 wiederfinden (auch nach Neuladen: gleiche Nutzer-ID)
     const s1 = ON.seats[1];
     const g = others.find(p => p.peer === s1.p) || others.find(p => p.by && p.by === s1.by);

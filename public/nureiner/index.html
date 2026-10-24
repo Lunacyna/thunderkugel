@@ -244,7 +244,7 @@ button.clue:hover{box-shadow:0 0 0 3px var(--glow),0 10px 20px rgba(0,0,0,.35)}
     return auth;
   });
   window.kbAuthReady=meP;
-  const roomP=meP.then(()=>{
+  const roomP=window.KB_LOBBY==='none'?meP.then(()=>null):meP.then(()=>{
     const lobby=conn(['lobby-zw','lobby-ne','lobby-ar'].includes(window.KB_LOBBY)?window.KB_LOBBY:'lobby');
     const room=Object.freeze({...lobby,join:n=>/^(kb|zw|ne|ar)-[a-z0-9]{4}$/.test(n)?Promise.resolve(conn('g-'+n)):Promise.reject({code:'invalid_argument',message:'bad name'})});
     return lobby._ready.then(ok=>{if(!ok){lobby.leave();return null}return room});
@@ -253,7 +253,7 @@ button.clue:hover{box-shadow:0 0 0 3px var(--glow),0 10px 20px rgba(0,0,0,.35)}
 })();
 
 </script>
-<!--cozy--><link rel="stylesheet" href="/assets/cozy/cozy.css?v=5"><script src="/assets/cozy/cozy.js?v=5"></script><link rel="stylesheet" href="/assets/cozy/retro.css?v=5"><script src="/assets/cozy/retro.js?v=5"></script><!--/cozy-->
+<!--cozy--><link rel="stylesheet" href="/assets/cozy/cozy.css?v=6"><script src="/assets/cozy/cozy.js?v=6"></script><link rel="stylesheet" href="/assets/cozy/retro.css?v=6"><script src="/assets/cozy/retro.js?v=6"></script><!--/cozy-->
 </head>
 <body>
 <div class="wrap">

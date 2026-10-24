@@ -256,6 +256,26 @@ footer a:hover{border-bottom-color:var(--neon)}
 :root[data-theme="kamin"] .thumb [stroke="#3A3170"]{stroke:#4A3F37}
 :root[data-theme="kamin"] .garland [stroke="#5B4E8A"]{stroke:#7A5A44}
 
+/* ---- Tagesrätsel (Mondwort) – eigener Punkt neben den Spielen ---- */
+.daily{margin-top:3.5rem;display:grid;gap:14px}
+.daily h2{margin:0;font-size:13px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--lavender);display:flex;align-items:center;gap:12px}
+.daily h2::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,rgba(var(--rgb-lav,185,166,232),.4),transparent)}
+.mwcard{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:18px;align-items:center;padding:16px 20px;border-radius:20px;text-decoration:none;color:var(--text);
+  background:linear-gradient(120deg,rgba(var(--rgb-glow,199,125,255),.16),rgba(var(--rgb-moon,253,213,187),.10));box-shadow:inset 0 0 0 2px rgba(var(--rgb-lav,185,166,232),.35),0 12px 30px rgba(0,0,0,.25);transition:transform .15s,box-shadow .15s}
+.mwcard:hover{transform:translateY(-2px);box-shadow:inset 0 0 0 2px var(--neon),0 0 26px rgba(var(--rgb-glow,199,125,255),.35)}
+.mwcard:focus-visible{outline:3px solid var(--neon);outline-offset:3px}
+.mwtiles{display:flex;gap:5px}
+.mwtiles i{width:34px;height:34px;display:grid;place-items:center;border-radius:8px;font-style:normal;font-weight:700;font-size:18px;color:var(--text);background:rgba(var(--rgb-night,18,15,46),.6);box-shadow:inset 0 0 0 1.5px rgba(var(--rgb-lav,185,166,232),.4)}
+.mwtiles i.g{background:#5FCB8E;color:var(--c-night,#16123A);box-shadow:none}.mwtiles i.y{background:#E9C25A;color:var(--c-night,#16123A);box-shadow:none}
+.mwtext{display:flex;flex-direction:column;gap:2px;min-width:0}
+.mwtext b{font-family:var(--font-script);font-size:32px;line-height:1.05;color:var(--neon);text-shadow:0 0 10px rgba(var(--rgb-glow,199,125,255),.45)}
+.mwtext b span{font-family:var(--font-body);font-size:15px;color:var(--muted);text-shadow:none}
+.mwsub{font-size:14px;color:var(--muted);font-weight:600}
+.mwstate{font-weight:700;font-size:14.5px;padding:9px 16px;border-radius:999px;background:var(--moon);color:var(--c-ink,#2A1E4F);white-space:nowrap}
+.mwstate.done{background:rgba(95,203,142,.2);color:#C9F7DA;box-shadow:inset 0 0 0 1.5px rgba(95,203,142,.55)}
+@media (max-width:700px){.mwcard{grid-template-columns:minmax(0,1fr);gap:10px}.mwstate{justify-self:start}.mwtiles i{width:30px;height:30px;font-size:16px}}
+.daily+.wall{margin-top:3rem}
+
 /* ---- Spiele: kompakte Karten, Filter-Leiste, offene Spielersuche ---- */
 .wall{margin-top:4.5rem;display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,250px),1fr));gap:30px 22px}
 .wall h2{grid-column:1/-1;margin:0;font-size:13px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--lavender);display:flex;align-items:center;gap:12px}
@@ -311,7 +331,7 @@ a.game:hover .garrow,a.game:focus-visible .garrow{transform:translateX(4px)}
 .lfg-list b,.lfg-list .who,.lfg-list .go{white-space:nowrap}
 @media (max-width:600px){.lfg-list{width:100%;flex-direction:column}.lfg-list a{display:flex;flex-wrap:wrap;gap:2px 6px;border-radius:14px}}
 </style>
-<!--cozy--><link rel="stylesheet" href="/assets/cozy/cozy.css?v=5"><script src="/assets/cozy/cozy.js?v=5"></script><link rel="stylesheet" href="/assets/cozy/retro.css?v=5"><script src="/assets/cozy/retro.js?v=5"></script><!--/cozy-->
+<!--cozy--><link rel="stylesheet" href="/assets/cozy/cozy.css?v=6"><script src="/assets/cozy/cozy.js?v=6"></script><link rel="stylesheet" href="/assets/cozy/retro.css?v=6"><script src="/assets/cozy/retro.js?v=6"></script><!--/cozy-->
 </head>
 <body>
 <canvas id="sky" aria-hidden="true"></canvas>
@@ -435,6 +455,15 @@ window.LZSound = window.LZSound || (() => {
       <h1>Spielezimmer</h1>
     </div>
     <p class="lead">Such dir ein Spiel aus und klick drauf. Alles läuft direkt im Browser – am selben Bildschirm oder online mit Freunden und Chat.</p>
+  </section>
+
+  <section class="daily" aria-labelledby="dailyHead">
+    <h2 id="dailyHead">Tagesrätsel</h2>
+    <a class="mwcard" href="/mondwort/" id="mwCard">
+      <span class="mwtiles" aria-hidden="true"><i class="g">M</i><i class="y">O</i><i>N</i><i class="g">D</i><i class="y">?</i></span>
+      <span class="mwtext"><b>Mondwort <span id="mwNr"></span></b><span class="mwsub">Das deutsche Wort des Tages: fünf Buchstaben, sechs Versuche, eigene Bestenliste. Neues Wort um 0:00 Uhr.</span></span>
+      <span class="mwstate" id="mwState">Jetzt raten →</span>
+    </a>
   </section>
 
   <section class="wall" aria-labelledby="gamesHead">
@@ -599,6 +628,20 @@ window.LZSound = window.LZSound || (() => {
       </div>
     </a>
 
+    <a class="game" href="/letztekarte/" data-p="solo duo group" data-cat="taktik" data-game="letztekarte">
+      <div class="thumb">
+        <svg viewBox="0 0 400 300" aria-hidden="true"><g transform="rotate(-14 150 170)"><rect x="96" y="92" width="96" height="138" rx="12" fill="#8FA8FF"/><text x="144" y="178" text-anchor="middle" font-family="Quicksand,sans-serif" font-weight="700" font-size="54" fill="#1B1640">7</text></g><g transform="rotate(-3 200 160)"><rect x="152" y="80" width="96" height="138" rx="12" fill="#FF7A93"/><text x="200" y="166" text-anchor="middle" font-family="Quicksand,sans-serif" font-weight="700" font-size="46" fill="#1B1640">+2</text></g><g transform="rotate(10 256 166)"><rect x="208" y="88" width="96" height="138" rx="12" fill="#1E1945" stroke="#FFD166" stroke-width="4"/><path d="M262 128l5.6 12.8 13.9 1.2-10.5 9.1 3.1 13.6L262 157.6l-12.1 7.1 3.1-13.6-10.5-9.1 13.9-1.2z" fill="#FFD166"/><path d="M244 160l-18 18M250 170l-14 16" stroke="#F6E6FF" stroke-width="4" stroke-linecap="round"/><text x="256" y="208" text-anchor="middle" font-family="Quicksand,sans-serif" font-weight="700" font-size="20" fill="#6FDCA8">+4</text></g><circle cx="80" cy="64" r="3" fill="#F6E6FF"/><circle cx="330" cy="54" r="2.5" fill="#F6E6FF"/><circle cx="350" cy="236" r="2" fill="#F6E6FF"/></svg>
+        <span class="badge-players" aria-label="1 bis 6 Personen"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" fill="currentColor"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7" fill="currentColor"/></svg>1–6</span>
+        <span class="live" hidden></span>
+      </div>
+      <div class="gbody">
+        <span class="gcat cat-taktik">Taktik</span>
+        <h3>Letzte Karte!</h3>
+        <p>Farbe auf Farbe, Zahl auf Zahl – wer zuerst alle Karten los ist, gewinnt.</p>
+        <div class="gfoot"><span class="gbadge">Bots &amp; Online bis 6</span><span class="garrow" aria-hidden="true">→</span></div>
+      </div>
+    </a>
+
   </section>
 
   <section class="board" aria-labelledby="lbHead">
@@ -639,7 +682,7 @@ window.LZSound = window.LZSound || (() => {
         <summary>Regeln &amp; Zählweise</summary>
         <ul>
           <li><b>Solo-Rekorde:</b> höchster Turm, schnellstes Memory (inkl. Strafsekunden), meiste Squash-Treffer, bester Dungeon-Lauf (nur wenn du überlebst). Pro Person zählt der beste Wert im Monat.</li>
-          <li><b>Duelle &amp; Siege:</b> fertig gespielte Partien zwischen echten Menschen – online in Vier gewinnt, Käsekästchen, Memory, Dungeon und Kugelblitz, bei 20 Questions auch gemeinsam an einem Bildschirm.</li>
+          <li><b>Duelle &amp; Siege:</b> fertig gespielte Partien zwischen echten Menschen – online in Vier gewinnt, Käsekästchen, Memory, Dungeon, Letzte Karte! (ab zwei Menschen am Tisch, Bots zählen nicht) und Kugelblitz, bei 20 Questions auch gemeinsam an einem Bildschirm.</li>
           <li>Partien gegen Bots und Namen wie „Spieler 2“ zählen nicht. Ein <span class="vb">✓</span> heißt: per Twitch bestätigt; wer ohne Login den Namen einer bestätigten Person nutzt, steht als „(Gast)“ in der Liste.</li>
           <li>„Zeitverschwendung in Zahlen“ zählt jede fertige Runde. Offen vergessene Tabs zählen nicht mit.</li>
         </ul>
@@ -777,7 +820,7 @@ if(window.LZSound)LZSound.mountToggle(document.getElementById('muteBtn'));
     pong:{title:'Meiste Treffer · Curve-Ball (Squash)',col:'Treffer',fmt:v=>de(v)+' Treffer'},
     dung:{title:'Bester Lauf · Karten-Dungeon',col:'Punkte',fmt:v=>de(v)+' Punkte'}
   };
-  const GAME_NAME={kb:'Kugelblitz',zw:'20 Questions',c4:'Vier gewinnt',dots:'Käsekästchen',memo:'Memory',dung:'Dungeon'};
+  const GAME_NAME={kb:'Kugelblitz',zw:'20 Questions',c4:'Vier gewinnt',dots:'Käsekästchen',memo:'Memory',dung:'Dungeon',sf:'Letzte Karte!'};
   const TOP=10,MAX=30;
   const st={tab:'solo',g:'stack',m:0,all:false};
   try{const p=JSON.parse(localStorage.getItem('lz_lb')||'{}');if(p.tab==='duel'||p.tab==='solo')st.tab=p.tab;if(SOLO[p.g])st.g=p.g}catch(e){}
@@ -894,6 +937,19 @@ if(window.LZSound)LZSound.mountToggle(document.getElementById('muteBtn'));
 })();
 
 // Sternenhimmel + Pfoten: /assets/cozy/sky.js
+})();
+</script>
+<script>
+/* Tagesrätsel-Karte: Nummer von heute + eigener Stand (vom Gerät, gesetzt auf /mondwort/) */
+(function(){
+  try{
+    const p={};for(const x of new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Berlin',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date()))p[x.type]=x.value;
+    const date=p.year+'-'+p.month+'-'+p.day, nr=Math.round((Date.UTC(+p.year,+p.month-1,+p.day)-Date.UTC(2026,9,24))/864e5)+1;
+    if(nr>0)document.getElementById('mwNr').textContent='#'+nr;
+    const m=JSON.parse(localStorage.getItem('lz_mw')||'null'),el=document.getElementById('mwState');
+    if(m&&m.date===date&&m.done){el.textContent=m.won?'Gelöst in '+m.n+'/6 ✓'+(m.streak>1?' · Serie '+m.streak:'')+' · Bestenliste →':'Heute nicht geschafft · Bestenliste →';el.classList.add('done')}
+    else if(m&&m.date===date&&m.n>0)el.textContent='Weiterraten ('+m.n+'/6) →';
+  }catch(e){}
 })();
 </script>
 </body>

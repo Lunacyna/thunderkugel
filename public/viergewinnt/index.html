@@ -30,8 +30,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Quicksand:wght@500;600;700&display=swap">
-<link rel="stylesheet" href="/assets/arcade/arcade.css?v=2">
-<link rel="stylesheet" href="/assets/arcade/viergewinnt.css?v=2">
+<link rel="stylesheet" href="/assets/arcade/arcade.css?v=4">
+<link rel="stylesheet" href="/assets/arcade/viergewinnt.css?v=4">
 <script>window.KB_LOBBY='lobby-ar';
 // Verbindung zum Kugelblitz-Server (Cloudflare Durable Objects) per WebSocket.
 // Stellt dieselbe Schnittstelle bereit, die das Spiel erwartet: window.claude.use("room"|"user").
@@ -113,7 +113,7 @@
     return auth;
   });
   window.kbAuthReady=meP;
-  const roomP=meP.then(()=>{
+  const roomP=window.KB_LOBBY==='none'?meP.then(()=>null):meP.then(()=>{
     const lobby=conn(['lobby-zw','lobby-ne','lobby-ar'].includes(window.KB_LOBBY)?window.KB_LOBBY:'lobby');
     const room=Object.freeze({...lobby,join:n=>/^(kb|zw|ne|ar)-[a-z0-9]{4}$/.test(n)?Promise.resolve(conn('g-'+n)):Promise.reject({code:'invalid_argument',message:'bad name'})});
     return lobby._ready.then(ok=>{if(!ok){lobby.leave();return null}return room});
@@ -122,7 +122,7 @@
 })();
 
 </script>
-<!--cozy--><link rel="stylesheet" href="/assets/cozy/cozy.css?v=5"><script src="/assets/cozy/cozy.js?v=5"></script><link rel="stylesheet" href="/assets/cozy/retro.css?v=5"><script src="/assets/cozy/retro.js?v=5"></script><!--/cozy-->
+<!--cozy--><link rel="stylesheet" href="/assets/cozy/cozy.css?v=6"><script src="/assets/cozy/cozy.js?v=6"></script><link rel="stylesheet" href="/assets/cozy/retro.css?v=6"><script src="/assets/cozy/retro.js?v=6"></script><!--/cozy-->
 </head>
 <body>
 <script id="lzsound">
@@ -240,7 +240,7 @@ window.LZSound = window.LZSound || (() => {
   </div>
 </div>
 <div class="toast" id="arToast" role="status" aria-live="polite"></div>
-<script src="/assets/arcade/arcade.js?v=2"></script>
-<script src="/assets/arcade/viergewinnt.js?v=2"></script>
+<script src="/assets/arcade/arcade.js?v=4"></script>
+<script src="/assets/arcade/viergewinnt.js?v=4"></script>
 </body>
 </html>
