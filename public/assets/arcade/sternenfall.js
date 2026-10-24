@@ -168,7 +168,7 @@
     const l = v.last || {}, n = nameOf(l.seat), mine = l.seat === M.me;
     switch (l.k) {
       case 'start': return `Los geht's! Erste Karte: ${cardName(l.card)}.`;
-      case 'play': return `${n} ${mine ? 'spielst' : 'spielt'} ${cardName(l.card)}${l.card.c === 4 ? ` und ${mine ? 'wählst' : 'wählt'} ${COLORS[l.color]}` : ''}.`;
+      case 'play': return `${n} ${mine ? 'spielst' : 'spielt'} ${cardName(l.card)}${l.card.c === 4 ? ` und ${mine ? 'wählst' : 'wählt'} ${COLORS[l.color]}` : ''}.${l.card.v === SF.REV ? ` Jetzt geht es ${v.dir === 1 ? 'im' : 'gegen den'} Uhrzeigersinn weiter.` : ''}`;
       case 'draw': return mine && l.playable && v.drawn != null ? `Du hast ${l.n > 1 ? l.n + ' Karten gezogen, zuletzt ' : ''}${cardName(v.hand.find(c => c.id === v.drawn) || { c: 4, v: 13 })}${l.n > 1 ? '' : ' gezogen'} – ausspielen oder behalten?` : `${n} ${mine ? 'ziehst' : 'zieht'} ${l.n > 1 ? l.n + ' Karten' : 'eine Karte'}${l.timeout ? ' (Zeit abgelaufen)' : ''}.`;
       case 'penalty': return `${n} ${mine ? 'ziehst' : 'zieht'} ${l.n} Karten${l.timeout ? ' (Zeit abgelaufen)' : ''}.`;
       case 'pass': return `${n} ${mine ? 'behältst' : 'behält'} die Karte${l.timeout ? ' (Zeit abgelaufen)' : ''}.`;
@@ -188,7 +188,9 @@
   }
 
   function render() {
-    renderSide();
+    renderMain(); renderSide();             // Seitenleiste danach: der Verlauf kennt dann schon den neuesten Zug
+  }
+  function renderMain() {
     const m = $('main'); if (!m) return;
     if (V.view === 'menu') return renderMenu(m);
     if (V.view === 'lobby') return renderLobby(m);
@@ -273,15 +275,18 @@
     const hand = v.hand.slice().sort((a, b) => a.c - b.c || a.v - b.v);
     const legal = new Set(v.legal);
     const canCatch = v.catchWin && v.catchWin.seat !== me && me >= 0;
-    const canCall = me >= 0 && !over && ((v.catchWin && v.catchWin.seat === me) || (myTurn && v.hand.length === 2 && !v.called[me]));
+    const canCall = me >= 0 && !over && ((v.catchWin && v.catchWin.seat === me) || (myTurn && v.hand.length === 2 && !v.called[me] && v.legal.length > 0));
     const drawLabel = v.pend > 0 ? `${v.pend} ziehen` : M.opts && M.opts.until ? 'Ziehen bis es passt' : 'Ziehen';
     const status = over ? 'Runde vorbei' : myTurn ? (v.pend > 0 ? `<em>Du bist dran</em> – leg ${v.pendV === SF.WILD4 ? '+4' : '+2 oder +4'} drauf oder zieh ${v.pend}` : v.drawn != null ? '<em>Gezogen</em> – ausspielen oder behalten?' : '<em>Du bist dran</em>') : `${esc(nameOf(v.turn))} ist dran`;
     const dirTxt = v.dir === 1 ? 'im Uhrzeigersinn' : 'gegen den Uhrzeigersinn';
+    const nextSeat = over ? -1 : SF.next({ n: v.n, dir: v.dir }, v.turn);
+    const flipNow = v.last && v.last.k === 'play' && v.last.card.v === SF.REV && v.moves !== renderTable.flipShown;
+    if (flipNow) renderTable.flipShown = v.moves;
     const seat = (i, pos) => { const x = M.seats[i], c = v.counts[i], shown = Math.min(c, pos === 'top' ? 9 : 8);
       return `<li class="sf-seat ${pos}${v.turn === i && !over ? ' turn' : ''}${x.on ? '' : ' off'}${c === 1 ? ' one' : ''}${v.catchWin && v.catchWin.seat === i ? ' catchme' : ''}" aria-label="${esc(x.name)}: ${c} ${c === 1 ? 'Karte' : 'Karten'}${v.turn === i ? ', ist dran' : ''}${x.bot ? ', Bot' : ''}${x.on ? '' : ', nicht verbunden'}">
         <span class="sf-backs" aria-hidden="true" style="--n:${shown}">${new Array(shown).fill('<i></i>').join('')}</span>
         <span class="sf-tag" aria-hidden="true"><span class="nm">${esc(x.name)}${x.v ? ' <span class="vb">✓</span>' : ''}</span><span class="cnt">${c}</span></span>
-        <span class="st" aria-hidden="true">${v.called[i] && c > 0 && c <= 2 ? 'Letzte Karte!' : x.bot ? 'Bot · ' + LVL[x.bot] : x.on ? '' : 'weg'}</span></li>`; };
+        <span class="st" aria-hidden="true">${i === nextSeat ? '<b class="sf-next">als Nächstes</b> ' : ''}${v.called[i] && c > 0 && c <= 2 ? 'Letzte Karte!' : x.bot ? 'Bot · ' + LVL[x.bot] : x.on ? '' : 'weg'}</span></li>`; };
     const bx = M.seats[base];
     m.innerHTML = `<div class="ar-stage sf-stage">
       <div class="ar-bar"><div class="ar-status" id="sfStatus">${status}</div><div class="row">${M.opts && M.opts.until ? '<span class="sf-rule" title="Hausregel: Ziehen, bis eine Karte passt">Ziehen bis es passt</span>' : ''}</div></div>
@@ -290,14 +295,15 @@
         <ul class="sf-top" aria-label="Mitspielende gegenüber">${at('top').map(i => seat(i, 'top')).join('')}</ul>
         <ul class="sf-side l" aria-label="Links">${at('left').map(i => seat(i, 'left')).join('')}</ul>
         <div class="sf-center">
-          <span class="sf-dir d${v.dir === 1 ? 'cw' : 'ccw'}" title="Richtung: ${dirTxt}" aria-label="Richtung: ${dirTxt}">${v.dir === 1 ? '↻' : '↺'}</span>
+          <svg class="sf-ring ${v.dir === 1 ? 'cw' : 'ccw'}" viewBox="0 0 200 200" aria-hidden="true"><g style="animation-delay:-${((Date.now() % 14000) / 1000).toFixed(2)}s"><circle cx="100" cy="100" r="88" fill="none" stroke="currentColor" stroke-width="3" stroke-dasharray="10 12" opacity=".55"/>${[0, 90, 180, 270].map(a => `<path transform="rotate(${a} 100 100)" d="${v.dir === 1 ? 'M92 4 L108 12 L92 20 Z' : 'M108 4 L92 12 L108 20 Z'}" fill="currentColor"/>`).join('')}</g></svg>
+          ${flipNow ? '<span class="sf-flip" aria-hidden="true">⇄ Richtungswechsel!</span>' : ''}
           <button class="sf-pile" type="button" data-sf="draw" ${myTurn && v.drawn == null ? '' : 'disabled'} aria-label="${drawLabel}, ${v.deckN} Karten im Stapel">${backHtml()}<span class="pn">${v.deckN}</span></button>
           <div class="sf-disc" aria-label="Oben liegt ${esc(cardName(v.top))}${v.top.c === 4 ? ', gewählte Farbe ' + COLORS[v.color] : ''}" role="img">${cardHtml(v.top, ' top ring' + v.color)}</div>
-          <div class="sf-now">${colorChip(v.color)}${v.pend > 0 ? `<span class="sf-pend">+${v.pend} aufgestaut</span>` : ''}</div>
+          <div class="sf-now">${colorChip(v.color)}<span class="sf-dirchip ${v.dir === 1 ? 'cw' : 'ccw'}" title="Spielrichtung">${v.dir === 1 ? '↻ im Uhrzeigersinn' : '↺ gegen den Uhrzeigersinn'}</span>${v.pend > 0 ? `<span class="sf-pend">+${v.pend} aufgestaut</span>` : ''}</div>
         </div>
         <ul class="sf-side r" aria-label="Rechts">${at('right').map(i => seat(i, 'right')).join('')}</ul>
         <div class="sf-bottom">
-          <div class="sf-me${v.turn === base && !over ? ' turn' : ''}"><span class="nm">${esc(me >= 0 ? 'Du' : bx.name)}${me < 0 ? ` · ${v.counts[base]} Karten` : ''}</span>${me >= 0 && v.called[me] && v.hand.length <= 2 ? '<span class="st">Letzte Karte!</span>' : ''}</div>
+          <div class="sf-me${v.turn === base && !over ? ' turn' : ''}">${base === nextSeat ? '<b class="sf-next">als Nächstes</b>' : ''}<span class="nm">${esc(me >= 0 ? 'Du' : bx.name)}${me < 0 ? ` · ${v.counts[base]} Karten` : ''}</span>${me >= 0 && v.called[me] && v.hand.length <= 2 ? '<span class="st">Letzte Karte!</span>' : ''}</div>
           <div class="sf-actions">
             <button class="btn" type="button" data-sf="draw" ${myTurn && v.drawn == null ? '' : 'disabled'}>${drawLabel} <kbd>Z</kbd></button>
             ${v.drawn != null && myTurn ? `<button class="btn ghost" type="button" data-sf="pass">Behalten <kbd>B</kbd></button>` : ''}

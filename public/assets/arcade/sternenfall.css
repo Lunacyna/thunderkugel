@@ -165,3 +165,22 @@
   .sf-felt .sf-now{flex-direction:row;flex-wrap:wrap;justify-content:center;width:100%}
 }
 :root.retro-mode .sf-felt,:root.retro-mode .sf-seat,:root.retro-mode .sf-backs i{border-radius:0}
+
+/* ---- Spielrichtung: drehender Pfeilring, Richtungs-Chip, "als Nächstes", Wechsel-Einblendung ---- */
+.sf-felt .sf-center{isolation:isolate}
+.sf-ring{position:absolute;left:50%;top:50%;width:min(260px,90%);aspect-ratio:1;transform:translate(-50%,-50%);color:var(--c-moon);z-index:-1;pointer-events:none;overflow:visible}
+.sf-ring g{transform-origin:100px 100px}
+@media (prefers-reduced-motion:no-preference){
+  .sf-ring.cw g{animation:sfSpin 14s linear infinite}
+  .sf-ring.ccw g{animation:sfSpin 14s linear infinite reverse}
+  @keyframes sfSpin{to{transform:rotate(360deg)}}
+}
+.sf-dirchip{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;font-weight:700;font-size:13.5px;background:rgba(var(--rgb-moon),.16);color:var(--c-moon);box-shadow:inset 0 0 0 1.5px rgba(var(--rgb-moon),.5);white-space:nowrap}
+.sf-dirchip.ccw{background:rgba(111,211,255,.14);color:#9FDFFF;box-shadow:inset 0 0 0 1.5px rgba(111,211,255,.5)}
+.sf-ring.ccw{color:#9FDFFF}
+.sf-next{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:999px;background:var(--c-moon);color:var(--c-ink)}
+.sf-flip{position:absolute;left:50%;top:50%;z-index:3;transform:translate(-50%,-50%);padding:10px 18px;border-radius:999px;font-weight:700;font-size:20px;white-space:nowrap;
+  background:var(--c-neon);color:var(--c-ink);box-shadow:0 0 30px rgba(var(--rgb-glow),.7);pointer-events:none;animation:sfFlip 1.6s ease forwards}
+@keyframes sfFlip{0%{opacity:0;transform:translate(-50%,-50%) scale(.6) rotate(-8deg)}15%{opacity:1;transform:translate(-50%,-50%) scale(1.08)}75%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-50%) scale(.95)}}
+@media (prefers-reduced-motion:reduce){.sf-flip{animation:sfFlipR 1.6s steps(1,end) forwards}@keyframes sfFlipR{to{opacity:0}}}
+@media (max-width:600px){.sf-dirchip{font-size:12px;padding:5px 10px}.sf-flip{font-size:16px}.sf-ring{width:min(200px,100%)}}

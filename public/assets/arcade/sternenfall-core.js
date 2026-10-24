@@ -80,7 +80,8 @@
     if (type === 'call') {                               // "Letzte Karte!" ansagen
       const h = g.hands[seat]; if (!h) return null;
       if (g.catchWin && g.catchWin.seat === seat) { closeCatch(g); g.called[seat] = true; g.last = { k: 'call', seat }; return g; }
-      if (seat === g.turn && h.length === 2 && !g.called[seat]) { g.called[seat] = true; g.last = { k: 'call', seat }; return g; }
+      // nur wenn man gleich wirklich die vorletzte Karte legen KANN (es gibt einen erlaubten Zug)
+      if (seat === g.turn && h.length === 2 && !g.called[seat] && legal(g0, seat).length) { g.called[seat] = true; g.last = { k: 'call', seat }; return g; }
       return null;
     }
     if (type === 'catch') {                              // jemanden erwischen, der nicht angesagt hat
