@@ -627,8 +627,8 @@ const LO={
       <div class="row"><button class="btn" id="start" type="button">Spiel starten</button><button class="btn line" id="back" type="button">Zurück</button></div>`);
     $('start').onclick=()=>{audio();this.newGame()};$('back').onclick=showMenu;
   },
-  newGame(){const S=this.S;S.players=Array.from({length:S.nPlayers},(_,i)=>({name:'Spieler '+(i+1),col:PCOL[i],pts:0,jokers:3,total:0}));S.round=0;this.nextRound()},
-  nextRound(){const S=this.S;S.round++;S.seed=(Math.random()*1e9)|0;S.card=makeCards(S.seed,1,S.mode)[0];S.times=[];S.turn=0;this.intro()},
+  newGame(){const S=this.S;S.players=Array.from({length:S.nPlayers},(_,i)=>({name:'Spieler '+(i+1),col:PCOL[i],pts:0,jokers:3,total:0}));S.round=0;S.gid=statId();this.nextRound()},
+  nextRound(){const S=this.S;S.round++;S.seed=(Math.random()*1e9)|0;S.card=makeCards(S.seed,1,S.mode)[0];S.times=[];S.turn=0;S.shk=0;this.intro()},
   intro(){
     const S=this.S;S.phase='intro';S.step=0;S.elapsed=0;S.penalty=0;S.hold=null;S.balls=makeBalls(S.seed);
     const p=S.players[S.turn];
@@ -646,7 +646,8 @@ const LO={
       $('go').onclick=()=>{if(last)this.roundResult();else{S.turn++;this.intro()}}},650);
   },
   roundResult(){
-    const S=this.S;S.phase='roundDone';const best=Math.min(...S.times);S.players.forEach((p,i)=>{if(S.times[i]===best)p.pts++});
+    const S=this.S;S.phase='roundDone';const best=Math.min(...S.times);
+    statRound(S.gid,S.round,S.times.reduce((a,t)=>a+t,0),5*S.players.length,S.shk);S.players.forEach((p,i)=>{if(S.times[i]===best)p.pts++});
     const order=S.players.map((p,i)=>({p,t:S.times[i]})).sort((a,b)=>a.t-b.t),w=order.filter(o=>o.t===best),end=S.round>=S.rounds;
     sheet(`<div class="label">Runde ${S.round} von ${S.rounds}</div><h2>${w.map(o=>o.p.name).join(' & ')} ${w.length>1?'gewinnen':'gewinnt'} die Karte</h2>
       <table class="res">${order.map(o=>`<tr class="${o.t===best?'win':''}"><td><span style="color:${o.p.col}">●</span> ${o.p.name}</td><td>${fmt(o.t)} s</td></tr>`).join('')}</table>
@@ -664,7 +665,7 @@ const LO={
   joker(){
     const S=this.S;if(S.phase!=='playing')return;const p=S.players[S.turn];
     if(p.jokers<=0){toast('Keine Joker mehr übrig');sfx.bad();return}
-    if(SHAKE.t>0)return;p.jokers--;S.hold=null;WOB.dir=kick(S.balls);WOB.t=.7;sfx.shake();toast(`Gewackelt! Noch ${p.jokers} Joker`);
+    if(SHAKE.t>0)return;p.jokers--;S.shk=(S.shk||0)+1;S.hold=null;WOB.dir=kick(S.balls);WOB.t=.7;sfx.shake();toast(`Gewackelt! Noch ${p.jokers} Joker`);
   },
   down(p){
     const S=this.S;if(S.phase!=='playing')return;
@@ -705,6 +706,9 @@ const rnd=(a,b)=>a+Math.random()*(b-a);
 // Spielraum ohne Server (für Solo gegen Bots)
 function localRoom(){let pr={};return{presence(p){const n={...pr};for(const k in p){if(p[k]===null)delete n[k];else n[k]=p[k]}pr=n;return Promise.resolve()},
   peers(){return [{peer:'solo',by:null,isMe:true,sameTab:true,kind:'viewer',guest:false,presence:pr,updatedAt:0}]},onPeers(){return()=>{}},leave(){return Promise.resolve()},connected:()=>true}}
+// Fun Metrics: pro Karte Spielzeit, von Menschen gesammelte Kugeln und Wackler melden
+function statId(){return window.LZCozy?LZCozy.stats.newId():Math.random().toString(36).slice(2,14)}
+function statRound(gid,rd,sec,balls,shakes){if(window.LZCozy&&gid)LZCozy.stats.round({game:'kb',id:gid+':'+rd,sec,balls,shakes})}
 function reportScores(game,rows){
   if(!window.KB_SERVER||!rows.length)return;
   const gid=Math.random().toString(36).slice(2,12)+Date.now().toString(36);
@@ -830,14 +834,14 @@ const ON={
     pl=pl.concat(bots).slice(0,4);
     g.pl=pl.map(x=>({p:x.p,b:x.b||null,nm:x.bot?x.nm:(this.solo&&x.p===me?'Du':undefined),bot:x.bot,lv:x.lv,pts:0,jk:3,st:0,lk:0}));
   },
-  hostStartGame(){const g=this.H.g;if(g.pl.length<2)return;g.pl.forEach(p=>{p.pts=0;p.jk=3});g.rd=0;this.hostNextRound()},
+  hostStartGame(){const g=this.H.g;if(g.pl.length<2)return;g.gs=statId();g.pl.forEach(p=>{p.pts=0;p.jk=3});g.rd=0;this.hostNextRound()},
   hostNextRound(){
     const H=this.H,g=H.g;
     if(g.rd>=g.rounds){g.ph='over';
       const humans=g.pl.filter(p=>!p.bot);
       if(!this.solo&&humans.length>=2){const max=Math.max(...g.pl.map(p=>p.pts));reportScores('kb',g.pl.map((p,k)=>({p,k})).filter(o=>!o.p.bot).map(o=>({name:pname(o.p,o.k),b:o.p.b||'',pts:o.p.pts,win:o.p.pts===max})))}
       return}
-    H.bots={};
+    H.bots={};H.shk=0;
     g.rd++;g.seed=(Math.random()*1e9)|0;H.balls=makeBalls(g.seed);H.cards=makeCards(g.seed,g.pl.length,g.mode);
     g.rm=[];g.win=-1;g.el=0;g.pl.forEach(p=>{p.st=0;p.lk=0});H.lock={};
     // alte Absichten nicht erneut ausführen
@@ -851,12 +855,13 @@ const ON={
     const bi=H.balls.findIndex(b=>b.id===id);if(bi<0)return;const b=H.balls[bi];
     if(!matches(g.mode,b,H.cards[i][pl.st])){H.lock[peer]=now+PEN*1000;return}
     H.balls.splice(bi,1);g.rm.push(id);pl.st++;
-    if(pl.st>=5){g.ph='round';g.win=i;pl.pts++;g.el=Math.round((now-H.t0)/100)/10}
+    if(pl.st>=5){g.ph='round';g.win=i;pl.pts++;g.el=Math.round((now-H.t0)/100)/10;
+      if(g.gs&&H.t0)statRound(g.gs,g.rd,g.el,g.pl.filter(x=>!x.bot).reduce((a,x)=>a+(x.st|0),0),H.shk||0)}
   },
   hostShake(peer){
     const H=this.H,g=H.g;if(g.ph!=='play'||SHAKE.t>0)return;
     const pl=g.pl.find(p=>p.p===peer);if(!pl||pl.jk<=0)return;
-    pl.jk--;g.sd=Math.round(kick(H.balls)*100)/100;g.sk++;g.sb=g.pl.indexOf(pl);
+    pl.jk--;if(!pl.bot)H.shk=(H.shk||0)+1;g.sd=Math.round(kick(H.balls)*100)/100;g.sk++;g.sb=g.pl.indexOf(pl);
   },
   hostTick(dt,now){
     const H=this.H,g=H.g;

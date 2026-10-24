@@ -386,11 +386,11 @@ function cleanClue(t){return String(t||'').replace(/[\u0000-\u001f]/g,'').trim()
 
 // ================= Spiel-Regeln (gleich für lokal und online) =================
 // ph: lobby | write | review | guess | result | over
-function newGame(cfg,players){return startRound({ph:'write',total:cfg.total,pl:players.map(p=>({...p})),rater:-1,deck:shuffle(WORDS).slice(0,cfg.total),score:0,lost:0,rd:0,log:[],hp:cfg.hp})}
+function newGame(cfg,players){return startRound({gs:newGid(),ph:'write',total:cfg.total,pl:players.map(p=>({...p})),rater:-1,deck:shuffle(WORDS).slice(0,cfg.total),score:0,lost:0,rd:0,log:[],hp:cfg.hp})}
 function startRound(G){
   const deck=G.deck.slice();if(!deck.length)return {...G,ph:'over'};
   const word=deck.pop();
-  return {...G,deck,word,rater:(G.rater+1)%G.pl.length,clues:{},guess:'',ok:null,burn:null,rd:G.rd+1,ph:'write',lstep:'hide',lwi:-1};
+  return {...G,deck,word,rater:(G.rater+1)%G.pl.length,clues:{},guess:'',ok:null,burn:null,rd:G.rd+1,ph:'write',lstep:'hide',lwi:-1,rs:Date.now()};
 }
 const givers=G=>G.pl.map((_,i)=>i).filter(i=>i!==G.rater);
 function toReview(G){
@@ -508,7 +508,10 @@ function hostSyncLobby(){
   const nxt=pl.map(x=>({p:x.p,b:x.b}));
   if(JSON.stringify(nxt)!==JSON.stringify(H.pl)){H.pl=nxt;ON.dirty=true}
 }
-function hostApply(actor,a,free){const G2=apply(ON.H,actor,a,free);if(G2){ON.H=G2;ON.dirty=true;return true}return false}
+function hostApply(actor,a,free){const G1=ON.H,G2=apply(G1,actor,a,free);if(G2){ON.H=G2;ON.dirty=true;cardDone(G1,G2);return true}return false}
+// Fun Metrics: eine Karte zählt, wenn das Ergebnis feststeht und es weitergeht ("War doch richtig" ist dann schon eingerechnet)
+function newGid(){return window.LZCozy?LZCozy.stats.newId():Math.random().toString(36).slice(2,14)}
+function cardDone(G1,G2){if(window.LZCozy&&G1&&G1.ph==='result'&&G2.ph!=='result'&&G1.gs)LZCozy.stats.round({game:'ne',id:G1.gs+':'+G1.rd,start:G1.rs,cards:G1.ok===true?1:0})}
 function takeOver(g){
   ON.H=unpack(g);ON.H.hp=myPeer();ON.host=true;ON.hostGone=false;ON.seen={};ON.off={};
   for(const p of ON.gr.peers()){const a=p.presence&&p.presence.a;if(Array.isArray(a)&&Number.isInteger(a[0]))ON.seen[p.peer]=a[0]}
@@ -544,7 +547,7 @@ function hostTick(){
 }
 function send(t,arg,actor){
   arg=arg||{};
-  if(V.view==='local'){const G2=apply(V.local,actor==null?-1:actor,{t,...arg},true);if(G2){V.local=G2;saveLocal();render(true)}return true}
+  if(V.view==='local'){const G1=V.local,G2=apply(G1,actor==null?-1:actor,{t,...arg},true);if(G2){V.local=G2;saveLocal();cardDone(G1,G2);render(true)}return true}
   if(ON.host){const i=myIndex(ON.H);if(hostApply(i,{t,...arg},false)){hostTick();return true}return false}
   if(ON.gr){ON.gr.presence({a:[++ON.seq,t,arg]}).catch(()=>{});return true}
   return false;

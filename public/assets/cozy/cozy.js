@@ -203,6 +203,41 @@
   }
   function text(html) { var d = document.createElement('div'); d.innerHTML = html; return (d.textContent || '').replace(/\s+/g, ' ').trim(); }
 
+  /* ---- Fun Metrics: abgeschlossene Runden melden -----------------------
+     LZCozy.stats.round({ game:'zw'|'ne'|'kb', id:'<spiel-id>:<runde>',
+                          start:<Date.now() beim Rundenstart>  ODER  sec:<gemessene Sekunden>,
+                          cards:0|1, balls:n, shakes:n })
+     Spielzeit = Rundenende − Rundenstart, abzüglich der Zeit, in der dieser
+     Tab im Hintergrund lag, gedeckelt pro Spiel (der Server deckelt nochmal).
+     Fire-and-forget: Fehler stören das Spiel nie. */
+  var STAT_CAP = { kb: 900, zw: 1800, ne: 900 };
+  var hiddenSpans = [], hiddenSince = document.hidden ? Date.now() : null;
+  document.addEventListener('visibilitychange', function () {
+    var now = Date.now();
+    if (document.hidden) hiddenSince = now;
+    else if (hiddenSince != null) { hiddenSpans.push([hiddenSince, now]); if (hiddenSpans.length > 60) hiddenSpans.shift(); hiddenSince = null; }
+  });
+  function visibleMs(start, end) {
+    var ms = end - start, spans = hiddenSpans.concat(hiddenSince != null ? [[hiddenSince, end]] : []);
+    spans.forEach(function (s) { var a = Math.max(s[0], start), b = Math.min(s[1], end); if (b > a) ms -= b - a; });
+    return Math.max(0, ms);
+  }
+  var stats = {
+    round: function (o) {
+      try {
+        if (!o || !STAT_CAP[o.game] || !o.id) return;
+        var sec = o.sec != null ? +o.sec : (o.start ? visibleMs(+o.start, Date.now()) / 1000 : 0);
+        // Uhren verschiedener Geräte (Spielleitung wechselt) können abweichen -> nie negativ, nie über der Grenze
+        sec = Math.max(0, Math.min(STAT_CAP[o.game], Math.round(sec || 0)));
+        var body = JSON.stringify({ game: o.game, id: String(o.id).toLowerCase().replace(/[^a-z0-9:]/g, '').slice(0, 30),
+                                    sec: sec, cards: o.cards ? 1 : 0, balls: o.balls | 0, shakes: o.shakes | 0 });
+        fetch('/api/stats', { method: 'POST', headers: { 'content-type': 'application/json' }, body: body, keepalive: true, credentials: 'same-origin' }).catch(function () {});
+      } catch (e) {}
+    },
+    newId: function () { return (Math.random().toString(36).slice(2, 10) + Date.now().toString(36)).slice(0, 18); },
+    visibleMs: visibleMs
+  };
+
   /* ---- Feedback-Dialog -------------------------------------------------- */
   var ICON_BUG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 18c1-1.6 2.4-2.6 4-3M19 18c-1-1.6-2.4-2.6-4-3"/><path d="M8 10.5C8 7 9.8 5 12 5s4 2 4 5.5V14a4 4 0 0 1-8 0z"/><path d="M8.5 6 7 4.5M15.5 6 17 4.5M12 10v8"/></svg>';
   var MAXLEN = 2000;
@@ -319,5 +354,5 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 
   window.LZCozy = { theme: theme, announce: announce, keys: keys, isTyping: isTyping, saveFocus: saveFocus, text: text,
-                    arrowGroups: arrowGroups, feedback: { open: open, close: close } };
+                    arrowGroups: arrowGroups, stats: stats, feedback: { open: open, close: close } };
 })();

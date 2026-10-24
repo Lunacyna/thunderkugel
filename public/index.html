@@ -165,6 +165,29 @@ table.lb td:nth-child(2){text-align:left;font-weight:700;overflow-wrap:anywhere}
 table.lb td:first-child{width:38px;text-align:center;font-family:var(--font-script);font-size:24px;color:var(--moon)}
 table.lb tr.top td:nth-child(2){color:var(--neon);text-shadow:0 0 10px rgba(var(--rgb-glow,199,125,255),.5)}
 .lbempty{color:var(--muted);font-weight:600;padding:16px 0;text-align:center}
+/* Fun Metrics: "Zeitverschwendung in Zahlen" über der Bestenliste */
+.funstats{margin:4px 0 18px}
+.fs-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px 14px;flex-wrap:wrap;margin:0 0 10px}
+.fs-head h4{margin:0;font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--lavender)}
+.fs-head p{margin:0;font-size:12.5px;font-weight:600;color:var(--muted)}
+.fs-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,196px),1fr));gap:10px;margin:0}
+.fs-tile{position:relative;display:grid;grid-template-columns:40px minmax(0,1fr);grid-template-areas:"ic lb" "ic dd";column-gap:12px;align-items:center;
+  padding:12px 14px;border-radius:16px;background:rgba(var(--rgb-deep,10,8,30),.32);box-shadow:inset 0 0 0 1.5px rgba(var(--rgb-lav,185,166,232),.18);overflow:hidden}
+.fs-tile::after{content:"";position:absolute;inset:auto -30% -60% auto;width:140px;height:140px;border-radius:50%;background:radial-gradient(closest-side,rgba(var(--rgb-glow,199,125,255),.16),transparent);pointer-events:none}
+.fs-ic{grid-area:ic;align-self:start;width:40px;height:40px;border-radius:12px;display:grid;place-items:center;color:var(--moon);background:rgba(var(--rgb-moon,253,213,187),.12);box-shadow:0 0 16px rgba(var(--rgb-moon,253,213,187),.15)}
+.fs-ic svg{width:22px;height:22px}
+.fs-tile dt{grid-area:lb;font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);line-height:1.3}
+.fs-tile dd{grid-area:dd;margin:0;min-width:0}
+.fs-v{display:block;font-weight:700;font-size:26px;line-height:1.15;color:var(--neon);text-shadow:0 0 12px rgba(var(--rgb-glow,199,125,255),.4);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fs-v small{font-size:14px;font-weight:700;color:var(--lavender);text-shadow:none;margin:0 6px 0 2px}
+.fs-v small:last-child{margin-right:0}
+.fs-sub{display:block;font-size:12.5px;font-weight:600;color:var(--muted);line-height:1.35;margin-top:2px}
+.fs-tile.loading .fs-v{color:transparent;text-shadow:none;border-radius:8px;width:70%;background:linear-gradient(90deg,rgba(var(--rgb-lav,185,166,232),.12),rgba(var(--rgb-lav,185,166,232),.26),rgba(var(--rgb-lav,185,166,232),.12));background-size:200% 100%;animation:fsShimmer 1.4s linear infinite}
+.fs-tile.loading .fs-sub{visibility:hidden}
+@keyframes fsShimmer{to{background-position:-200% 0}}
+.fs-tile.pop .fs-ic{animation:fsPop .6s ease-out}
+@keyframes fsPop{40%{transform:scale(1.15) rotate(-6deg)}}
+@media (prefers-reduced-motion:reduce){.fs-tile.loading .fs-v,.fs-tile.pop .fs-ic{animation:none}}
 .side-note p{margin:0 0 12px;color:var(--muted);font-weight:600;font-size:15px}
 .side-note a.play{margin:4px 0 0;text-decoration:none}
 
@@ -377,12 +400,33 @@ window.LZSound = window.LZSound || (() => {
     <div class="frame">
       <h3 id="lbTitle">Wer gewinnt diesen Monat?</h3>
       <div class="toggles" id="lbMonth"><button type="button" data-m="0" aria-pressed="true">Dieser Monat</button><button type="button" data-m="1" aria-pressed="false">Letzter Monat</button></div>
+      <section class="funstats" aria-labelledby="fsTitle" aria-busy="true">
+        <div class="fs-head"><h4 id="fsTitle">Zeitverschwendung in Zahlen</h4><p id="fsAll"></p></div>
+        <dl class="fs-grid">
+          <div class="fs-tile loading" data-k="time">
+            <span class="fs-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12M6 21h12M7 3c0 5 10 5 10 9s-10 4-10 9M17 3c0 5-10 5-10 9s10 4 10 9"/><path d="M9.5 18.5h5" stroke-width="2.4"/></svg></span>
+            <dt>Gemeinsam verschwendete Zeit</dt>
+            <dd><span class="fs-v" aria-hidden="true">0 Min.</span><span class="lz-sr" data-sr></span><span class="fs-sub" data-sub></span></dd>
+          </div>
+          <div class="fs-tile loading" data-k="cards">
+            <span class="fs-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="11" height="15" rx="2" transform="rotate(-8 9 12.5)"/><rect x="9.5" y="4" width="11" height="15" rx="2" transform="rotate(7 15 11.5)"/><path d="M13.5 11.5l1.6 1.6 3-3.4"/></svg></span>
+            <dt>Erratene Begriffe &amp; Karten</dt>
+            <dd><span class="fs-v" aria-hidden="true">0</span><span class="lz-sr" data-sr></span><span class="fs-sub" data-sub></span></dd>
+          </div>
+          <div class="fs-tile loading" data-k="chaos">
+            <span class="fs-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11h18a9 9 0 0 1-18 0z"/><circle cx="9" cy="7.5" r="2"/><circle cx="14.5" cy="6" r="2"/><path d="M1.5 5.5 3 7M22.5 5.5 21 7M12 1.8v1.6"/></svg></span>
+            <dt>Kugelblitz-Chaos</dt>
+            <dd><span class="fs-v" aria-hidden="true">0</span><span class="lz-sr" data-sr></span><span class="fs-sub" data-sub></span></dd>
+          </div>
+        </dl>
+      </section>
       <div class="toggles" id="lbGame" style="margin-top:-6px"><button type="button" data-g="all" aria-pressed="true">Alle Spiele</button><button type="button" data-g="kb" aria-pressed="false">Kugelblitz</button><button type="button" data-g="zw" aria-pressed="false">20 Questions</button></div>
       <div id="lb" aria-live="polite"><div class="lbempty">Lädt …</div></div>
     </div>
     <div class="frame side-note">
       <h3>Mitmachen</h3>
       <p>Ein <span class="vb">✓</span> heißt: per Twitch bestätigt. Gezählt wird jede fertig gespielte Partie mit mindestens zwei echten Menschen – online, und bei 20 Questions auch, wenn ihr gemeinsam an einem Bildschirm spielt und eure Namen eintragt. Bots und Namen wie „Spieler 2“ zählen nicht.</p>
+      <p>Für die „Zeitverschwendung in Zahlen“ zählt jede fertig gespielte Karte – auch solo, gegen Bots und bei Nur Einer!. Offen vergessene Tabs zählen nicht mit.</p>
       <p>Du hast eine Idee für eine Karte für 20 Questions – vielleicht einen Insider aus dem Stream?</p>
       <a class="play" href="/zwanzig/karten/">Karte vorschlagen</a>
     </div>
@@ -488,6 +532,56 @@ if(window.LZSound)LZSound.mountToggle(document.getElementById('muteBtn'));
     document.querySelectorAll('#'+id+' button').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));set(b.dataset[attr]);load()});
   wire('lbMonth','m',v=>m=+v);wire('lbGame','g',v=>g=v);
   load();
+  // ---- Fun Metrics ----
+  const fs=document.querySelector('.funstats');
+  const de=n=>Math.round(n).toLocaleString('de-DE');
+  const plural=(n,one,many)=>de(n)+' '+(Math.round(n)===1?one:many);
+  // Zeit: unter 1 Std. nur Minuten, darüber Std. + Min., ab 1000 Std. nur noch Stunden
+  function timeParts(sec){const min=Math.floor(sec/60);if(min<60)return [[min,'Min.','Minute','Minuten']];
+    const h=Math.floor(min/60),r=min%60;return h>=1000||r===0?[[h,'Std.','Stunde','Stunden']]:[[h,'Std.','Stunde','Stunden'],[r,'Min.','Minute','Minuten']]}
+  const timeHtml=sec=>timeParts(sec).map(([n,u])=>de(n)+'<small>'+u+'</small>').join('');
+  const timeText=sec=>sec>0&&sec<60?'unter einer Minute':timeParts(sec).map(([n,,a,b])=>plural(n,a,b)).join(' ');
+  const timeShort=sec=>timeParts(sec).map(([n,u])=>de(n)+' '+u).join(' ');
+  const TILES={
+    time:{v:d=>d.sec,html:timeHtml,sr:timeText,
+      sub:d=>{const tea=Math.floor(d.sec/1200);return d.sec<60?'Die Uhr wartet noch auf euch.':tea<1?'Reicht noch nicht für eine Tasse Tee.':'Das sind etwa '+plural(tea,'Tasse','Tassen')+' Tee.'}},
+    cards:{v:d=>d.zw+d.ne,html:n=>de(n)+'<small>'+(Math.round(n)===1?'Karte':'Karten')+'</small>',sr:n=>plural(n,'Karte','Karten'),
+      sub:d=>'20 Questions: '+de(d.zw)+' · Nur Einer!: '+de(d.ne)},
+    chaos:{v:d=>d.balls,html:n=>de(n)+'<small>'+(Math.round(n)===1?'Kugel':'Kugeln')+'</small>',sr:n=>plural(n,'Kugel','Kugeln')+' eingesammelt',
+      sub:d=>d.shakes?'und '+de(d.shakes)+'× die Schale durchgeschüttelt':'Noch keine Schale geschüttelt – verdächtig ruhig.'}
+  };
+  const reduce=matchMedia('(prefers-reduced-motion: reduce)');
+  // Zahlen sanft hochzählen, sobald die Kacheln sichtbar sind
+  function countTo(tile,cfg,target){
+    const el=tile.querySelector('.fs-v'),from=tile._v||0;tile._v=target;
+    if(reduce.matches||from===target){el.innerHTML=cfg.html(target);return}
+    const t0=performance.now(),dur=Math.min(1600,700+Math.log10(Math.abs(target-from)+1)*250);
+    tile.classList.remove('pop');void tile.offsetWidth;tile.classList.add('pop');
+    (function step(t){const k=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-k,3);el.innerHTML=cfg.html(from+(target-from)*e);if(k<1)requestAnimationFrame(step)})(t0);
+  }
+  let pending=null,visible=false;
+  function paint(d){
+    fs.querySelectorAll('.fs-tile').forEach(tile=>{const cfg=TILES[tile.dataset.k],val=cfg.v(d);
+      tile.classList.remove('loading');tile.querySelector('[data-sub]').textContent=cfg.sub(d);
+      tile.querySelector('[data-sr]').textContent=cfg.sr(val)+'.';
+      countTo(tile,cfg,val)});
+  }
+  if('IntersectionObserver' in window){new IntersectionObserver(es=>{if(es.some(x=>x.isIntersecting)){visible=true;if(pending){paint(pending);pending=null}}},{threshold:.3}).observe(fs)}else visible=true;
+  async function loadStats(){
+    document.getElementById('fsTitle').textContent='Zeitverschwendung '+(m===0?'diesen Monat':'im '+monthName(1));
+    fs.setAttribute('aria-busy','true');
+    try{
+      const r=await fetch('/api/stats?month='+monthKey(m),{cache:'no-store'});if(!r.ok)throw 0;const j=await r.json(),d=j.m,a=j.all;
+      document.getElementById('fsAll').textContent=a.rounds?'Seit dem Start: '+timeShort(a.sec)+' · '+plural(a.zw+a.ne,'Karte','Karten')+' · '+plural(a.balls,'Kugel','Kugeln'):'';
+      if(visible)paint(d);else pending=d;
+    }catch(e){
+      fs.querySelectorAll('.fs-tile').forEach(t=>{t.classList.remove('loading');t.querySelector('.fs-v').textContent='–';t.querySelector('[data-sub]').textContent='';t.querySelector('[data-sr]').textContent='nicht verfügbar.'});
+      document.getElementById('fsAll').textContent='Die Statistik ist gerade nicht erreichbar.';
+    }
+    fs.setAttribute('aria-busy','false');
+  }
+  document.getElementById('lbMonth').addEventListener('click',e=>{if(e.target.closest('button'))loadStats()});
+  loadStats();
 })();
 
 // Sternenhimmel + Pfoten: /assets/cozy/sky.js

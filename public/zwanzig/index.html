@@ -453,9 +453,9 @@ function buildRound(G){
   const tiles=shuffle([...hints.map(t=>({k:'h',t})),...acts.map(a=>({k:'a',ty:a.ty,n:a.n||0,t:a.t}))]).map((t,i)=>({...t,num:i+1,o:false}));
   const n=G.pl.length,order=[];if(G.vr){for(let k=1;k<n;k++)order.push((G.vl+k)%n)}else{for(let k=0;k<n;k++)order.push((G.vl+k)%n)}
   const el=findEligible(G.pl,order,0);
-  return {...G,deck,card:{key:c.key,answer:c.answer,category:c.category,aliases:c.aliases||[],author:c.custom?(c.author||''):'',av:!!c.authorVerified},tiles,order,pl:el.pl,tp:el.tp,opened:0,cur:null,log:[],msg:null,lw:null,res:null,ph:'pick'};
+  return {...G,deck,card:{key:c.key,answer:c.answer,category:c.category,aliases:c.aliases||[],author:c.custom?(c.author||''):'',av:!!c.authorVerified},tiles,order,pl:el.pl,tp:el.tp,opened:0,cur:null,log:[],msg:null,lw:null,res:null,ph:'pick',rs:Date.now()};
 }
-function newGame(cfg,players){return buildRound({goal:cfg.goal,mode:cfg.mode,diff:cfg.diff,reader:cfg.reader||'pc',vr:cfg.mode==='spoken'||cfg.reader==='person',pl:players.map(p=>({...p,pts:0,sk:false})),vl:0,rd:1,deck:[]})}
+function newGame(cfg,players){return buildRound({gs:newGid(),goal:cfg.goal,mode:cfg.mode,diff:cfg.diff,reader:cfg.reader||'pc',vr:cfg.mode==='spoken'||cfg.reader==='person',pl:players.map(p=>({...p,pts:0,sk:false})),vl:0,rd:1,deck:[]})}
 function advance(G,extra){G={...G,...(extra||{})};if(G.opened>=20)return endRound(G,null);const r=findEligible(G.pl,G.order,G.tp+1);return {...G,pl:r.pl,tp:r.tp,ph:'pick',cur:null}}
 function endRound(G,w){
   const pl=G.pl.map(p=>({...p})),v=G.vl;let gains;
@@ -560,7 +560,10 @@ function unpack(g){
   try{if(g.sx){const d=JSON.parse(decodeURIComponent(escape(atob(g.sx.split('').reverse().join('')))));G.tiles=d.tiles;G.deck=d.deck||[];if(G.card)G.card.aliases=d.aliases||[]}}catch(e){}
   delete G.sx;if(!G.deck)G.deck=[];return G;
 }
-function hostApply(actor,a,free){const prev=ON.H&&ON.H.ph;const G2=apply(ON.H,actor,a,free);if(G2){ON.H=G2;ON.dirty=true;if(prev!=='gameEnd'&&G2.ph==='gameEnd')reportGame(G2);return true}return false}
+function hostApply(actor,a,free){const prev=ON.H&&ON.H.ph;const G2=apply(ON.H,actor,a,free);if(G2){ON.H=G2;ON.dirty=true;if(prev!=='roundEnd'&&G2.ph==='roundEnd')reportRound(G2);if(prev!=='gameEnd'&&G2.ph==='gameEnd')reportGame(G2);return true}return false}
+// Fun Metrics: jede aufgelöste Karte zählt (Spielzeit + erraten ja/nein); gemeldet von der Spielleitung bzw. dem lokalen Gerät
+function newGid(){return window.LZCozy?LZCozy.stats.newId():Math.random().toString(36).slice(2,14)}
+function reportRound(G){if(window.LZCozy&&G&&G.gs)LZCozy.stats.round({game:'zw',id:G.gs+':'+G.rd,start:G.rs,cards:G.res&&G.res.w!=null?1:0})}
 function reportGame(G){
   if(!window.KB_SERVER||!G||!G.pl)return;
   const max=Math.max(...G.pl.map(p=>p.pts));
@@ -605,7 +608,7 @@ function hostTick(){
   }
 }
 function send(t,arg){
-  if(V.view==='local'){const prev=V.local&&V.local.ph;const G2=apply(V.local,-1,{t,...(arg||{})},true);if(G2){V.local=G2;saveLocal();if(prev!=='gameEnd'&&G2.ph==='gameEnd')reportGame(G2);render(true)}return}
+  if(V.view==='local'){const prev=V.local&&V.local.ph;const G2=apply(V.local,-1,{t,...(arg||{})},true);if(G2){V.local=G2;saveLocal();if(prev!=='roundEnd'&&G2.ph==='roundEnd')reportRound(G2);if(prev!=='gameEnd'&&G2.ph==='gameEnd')reportGame(G2);render(true)}return}
   if(ON.host){const i=myIndex(ON.H);if(hostApply(i,{t,...(arg||{})},false))hostTick();return}
   if(ON.gr){ON.gr.presence({a:[++ON.seq,t,arg||{}]}).catch(()=>{})}
 }

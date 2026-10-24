@@ -131,6 +131,13 @@ Oben neben dem Lautsprecher sitzt ein runder Knopf: **Mond** = Sternennacht (lil
 - **Kugelblitz:** Leertaste oder J = Joker (Wackeln), 1–3 = Auswahl im Menü, Enter = Weiter. Das Greifen der Kugeln bleibt Maus/Touch – das ist der Kern des Spiels.
 - Spielzüge, Hinweise, Punkte und Rundenwechsel werden für Screenreader angesagt (zeitkritische Wechsel wie „Du bist dran“ sofort, der Rest höflich).
 
+## Zeitverschwendung in Zahlen (Fun Metrics)
+
+Über der Bestenliste stehen drei Kacheln: gemeinsam verschwendete Zeit, erratene Karten (20 Questions + Nur Einer!) und Kugelblitz-Chaos (gesammelte Kugeln + Wackler). Sie folgen dem Monats-Umschalter; darüber steht die Summe seit Start.
+- Gemeldet wird jede fertige Karte/Runde einmal (`POST /api/stats`), von der Spielleitung bzw. dem lokalen Gerät – auch solo und bei Nur Einer!.
+- Spielzeit = Rundenende − Rundenstart, ohne die Zeit, in der der Tab im Hintergrund lag. Obergrenze pro Runde: 15 Min. (Kugelblitz, Nur Einer!), 30 Min. (20 Questions) – im Browser und nochmal im Server.
+- Gespeichert als einfache Zähler im bestehenden Store (`st:JJJJ-MM`, `st:all`); doppelte Meldungen werden über die Runden-ID erkannt.
+
 ## Feedback-Formular (Discord)
 
 Unten auf jeder Seite: „Bug gefunden oder Spiel-Idee?“. Die Nachrichten landen in einem **privaten Discord-Kanal** – deine Adresse/URL steht nirgends im Quellcode.
